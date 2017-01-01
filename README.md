@@ -14,7 +14,10 @@ https://github.com/dolphin-emu/dolphin/pull/4407
 
 3. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
 
-4. Run `example.py`
+4. Install via pip: (or by cloning this repo for the very latest)
+`pip3 install melee`
+
+5. Run `example.py`
 
 ## NOTE:
 The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
