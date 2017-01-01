@@ -16,8 +16,9 @@ class GameState:
     def __init__(self, dolphin):
         #Dict with key of address, and value of (name, player)
         self.locations = dict()
-        #TODO: Make configurable
-        with open("melee/locations.csv") as csvfile:
+        #Copy the locations.csv adjacent to this file
+        path = os.path.dirname(os.path.realpath(__file__))
+        with open(path + "/locations.csv") as csvfile:
             reader = csv.DictReader(csvfile)
             for line in reader:
                 self.locations[line["Address"]] = (line["Name"], line["Player"])
