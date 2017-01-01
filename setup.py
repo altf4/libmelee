@@ -10,4 +10,6 @@ setup(
   download_url = 'https://github.com/altf4/libmelee/tarball/0.0.1',
   keywords = ['dolphin', 'AI', 'video games'],
   classifiers = [],
+  license = "GPLv3",
+  platform = "linux, osx"
 )
