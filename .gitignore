@@ -1,5 +1,6 @@
 #Log directory
 Logs/*
+MANIFEST
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
