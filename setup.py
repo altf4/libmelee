@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 setup(
   name = 'melee',
   packages = ['melee'],
@@ -11,6 +11,5 @@ setup(
   keywords = ['dolphin', 'AI', 'video games'],
   classifiers = [],
   license = "GPLv3",
-  platform = "linux, osx",
   include_package_data=True
 )
