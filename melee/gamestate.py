@@ -1,4 +1,4 @@
-from  melee import enums
+from melee import enums
 import csv
 from struct import *
 import binascii
