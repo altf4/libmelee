@@ -16,12 +16,12 @@ def check_port(value):
 
 chain = None
 
-parser = argparse.ArgumentParser(description='SmashBot: The AI that beats you at Melee')
+parser = argparse.ArgumentParser(description='Example of libmelee in action')
 parser.add_argument('--port', '-p', type=check_port,
-                    help='The controller port SmashBot will play on',
+                    help='The controller port your AI will play on',
                     default=2)
 parser.add_argument('--opponent', '-o', type=check_port,
-                    help='The controller port the human will play on',
+                    help='The controller port the opponent will play on',
                     default=1)
 parser.add_argument('--live', '-l',
                     help='The opponent playing live with a GCN Adapter',

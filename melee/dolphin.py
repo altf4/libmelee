@@ -17,7 +17,7 @@ class Dolphin:
         if not os.path.exists(mem_watcher_path):
             os.makedirs(mem_watcher_path)
             print("WARNING: Had to create a MemoryWatcher directory in Dolphin just now. " \
-                "You may need to restart Dolphin and SmashBot in order for this to work. " \
+                "You may need to restart Dolphin and this program in order for this to work. " \
                 "(You should only see this warning once)")
 
         #Copy over Locations.txt that is adjacent to this file
@@ -28,10 +28,10 @@ class Dolphin:
         if not os.path.exists(pipes_path):
             os.makedirs(pipes_path)
             print("WARNING: Had to create a Pipes directory in Dolphin just now. " \
-                "You may need to restart Dolphin and SmashBot in order for this to work. " \
+                "You may need to restart Dolphin and this program in order for this to work. " \
                 "(You should only see this warning once)")
 
-        pipes_path += "SmashBot" + str(ai_port)
+        pipes_path += "Bot" + str(ai_port)
         if not os.path.exists(pipes_path):
             os.mkfifo(pipes_path)
 
@@ -47,13 +47,13 @@ class Dolphin:
         config = configparser.SafeConfigParser()
         config.read(controller_config_path)
 
-        #Add a SmashBot standard controller config to the given port
+        #Add a bot standard controller config to the given port
         section = "GCPad" + str(port)
         if not config.has_section(section):
             config.add_section(section)
 
         if not gcnadapter:
-            config.set(section, 'Device', 'Pipe/0/SmashBot' + str(port))
+            config.set(section, 'Device', 'Pipe/0/Bot' + str(port))
             config.set(section, 'Buttons/A', 'Button A')
             config.set(section, 'Buttons/B', 'Button B')
             config.set(section, 'Buttons/X', 'Button X')
@@ -87,7 +87,7 @@ class Dolphin:
         with open(controller_config_path, 'w') as configfile:
             config.write(configfile)
 
-        #Change SmashBot's controller port to use "standard" input
+        #Change the bot's controller port to use "standard" input
         dolphinn_config_path = self.get_dolphin_config_path() + "Dolphin.ini"
         config = configparser.SafeConfigParser()
         config.read(dolphinn_config_path)
@@ -146,7 +146,7 @@ class Dolphin:
             return linux_path
 
         print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
-                and then run SmashBot again.")
+                and then run again.")
         sys.exit(1)
         return ""
 
@@ -171,13 +171,13 @@ class Dolphin:
             return osx_path
 
         print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
-                and then run SmashBot again.")
+                and then run again.")
         sys.exit(1)
         return ""
 
     """Get the path of the named pipe input file for the given controller port"""
     def get_dolphin_pipes_path(self, port):
-        return self.get_dolphin_home_path() + "/Pipes/SmashBot" + str(port)
+        return self.get_dolphin_home_path() + "/Pipes/Bot" + str(port)
 
     """Get the MemoryWatcher socket path"""
     def get_memory_watcher_socket_path(self):
