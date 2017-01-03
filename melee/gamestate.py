@@ -40,6 +40,18 @@ class GameState:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         self.sock.bind(path)
 
+    """Return a list representation of the current gamestate
+    Only caring about in-game things, not menus and such"""
+    def tolist(self):
+        thelist = []
+        thelist.append(self.frame)
+        thelist.append(self.stage.value)
+        thelist = thelist + self.ai_state.tolist()
+        thelist = thelist + self.opponent_state.tolist()
+        #TODO: Figure out the best way to add projectiles to the list
+        #thelist = thelist + self.projectiles.tolist()
+        return thelist
+
     """Process one new memory update
        returns True if the frame is finished processing (no more updates this frame)
        Run this in a loop until it returns returns True, then press your buttons,
@@ -237,6 +249,29 @@ class PlayerState:
     cursor_x = 0
     cursor_y = 0
 
+    """Produces a list representation of the player's state"""
+    def tolist(self):
+        thelist = []
+        thelist.append(self.x)
+        thelist.append(self.y)
+        thelist.append(self.percent)
+        thelist.append(self.stock)
+        thelist.append(int(self.facing))
+        thelist.append(self.action.value)
+        #We're... gonna leave this one out for now since it's a bit irrelevant
+        #thelist.append(self.action_counter)
+        thelist.append(self.action_frame)
+        thelist.append(int(self.invulnerable))
+        thelist.append(self.hitlag_frames_left)
+        thelist.append(self.hitstun_frames_left)
+        thelist.append(int(self.charging_smash))
+        thelist.append(self.jumps_left)
+        thelist.append(int(self.on_ground))
+        #We're combining speeds here for simplicity's sake
+        thelist.append(self.speed_air_x_self + self.speed_x_attack + self.speed_ground_x_self)
+        thelist.append(self.speed_y_self + self.speed_y_attack)
+        return thelist
+
 """Represents the state of a projectile (items, lasers, etc...)"""
 class Projectile:
     x = 0
@@ -245,3 +280,14 @@ class Projectile:
     y_speed = 0
     opponent_owned = True
     subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
+
+    """Produces a list representation of the projectile"""
+    def tolist(self):
+        thelist = []
+        thelist.append(self.x)
+        thelist.append(self.y)
+        thelist.append(self.x_speed)
+        thelist.append(self.y_speed)
+        thelist.append(int(self.opponent_owned))
+        thelist.append(self.subtype.value)
+        return thelist
