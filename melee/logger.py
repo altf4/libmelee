@@ -10,7 +10,7 @@ class Logger:
         if not os.path.exists("Logs/"):
             os.makedirs("Logs/")
         self.csvfile = open('Logs/' + str(timestamp) + '.csv', 'w')
-        fieldnames = ['Frame', 'Goal', 'Strategy', 'Tactic', 'Chain', 'Opponent x',
+        fieldnames = ['Frame', 'Opponent x',
             'Opponent y', 'AI x', 'AI y', 'Opponent Facing', 'AI Facing',
             'Opponent Action', 'AI Action', 'Opponent Action Frame', 'AI Action Frame',
             'Opponent Jumps Left', 'AI Jumps Left', 'Opponent Stock', 'AI Stock',
