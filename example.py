@@ -70,7 +70,7 @@ for mem_update in gamestate:
             #This line will get hit once per frame, so here is where you read
             #   in the gamestate and decide what buttons to push on the controller
             melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-        #If we're at the character select screen, choose Fox
+        #If we're at the character select screen, choose our character
         elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
             melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
                 ai_state=gamestate.ai_state, controller=controller)
