@@ -73,7 +73,7 @@ for mem_update in gamestate:
         #If we're at the character select screen, choose our character
         elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
             melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-                ai_state=gamestate.ai_state, controller=controller)
+                ai_state=gamestate.ai_state, controller=controller, swag=True)
         #If we're at the postgame scores screen, spam START
         elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
             melee.menuhelper.skippostgame(controller=controller)

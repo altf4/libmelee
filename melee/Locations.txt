@@ -91,3 +91,8 @@
 00455C44
 #projectiles
 00BDA4A4 8 2C 60
+#Character select screen cursor token status for each player
+004a0bc0 2
+004a0bc4 2
+004a0bc8 2
+004a0bcc 2

@@ -182,6 +182,10 @@ class GameState:
         if label == "speed_ground_x_self":
             self.player[player_int].speed_ground_x_self = unpack('>f', mem_update[1])[0]
             return False
+        if label == "coin_down":
+            temp = unpack('>I', mem_update[1])[0]
+            temp = temp & 0x000000ff
+            self.player[player_int].coin_down = (temp == 2)
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
             if self.newframe:
@@ -248,6 +252,7 @@ class PlayerState:
     speed_ground_x_self = 0
     cursor_x = 0
     cursor_y = 0
+    coin_down = False
 
     """Produces a list representation of the player's state"""
     def tolist(self):
