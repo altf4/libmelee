@@ -85,8 +85,47 @@ def choosecharacter(character, ai_state, controller, swag = False):
 """Choose a stage from the stage select menu
     Intended to be called each frame while in the stage select menu"""
 def choosestage(stage, gamestate, controller):
-    #TODO We need to know the cursor position here
-    pass
+    target_x, target_y = 0,0
+    if stage == enums.Stage.BATTLEFIELD:
+        target_x, target_y = 1,-9
+    if stage == enums.Stage.FINAL_DESTINATION:
+        target_x, target_y = 6.7,-9
+    if stage == enums.Stage.DREAMLAND:
+        target_x, target_y = 12.5,-9
+    if stage == enums.Stage.POKEMON_STADIUM:
+        target_x, target_y = 15, 3.5
+    if stage == enums.Stage.YOSHIS_STORY:
+        target_x, target_y = 3.5, 15.5
+    if stage == enums.Stage.FOUNTAIN_OF_DREAMS:
+        target_x, target_y = 10, 15.5
+    if stage == enums.Stage.RANDOM_STAGE:
+        target_x, target_y = -13.5, 3.5
+
+    #Wiggle room in positioning cursor
+    wiggleroom = 1.5
+    #Move up if we're too low
+    if gamestate.stage_select_cursor_y < target_y - wiggleroom:
+        controller.release_button(enums.Button.BUTTON_A)
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+        return
+    #Move downn if we're too high
+    if gamestate.stage_select_cursor_y > target_y + wiggleroom:
+        controller.release_button(enums.Button.BUTTON_A)
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        return
+    #Move right if we're too left
+    if gamestate.stage_select_cursor_x < target_x - wiggleroom:
+        controller.release_button(enums.Button.BUTTON_A)
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+        return
+    #Move left if we're too right
+    if gamestate.stage_select_cursor_x > target_x + wiggleroom:
+        controller.release_button(enums.Button.BUTTON_A)
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+        return
+
+    #If we get in the right area, press A
+    controller.press_button(enums.Button.BUTTON_A)
 
 """Spam the start button"""
 def skippostgame(controller):

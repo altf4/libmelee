@@ -12,6 +12,8 @@ class GameState:
     menu_state = enums.Menu.CHARACTER_SELECT
     player = dict()
     projectiles = []
+    stage_select_cursor_x = 0.0
+    stage_select_cursor_y = 0.0
 
     def __init__(self, dolphin):
         #Dict with key of address, and value of (name, player)
@@ -60,11 +62,11 @@ class GameState:
         label = self.locations[mem_update[0]][0]
         player_int = int(self.locations[mem_update[0]][1])
         if label == "frame":
-            self.frame = unpack('>I', mem_update[1])[0]
+            self.frame = unpack('<I', mem_update[1])[0]
             self.newframe = True
             return True
         if label == "stage":
-            self.stage = unpack('>I', mem_update[1])[0]
+            self.stage = unpack('<I', mem_update[1])[0]
             self.stage = self.stage >> 16
             try:
                 self.stage = enums.Stage(self.stage)
@@ -72,88 +74,89 @@ class GameState:
                 self.stage = enums.Stage.NO_STAGE
             return False
         if label == "menu_state":
-            self.menu_state = unpack('>I', mem_update[1])[0]
+            self.menu_state = unpack('<I', mem_update[1])[0]
             self.menu_state &= 0x000000ff
             self.menu_state = enums.Menu(self.menu_state)
             return False
         #Player variables
         if label == "percent":
-            self.player[player_int].percent = unpack('>I', mem_update[1])[0]
+            self.player[player_int].percent = unpack('<I', mem_update[1])[0]
             self.player[player_int].percent = self.player[player_int].percent >> 16
             return False
         if label == "stock":
-            self.player[player_int].stock = unpack('>I', mem_update[1])[0]
+            self.player[player_int].stock = unpack('<I', mem_update[1])[0]
             self.player[player_int].stock = self.player[player_int].stock >> 24
             return False
         if label == "facing":
-            self.player[player_int].facing = unpack('>I', mem_update[1])[0]
+            self.player[player_int].facing = unpack('<I', mem_update[1])[0]
             self.player[player_int].facing = self.player[player_int].facing >> 31
             return False
         if label == "x":
-            self.player[player_int].x = unpack('>f', mem_update[1])[0]
+            self.player[player_int].x = unpack('<f', mem_update[1])[0]
             return False
         if label == "y":
-            self.player[player_int].y = unpack('>f', mem_update[1])[0]
+            self.player[player_int].y = unpack('<f', mem_update[1])[0]
             return False
         if label == "character":
-            temp = unpack('>I', mem_update[1])[0] >> 24
+            temp = unpack('<I', mem_update[1])[0] >> 24
             try:
                 self.player[player_int].character = enums.Character(temp)
             except ValueError:
                 self.player[player_int].character = enums.Character.UNKNOWN_CHARACTER
             return False
         if label == "cursor_x":
-            self.player[player_int].cursor_x = unpack('>f', mem_update[1])[0]
+            self.player[player_int].cursor_x = unpack('<f', mem_update[1])[0]
             return False
         if label == "cursor_y":
-            self.player[player_int].cursor_y = unpack('>f', mem_update[1])[0]
+            self.player[player_int].cursor_y = unpack('<f', mem_update[1])[0]
             return False
         if label == "action":
-            temp = unpack('>I', mem_update[1])[0]
+            temp = unpack('<I', mem_update[1])[0]
             try:
                 self.player[player_int].action = enums.Action(temp)
             except ValueError:
                 self.player[player_int].action = enums.Action.UNKNOWN_ANIMATION
             return False
         if label == "action_counter":
+            #TODO look if this is backwards
             temp = unpack('I', mem_update[1])[0]
             temp = temp >> 8
             self.player[player_int].action_counter = temp
             return False
         if label == "action_frame":
-            temp = unpack('>f', mem_update[1])[0]
+            temp = unpack('<f', mem_update[1])[0]
             try:
                 self.player[player_int].action_frame = int(temp)
             except ValueError:
                 pass
             return False
         if label == "invulnerable":
-            self.player[player_int].invulnerable = unpack('>I', mem_update[1])[0]
+            self.player[player_int].invulnerable = unpack('<I', mem_update[1])[0]
             self.player[player_int].invulnerable = self.player[player_int].invulnerable >> 31
             return False
         if label == "hitlag_frames_left":
-            temp = unpack('>f', mem_update[1])[0]
+            temp = unpack('<f', mem_update[1])[0]
             try:
                 self.player[player_int].hitlag_frames_left = int(temp)
             except ValueError:
                 pass
             return False
         if label == "hitstun_frames_left":
-            temp = unpack('>f', mem_update[1])[0]
+            temp = unpack('<f', mem_update[1])[0]
             try:
                 self.player[player_int].hitstun_frames_left = int(temp)
             except ValueError:
                 pass
             return False
         if label == "charging_smash":
-            temp = unpack('>I', mem_update[1])[0]
+            temp = unpack('<I', mem_update[1])[0]
             if temp == 2:
                 self.player[player_int].charging_smash = True
             else:
                 self.player[player_int].charging_smash = False
             return False
         if label == "jumps_left":
-            temp = unpack('>I', mem_update[1])[0]
+            temp = unpack('<I', mem_update[1])[0]
             temp = temp >> 24
             #This value is actually the number of jumps USED
             #   so we have to do some quick math to turn this into what we want
@@ -161,31 +164,37 @@ class GameState:
             self.player[player_int].jumps_left = temp
             return False
         if label == "on_ground":
-            temp = unpack('>I', mem_update[1])[0]
+            temp = unpack('<I', mem_update[1])[0]
             if temp == 0:
                 self.player[player_int].on_ground = True
             else:
                 self.player[player_int].on_ground = False
             return False
         if label == "speed_air_x_self":
-            self.player[player_int].speed_air_x_self = unpack('>f', mem_update[1])[0]
+            self.player[player_int].speed_air_x_self = unpack('<f', mem_update[1])[0]
             return False
         if label == "speed_y_self":
-            self.player[player_int].speed_y_self = unpack('>f', mem_update[1])[0]
+            self.player[player_int].speed_y_self = unpack('<f', mem_update[1])[0]
             return False
         if label == "speed_x_attack":
-            self.player[player_int].speed_x_attack = unpack('>f', mem_update[1])[0]
+            self.player[player_int].speed_x_attack = unpack('<f', mem_update[1])[0]
             return False
         if label == "speed_y_attack":
-            self.player[player_int].speed_y_attack = unpack('>f', mem_update[1])[0]
+            self.player[player_int].speed_y_attack = unpack('<f', mem_update[1])[0]
             return False
         if label == "speed_ground_x_self":
-            self.player[player_int].speed_ground_x_self = unpack('>f', mem_update[1])[0]
+            self.player[player_int].speed_ground_x_self = unpack('<f', mem_update[1])[0]
             return False
         if label == "coin_down":
-            temp = unpack('>I', mem_update[1])[0]
+            temp = unpack('<I', mem_update[1])[0]
             temp = temp & 0x000000ff
             self.player[player_int].coin_down = (temp == 2)
+        if label == "stage_select_cursor_x":
+            self.stage_select_cursor_x = unpack('<f', mem_update[1])[0]
+            return False
+        if label == "stage_select_cursor_y":
+            self.stage_select_cursor_y = unpack('<f', mem_update[1])[0]
+            return False
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
             if self.newframe:

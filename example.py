@@ -77,6 +77,10 @@ for mem_update in gamestate:
         #If we're at the postgame scores screen, spam START
         elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
             melee.menuhelper.skippostgame(controller=controller)
+        #If we're at the stage select screen, choose a stage
+        elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
+            melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
+                gamestate=gamestate, controller=controller)
         #Flush any button presses queued up
         controller.flush()
         if log:
