@@ -3,11 +3,19 @@
 from melee import enums
 
 """Choose a character from the character select menu
-    Intended to be called each frame while in the character select menu"""
-def choosecharacter(character, ai_state, controller, swag = False):
+    Intended to be called each frame while in the character select menu
+    character = The character you want to pick
+    gamestate = The current gamestate
+    controller = The controller object to press
+    swag = Pick random until you get the character
+    start = Automatically start the match when it's ready
+        NOTE: All controller cursors must be above the character level for this
+        to work. The match won't start otherwise."""
+def choosecharacter(character, gamestate, controller, swag=False, start=False):
     #Figure out where the character is on the select screen
     #NOTE: This assumes you have all characters unlocked
     #Positions will be totally wrong if something is not unlocked
+    ai_state = gamestate.ai_state
     row = character.value // 9
     column = character.value % 9
     #The random slot pushes the bottom row over a slot, so compensate for that
@@ -41,8 +49,16 @@ def choosecharacter(character, ai_state, controller, swag = False):
 
     #If character is selected, and we're in of the area, and coin is down, then we're good
     if (ai_state.character == character) and ai_state.coin_down:
-        controller.empty_input()
-        return
+        if start and gamestate.ready_to_start and \
+            controller.prev.button[enums.Button.BUTTON_START] == False:
+            controller.press_button(enums.Button.BUTTON_START)
+            return
+        else:
+            controller.empty_input()
+            return
+
+    #release start in addition to anything else
+    controller.release_button(enums.Button.BUTTON_START)
 
     #If we're in the right area, select the character
     if isOverCharacter:
@@ -83,7 +99,10 @@ def choosecharacter(character, ai_state, controller, swag = False):
     controller.empty_input()
 
 """Choose a stage from the stage select menu
-    Intended to be called each frame while in the stage select menu"""
+    Intended to be called each frame while in the stage select menu
+    stage = The stage you want to select
+    gamestate = The current gamestate
+    controller = The controller object to press"""
 def choosestage(stage, gamestate, controller):
     target_x, target_y = 0,0
     if stage == enums.Stage.BATTLEFIELD:

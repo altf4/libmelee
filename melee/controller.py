@@ -101,6 +101,24 @@ class Controller:
         command += "SET C .5 .5" + "\n"
         command += "SET L 0" + "\n"
         command += "SET R 0" + "\n"
+        #Set the internal state back to neutral
+        self.current.button[enums.Button.BUTTON_A] = False
+        self.current.button[enums.Button.BUTTON_B] = False
+        self.current.button[enums.Button.BUTTON_X] = False
+        self.current.button[enums.Button.BUTTON_Y] = False
+        self.current.button[enums.Button.BUTTON_Z] = False
+        self.current.button[enums.Button.BUTTON_L] = False
+        self.current.button[enums.Button.BUTTON_R] = False
+        self.current.button[enums.Button.BUTTON_START] = False
+        self.current.button[enums.Button.BUTTON_D_UP] = False
+        self.current.button[enums.Button.BUTTON_D_DOWN] = False
+        self.current.button[enums.Button.BUTTON_D_LEFT] = False
+        self.current.button[enums.Button.BUTTON_D_RIGHT] = False
+        self.current.main_stick = (.5, .5)
+        self.current.c_stick = (.5, .5)
+        self.current.l_shoulder = 0
+        self.current.r_shoulder = 0
+        #Send the presses to dolphin
         self.pipe.write(command)
         if self.logger:
             self.logger.log("Buttons Pressed", "Empty Input", concat=True)

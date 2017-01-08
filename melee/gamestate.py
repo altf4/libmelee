@@ -14,6 +14,7 @@ class GameState:
     projectiles = []
     stage_select_cursor_x = 0.0
     stage_select_cursor_y = 0.0
+    ready_to_start = False
 
     def __init__(self, dolphin):
         #Dict with key of address, and value of (name, player)
@@ -195,6 +196,10 @@ class GameState:
         if label == "stage_select_cursor_y":
             self.stage_select_cursor_y = unpack('<f', mem_update[1])[0]
             return False
+        if label == "ready_to_start":
+            temp = unpack('>I', mem_update[1])[0]
+            temp = temp & 0x000000ff
+            self.ready_to_start = bool(temp)
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
             if self.newframe:
