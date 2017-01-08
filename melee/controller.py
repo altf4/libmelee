@@ -44,6 +44,37 @@ class Controller:
             self.pipe.close()
             self.pipe = None
 
+    """Here is a simpler representation of a button press, in case
+        you don't want to bother with the tedium of manually doing everything.
+        It isn't capable of doing everything the normal controller press functions
+        can, but probably covers most scenarios.
+        Notably, a difference here is that doing a button press releases all
+        other buttons pressed previously.
+        Don't call this function twice in the same frame
+            x = 0 (left) to 1 (right) on the main stick
+            y = 0 (down) to 1 (up) on the main stick
+            button = the button to press. Enter None for no button"""
+    def simple_press(self, x, y, button):
+        if not self.pipe:
+            return
+        #Tilt the main stick
+        self.tilt_analog(enums.Button.BUTTON_MAIN, x, y)
+        #Release the shoulders
+        self.press_shoulder(enums.Button.BUTTON_L, 0)
+        self.press_shoulder(enums.Button.BUTTON_R, 0)
+        #Press the right button
+        for item in enums.Button:
+            #Don't do anything for the main or c-stick
+            if item == enums.Button.BUTTON_MAIN:
+                continue
+            if item == enums.Button.BUTTON_C:
+                continue
+            #Press our button, release all others
+            if item == button:
+                self.press_button(item)
+            else:
+                self.release_button(item)
+
     def press_button(self, button):
         if not self.pipe:
             return
