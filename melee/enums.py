@@ -8,7 +8,7 @@ class Stage(Enum):
     DREAMLAND = 0x1A
     FOUNTAIN_OF_DREAMS = 0x8
     YOSHIS_STORY = 0x6
-    RANDOM_STAGE = 0xFF #not technically a stage, but it's useful to call it one
+    RANDOM_STAGE = 0x1D #not technically a stage, but it's useful to call it one
 
 class Menu(Enum):
     CHARACTER_SELECT = 0
