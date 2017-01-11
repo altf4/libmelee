@@ -49,7 +49,9 @@ class GameState:
     Only caring about in-game things, not menus and such"""
     def tolist(self):
         thelist = []
-        thelist.append(self.frame)
+        #I don't think that the frame is really relevant here...
+        #thelist.append(self.frame)
+        thelist.append(self.distance)
         thelist.append(self.stage.value)
         thelist = thelist + self.ai_state.tolist()
         thelist = thelist + self.opponent_state.tolist()
@@ -311,6 +313,7 @@ class PlayerState:
         #We're combining speeds here for simplicity's sake
         thelist.append(self.speed_air_x_self + self.speed_x_attack + self.speed_ground_x_self)
         thelist.append(self.speed_y_self + self.speed_y_attack)
+        thelist.append(int(self.off_stage))
         return thelist
 
 """Represents the state of a projectile (items, lasers, etc...)"""
