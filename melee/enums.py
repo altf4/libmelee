@@ -16,6 +16,11 @@ class Menu(Enum):
     IN_GAME = 2
     POSTGAME_SCORES = 4
 
+class ControllerStatus(Enum):
+    CONTROLLER_HUMAN = 0
+    CONTROLLER_CPU = 1
+    CONTROLLER_UNPLUGGED = 3
+
 class Character(Enum):
     DOC = 0x00
     MARIO = 0x01

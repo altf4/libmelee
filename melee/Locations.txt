@@ -99,3 +99,8 @@
 00bda810 28 38
 00bda810 28 3c
 004d6cf2
+#Character controller type
+003F0E08
+003F0E2C
+003F0E50
+003F0E74

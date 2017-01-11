@@ -153,3 +153,54 @@ def skippostgame(controller):
         controller.press_button(enums.Button.BUTTON_START)
     else:
         controller.release_button(enums.Button.BUTTON_START)
+
+"""Switch a given player's controller to be of the given state
+WARNING: There's a condition on this you need to know. The way controllers work
+    in Melee, if a controller is plugged in, only that player can make the status
+    go to uplugged. If you've ever played Melee, you probably know this. If your
+    friend walks away, you have to press the A button on THEIR controller. (or
+    else actually unplug the controller) No way around it."""
+def changecontrollerstatus(controller, gamestate, port, status, character=None):
+    ai_state = gamestate.ai_state
+    target_x, target_y = 0,-2.2
+    if port == 1:
+        target_x = -31.5
+    if port == 2:
+        target_x = -16.5
+    if port == 3:
+        target_x = -1
+    if port == 4:
+        target_x = 14
+    wiggleroom = 1.5
+
+    correctcharacter = (character == None) or \
+        (character == gamestate.player[port].character)
+
+    #if we're in the right state already, do nothing
+    if gamestate.player[port].controller_status == status and correctcharacter:
+        controller.empty_input()
+        return
+
+    #Move up if we're too low
+    if ai_state.cursor_y < target_y - wiggleroom:
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+        return
+    #Move downn if we're too high
+    if ai_state.cursor_y > target_y + wiggleroom:
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        return
+    #Move right if we're too left
+    if ai_state.cursor_x < target_x - wiggleroom:
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+        return
+    #Move left if we're too right
+    if ai_state.cursor_x > target_x + wiggleroom:
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+        return
+
+    #If we get in the right area, press A until we're in the right state
+    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, .5)
+    if controller.prev.button[enums.Button.BUTTON_A] == False:
+        controller.press_button(enums.Button.BUTTON_A)
+    else:
+        controller.release_button(enums.Button.BUTTON_A)
