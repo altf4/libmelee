@@ -199,7 +199,7 @@ class GameState:
         if label == "ready_to_start":
             temp = unpack('>I', mem_update[1])[0]
             temp = temp & 0x000000ff
-            self.ready_to_start = bool(temp)
+            self.ready_to_start = not bool(temp)
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
             if self.newframe:
