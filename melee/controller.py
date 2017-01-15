@@ -25,6 +25,17 @@ class ControllerState:
         self.l_shoulder = 0
         self.r_shoulder = 0
 
+    def __str__(self):
+        string = ""
+        for val in self.button:
+            string += str(val) + ": " + str(self.button[val])
+            string += "\n"
+        string += "MAIN_STICK: " + str(self.main_stick) + "\n"
+        string += "C_STICK: " + str(self.c_stick) + "\n"
+        string += "L_SHOULDER: " + str(self.l_shoulder) + "\n"
+        string += "R_SHOULDER: " + str(self.r_shoulder) + "\n"
+        return string
+
 """Utility class that manages virtual controller state and button presses"""
 class Controller:
     def __init__(self, dolphin, port):
