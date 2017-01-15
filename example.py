@@ -60,30 +60,30 @@ dolphin.run(render=True)
 #   Due to how named pipes work, this has to come AFTER running dolphin
 controller.connect()
 
-#Main loop: process memory updates until the frame has incremented
-for mem_update in gamestate:
-    #If the frame counter has updated, then process it!
-    if gamestate.update(mem_update):
-        #What menu are we in?
-        if gamestate.menu_state == melee.enums.Menu.IN_GAME:
-            #XXX: This is where your AI does all of its stuff!
-            #This line will get hit once per frame, so here is where you read
-            #   in the gamestate and decide what buttons to push on the controller
-            melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-        #If we're at the character select screen, choose our character
-        elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
-            melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-                gamestate=gamestate, controller=controller, swag=True,
-                start=True)
-        #If we're at the postgame scores screen, spam START
-        elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
-            melee.menuhelper.skippostgame(controller=controller)
-        #If we're at the stage select screen, choose a stage
-        elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
-            melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
-                gamestate=gamestate, controller=controller)
-        #Flush any button presses queued up
-        controller.flush()
-        if log:
-            log.logframe(gamestate)
-            log.writeframe()
+#Main loop
+while True:
+    #"step" to the next frame
+    gamestate.step()
+    #What menu are we in?
+    if gamestate.menu_state == melee.enums.Menu.IN_GAME:
+        #XXX: This is where your AI does all of its stuff!
+        #This line will get hit once per frame, so here is where you read
+        #   in the gamestate and decide what buttons to push on the controller
+        melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
+    #If we're at the character select screen, choose our character
+    elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
+        melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
+            gamestate=gamestate, controller=controller, swag=True,
+            start=True)
+    #If we're at the postgame scores screen, spam START
+    elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
+        melee.menuhelper.skippostgame(controller=controller)
+    #If we're at the stage select screen, choose a stage
+    elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
+        melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
+            gamestate=gamestate, controller=controller)
+    #Flush any button presses queued up
+    controller.flush()
+    if log:
+        log.logframe(gamestate)
+        log.writeframe()

@@ -59,6 +59,12 @@ class GameState:
         #thelist = thelist + self.projectiles.tolist()
         return thelist
 
+    def step(self):
+        for mem_update in self:
+            #If the frame counter has updated, then process it!
+            if self.update(mem_update):
+                return
+
     """Process one new memory update
        returns True if the frame is finished processing (no more updates this frame)
        Run this in a loop until it returns returns True, then press your buttons,
