@@ -21,6 +21,11 @@ class ControllerStatus(Enum):
     CONTROLLER_CPU = 1
     CONTROLLER_UNPLUGGED = 3
 
+class ControllerType(Enum):
+    STANDARD = "6"
+    GCN_ADAPTER = "12"
+    UNPLUGGED = "0"
+
 class Character(Enum):
     DOC = 0x00
     MARIO = 0x01

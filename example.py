@@ -24,7 +24,7 @@ parser.add_argument('--opponent', '-o', type=check_port,
                     help='The controller port the opponent will play on',
                     default=1)
 parser.add_argument('--live', '-l',
-                    help='The opponent playing live with a GCN Adapter',
+                    help='The opponent is playing live with a GCN Adapter',
                     default=True)
 parser.add_argument('--debug', '-d', action='store_true',
                     help='Debug mode. Creates a CSV of all game state')
@@ -35,9 +35,18 @@ log = None
 if args.debug:
     log = melee.logger.Logger()
 
+#Options here are:
+#   "Standard" input is what dolphin calls the type of input that we use
+#       for named pipe (bot) input
+#   GCN_ADAPTER will use your WiiU adapter for live human-controlled play
+#   UNPLUGGED is pretty obvious what it means
+opponent_type = melee.enums.ControllerType.UNPLUGGED
+if args.live:
+    opponent_type = melee.enums.ControllerType.GCN_ADAPTER
+
 #Create our Dolphin object. This will be the primary object that we will interface with
 dolphin = melee.dolphin.Dolphin(ai_port=args.port, opponent_port=args.opponent,
-    live=args.live, logger=log)
+    opponent_type=opponent_type, logger=log)
 #Create our GameState object for the dolphin instance
 gamestate = melee.gamestate.GameState(dolphin)
 #Create our Controller object that we can press buttons on
@@ -56,8 +65,11 @@ signal.signal(signal.SIGINT, signal_handler)
 
 #Run dolphin and render the output
 dolphin.run(render=True)
+
 #Plug our controller in
 #   Due to how named pipes work, this has to come AFTER running dolphin
+#   NOTE: If you're loading a movie file, don't connect the controller,
+#   dolphin will hang waiting for input and never receive it
 controller.connect()
 
 #Main loop

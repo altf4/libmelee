@@ -1,14 +1,16 @@
 import os, pwd, shutil, subprocess
 import configparser
+from melee import enums
 
 """Class for making confuguration and interfacing with the Dolphin emulator easy"""
 class Dolphin:
 
     """Do a some setup of some important dolphin paths"""
-    def __init__(self, ai_port, opponent_port, live, logger=None):
+    def __init__(self, ai_port, opponent_port, opponent_type, logger=None):
         self.ai_port = ai_port
         self.opponent_port = opponent_port
         self.logger = logger
+        self.process = None
         config_path = self.get_dolphin_home_path()
         mem_watcher_path = config_path + "MemoryWatcher/"
         pipes_path = config_path + "Pipes/"
@@ -36,12 +38,12 @@ class Dolphin:
             os.mkfifo(pipes_path)
 
         #setup the controllers specified
-        self.setup_controller(ai_port, False)
-        self.setup_controller(opponent_port, live)
+        self.setup_controller(ai_port)
+        self.setup_controller(opponent_port, opponent_type)
 
     """Setup the necessary files for dolphin to recognize the player at the given
     controller port and type"""
-    def setup_controller(self, port, gcnadapter):
+    def setup_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         #Read in dolphin's controller config file
         controller_config_path = self.get_dolphin_config_path() + "GCPadNew.ini"
         config = configparser.SafeConfigParser()
@@ -52,7 +54,7 @@ class Dolphin:
         if not config.has_section(section):
             config.add_section(section)
 
-        if not gcnadapter:
+        if controllertype == enums.ControllerType.STANDARD:
             config.set(section, 'Device', 'Pipe/0/Bot' + str(port))
             config.set(section, 'Buttons/A', 'Button A')
             config.set(section, 'Buttons/B', 'Button B')
@@ -81,6 +83,7 @@ class Dolphin:
             config.set(section, 'C-Stick/Right', 'Axis C X +')
             config.set(section, 'Triggers/L-Analog', 'Axis L -+')
             config.set(section, 'Triggers/R-Analog', 'Axis R -+')
+        #This section is unused if it's not a standard input (I think...)
         else:
             config.set(section, 'Device', 'XInput2/0/Virtual core pointer')
 
@@ -92,10 +95,8 @@ class Dolphin:
         config = configparser.SafeConfigParser()
         config.read(dolphinn_config_path)
         #Indexed at 0. "6" means standard controller, "12" means GCN Adapter
-        if not gcnadapter:
-            config.set("Core", 'SIDevice'+str(port-1), "6")
-        else:
-            config.set("Core", 'SIDevice'+str(port-1), "12")
+        # The enum is scoped to the proper value, here
+        config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
         #Enable Cheats
         config.set("Core", 'enablecheats', "True")
         #Turn on background input so we don't need to have window focus on dolphin
@@ -103,7 +104,7 @@ class Dolphin:
         with open(dolphinn_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
-        #Enable the cheats we need
+        #Enable the specific cheats we need (Netplay community settings)
         melee_config_path = self.get_dolphin_home_path() + "/GameSettings/GALE01.ini"
         config = configparser.SafeConfigParser(allow_no_value=True)
         config.optionxform = str
@@ -115,16 +116,24 @@ class Dolphin:
             config.write(dolphinfile)
 
     """Run dolphin-emu"""
-    def run(self, render = True):
+    def run(self, render=True, iso_path=None, movie_path=None):
         command = ["dolphin-emu"]
         if not render:
             #Use the "Null" renderer
-            command.append("-v Null")
+            command.append("-v")
+            command.append("Null")
+        if movie_path != None:
+            command.append("-m")
+            command.append(movie_path)
+        if iso_path != None:
+            command.append("-e")
+            command.append(iso_path)
         self.process = subprocess.Popen(command)
 
     """Terminate the dolphin process"""
     def terminate(self):
-        self.process.terminate()
+        if self.process != None:
+            self.process.terminate()
 
     """Return the path to dolphin's home directory"""
     def get_dolphin_home_path(self):
