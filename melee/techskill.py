@@ -11,7 +11,7 @@ def multishine(ai_state, controller):
 
     #Shine on frame 3 of knee bend, else nothing
     if ai_state.action == enums.Action.KNEE_BEND:
-        if ai_state.action_frame == 2:
+        if ai_state.action_frame == 3:
             controller.press_button(enums.Button.BUTTON_B)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return

@@ -102,3 +102,19 @@
 "controller_status","003F0E2C",2
 "controller_status","003F0E50",3
 "controller_status","003F0E74",4
+"hitbox_1_size","00453130 990",1
+"hitbox_2_size","00453130 AC8",1
+"hitbox_3_size","00453130 C00",1
+"hitbox_4_size","00453130 D38",1
+"hitbox_1_status","00453130 974",1
+"hitbox_2_status","00453130 AAC",1
+"hitbox_3_status","00453130 BE4",1
+"hitbox_4_status","00453130 D1C",1
+"hitbox_1_x","00453130 9C0",1
+"hitbox_1_y","00453130 9C4",1
+"hitbox_2_x","00453130 AF8",1
+"hitbox_2_y","00453130 AFC",1
+"hitbox_3_x","00453130 C30",1
+"hitbox_3_y","00453130 C34",1
+"hitbox_4_x","00453130 D68",1
+"hitbox_4_y","00453130 D6C",1

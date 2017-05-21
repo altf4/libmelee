@@ -1,2 +1,5 @@
 include melee/locations.csv
 include melee/Locations.txt
+include melee/framedata.csv
+include melee/actiondata.csv
+include melee/characterdata.csv
