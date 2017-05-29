@@ -104,6 +104,8 @@ def choosecharacter(character, gamestate, controller, swag=False, start=False):
     gamestate = The current gamestate
     controller = The controller object to press"""
 def choosestage(stage, gamestate, controller):
+    if gamestate.frame < 30:
+        return
     target_x, target_y = 0,0
     if stage == enums.Stage.BATTLEFIELD:
         target_x, target_y = 1,-9
