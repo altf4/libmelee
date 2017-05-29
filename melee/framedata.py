@@ -30,19 +30,19 @@ class FrameData:
                 action = enums.Action(int(frame["action"]))
                 action_frame = int(frame["frame"])
                 self.framedata[character][action][action_frame] = \
-                    {"hitbox_1_status": bool(frame["hitbox_1_status"]), \
+                    {"hitbox_1_status": frame["hitbox_1_status"] == "True", \
                     "hitbox_1_size": float(frame["hitbox_1_size"]), \
                     "hitbox_1_x": float(frame["hitbox_1_x"]), \
                     "hitbox_1_y": float(frame["hitbox_1_y"]), \
-                    "hitbox_2_status": bool(frame["hitbox_2_status"]), \
+                    "hitbox_2_status": frame["hitbox_2_status"] == "True", \
                     "hitbox_2_size": float(frame["hitbox_2_size"]), \
                     "hitbox_2_x": float(frame["hitbox_2_x"]), \
                     "hitbox_2_y": float(frame["hitbox_2_y"]), \
-                    "hitbox_3_status": bool(frame["hitbox_3_status"]), \
+                    "hitbox_3_status": frame["hitbox_3_status"] == "True", \
                     "hitbox_3_size": float(frame["hitbox_3_size"]), \
                     "hitbox_3_x": float(frame["hitbox_3_x"]), \
                     "hitbox_3_y": float(frame["hitbox_3_y"]), \
-                    "hitbox_4_status": bool(frame["hitbox_4_status"]), \
+                    "hitbox_4_status": frame["hitbox_4_status"] == "True", \
                     "hitbox_4_size": float(frame["hitbox_4_size"]), \
                     "hitbox_4_x": float(frame["hitbox_4_x"]), \
                     "hitbox_4_y": float(frame["hitbox_4_y"])}
