@@ -1,10 +1,11 @@
-from melee import enums, characterdata, stages
+from melee import enums, stages
 import csv
 from struct import *
 import binascii
 import os
 import socket
 import math
+import time
 from collections import defaultdict
 
 """Represents the state of a running game of Melee at a given moment in time"""
@@ -19,6 +20,8 @@ class GameState:
     ready_to_start = False
     distance = 0.0
     sock = None
+    processingtime = 0.0
+    frametimestamp = 0.0
 
     def __init__(self, dolphin):
         #Dict with key of address, and value of (name, player)
@@ -28,7 +31,6 @@ class GameState:
             reader = csv.DictReader(csvfile)
             for line in reader:
                 self.locations[line["Address"]] = (line["Name"], line["Player"])
-        self.characterdata = characterdata.CharacterData()
         self.player[1] = PlayerState()
         self.player[2] = PlayerState()
         self.player[3] = PlayerState()
@@ -70,9 +72,13 @@ class GameState:
         return thelist
 
     def step(self):
+        # How long did it take to get here from last time?
+        self.processingtime = time.time() - self.frametimestamp
         for mem_update in self:
             #If the frame counter has updated, then process it!
             if self.update(mem_update):
+                # Start the timer, now that we're done waiting for dolphin updates
+                self.frametimestamp = time.time()
                 return
     #Melee's indexing of action frames is wildly inconsistent.
     #   Here we adjust all of the frames to be indexed at 1 (so math is easier)
@@ -131,7 +137,7 @@ class GameState:
             return False
         if label == "facing":
             self.player[player_int].facing = unpack('<I', mem_update[1])[0]
-            self.player[player_int].facing = self.player[player_int].facing >> 31
+            self.player[player_int].facing = not bool(self.player[player_int].facing >> 31)
             return False
         if label == "x":
             self.player[player_int].x = unpack('<f', mem_update[1])[0]

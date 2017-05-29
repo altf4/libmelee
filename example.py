@@ -82,6 +82,9 @@ controller.connect()
 while True:
     #"step" to the next frame
     gamestate.step()
+    if(gamestate.processingtime * 1000 > 12):
+        print("WARNING: Last frame took " + str(gamestate.processingtime*1000) + "ms to process.")
+
     #What menu are we in?
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         if args.framerecord:

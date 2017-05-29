@@ -1,3 +1,3 @@
-"Character","CharacterIndex","Jumps","RunSpeed","DashSpeed","DashFrames","Friction","DashAcceleration"
-"Fox",10,1,2.2,2.02,12,0.08,0.12
-"Marth",23,1,1.56,1.7775000334,15,0.06,0.06
+"Character","CharacterIndex","Jumps","RunSpeed","DashSpeed","DashFrames","Friction","DashAcceleration","size"
+"Fox",10,1,2.2,2.02,12,0.08,0.12,11
+"Marth",23,1,1.56,1.7775000334,15,0.06,0.06,14

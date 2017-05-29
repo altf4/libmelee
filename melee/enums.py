@@ -26,6 +26,12 @@ class ControllerType(Enum):
     GCN_ADAPTER = "12"
     UNPLUGGED = "0"
 
+class AttackState(Enum):
+    WINDUP = 0
+    ATTACKING = 1
+    COOLDOWN = 2
+    NOT_ATTACKING = 3
+
 class Character(Enum):
     DOC = 0x00
     MARIO = 0x01
