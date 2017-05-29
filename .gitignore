@@ -2,7 +2,7 @@
 Logs/*
 MANIFEST
 
-framedata.csv
+/framedata.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
