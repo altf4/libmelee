@@ -32,3 +32,11 @@ def multishine(ai_state, controller):
         return
 
     controller.empty_input()
+
+"""Spam upsmashes"""
+def upsmashes(ai_state, controller):
+    if ai_state.action == enums.Action.STANDING:
+        controller.tilt_analog(enums.Button.BUTTON_C, .5, 1)
+        return
+
+    controller.empty_input()

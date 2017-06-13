@@ -1,7 +1,8 @@
 import csv
 import os
 import math
-from melee import enums
+from melee.enums import Action, Character
+from melee import stages
 from itertools import filterfalse
 from collections import defaultdict
 
@@ -13,7 +14,8 @@ class FrameData:
                 'hitbox_1_status', 'hitbox_1_size', 'hitbox_1_x', 'hitbox_1_y',
                 'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
                 'hitbox_3_status', 'hitbox_3_size', 'hitbox_3_x', 'hitbox_3_y',
-                'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y']
+                'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y',
+                'locomotion_x', 'locomotion_y']
             self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames)
             self.writer.writeheader()
             self.rows = []
@@ -26,8 +28,8 @@ class FrameData:
             # Build a series of nested dicts for faster read access
             for frame in csvreader:
                 # Pull out the character, action, and frame
-                character = enums.Character(int(frame["character"]))
-                action = enums.Action(int(frame["action"]))
+                character = Character(int(frame["character"]))
+                action = Action(int(frame["action"]))
                 action_frame = int(frame["frame"])
                 self.framedata[character][action][action_frame] = \
                     {"hitbox_1_status": frame["hitbox_1_status"] == "True", \
@@ -45,13 +47,9 @@ class FrameData:
                     "hitbox_4_status": frame["hitbox_4_status"] == "True", \
                     "hitbox_4_size": float(frame["hitbox_4_size"]), \
                     "hitbox_4_x": float(frame["hitbox_4_x"]), \
-                    "hitbox_4_y": float(frame["hitbox_4_y"])}
-
-        #Read the action state data csv
-        path = os.path.dirname(os.path.realpath(__file__))
-        with open(path + "/actiondata.csv") as csvfile:
-            # A list of dicts containing the frame data
-            self.actiondata = list(csv.DictReader(csvfile))
+                    "hitbox_4_y": float(frame["hitbox_4_y"]), \
+                    "locomotion_x": float(frame["locomotion_x"]), \
+                    "locomotion_y": float(frame["locomotion_y"])}
 
         #read the character data csv
         self.characterdata = dict()
@@ -63,15 +61,27 @@ class FrameData:
                 #Convert all fields to numbers
                 for key, value in line.items():
                     line[key] = float(value)
-                self.characterdata[enums.Character(line["CharacterIndex"])] = line
+                self.characterdata[Character(line["CharacterIndex"])] = line
 
     #Returns boolean on if the given action is a roll
     def isroll(self, character, action):
-        for line in self.actiondata:
-            if line["action"] == str(action) and line["character"] == str(character) \
-                and line["isroll"] == "True":
-                return True
-        return False
+        # Marth counter
+        if character == Character.MARTH and action == Action.MARTH_COUNTER:
+            return True
+        if character == Character.MARTH and action == Action.MARTH_COUNTER_FALLING:
+            return True
+
+        # Turns out that the actions we'd call a "roll" are fairly few. Let's just
+        # hardcode them since it's just more cumbersome to do otherwise
+        rolls = [Action.SPOTDODGE, Action.ROLL_FORWARD, Action.ROLL_BACKWARD, \
+            Action.NEUTRAL_TECH, Action.FORWARD_TECH, Action.BACKWARD_TECH, \
+            Action.GROUND_GETUP, Action.TECH_MISS_UP, Action.TECH_MISS_DOWN, \
+            Action.EDGE_GETUP_SLOW, Action.EDGE_GETUP_QUICK, Action.EDGE_ROLL_SLOW, \
+            Action.EDGE_ROLL_QUICK, Action.GROUND_ROLL_FORWARD_UP, Action.GROUND_ROLL_BACKWARD_UP, \
+            Action.GROUND_ROLL_FORWARD_DOWN, Action.GROUND_ROLL_BACKWARD_DOWN, Action.SHIELD_BREAK_FLY, \
+            Action.SHIELD_BREAK_FALL, Action.SHIELD_BREAK_DOWN_U, Action.SHIELD_BREAK_DOWN_D, \
+            Action.SHIELD_BREAK_STAND_U, Action.SHIELD_BREAK_STAND_D, Action.TAUNT_RIGHT, Action.TAUNT_LEFT]
+        return action in rolls
 
     #Returns boolean on if the given action is an attack (contains a hitbox)
     def isattack(self, character, action):
@@ -80,17 +90,17 @@ class FrameData:
         return False
 
     def isshield(self, action):
-        out = action == enums.Action.SHIELD \
-            or action == enums.Action.SHIELD_START \
-            or action == enums.Action.SHIELD_REFLECT \
-            or action == enums.Action.SHIELD_STUN \
-            or action == enums.Action.SHIELD_RELEASE
+        out = action == Action.SHIELD \
+            or action == Action.SHIELD_START \
+            or action == Action.SHIELD_REFLECT \
+            or action == Action.SHIELD_STUN \
+            or action == Action.SHIELD_RELEASE
         return out
 
     def maxjumps(character):
-        if character == enums.Character.JIGGLYPUFF:
+        if character == Character.JIGGLYPUFF:
             return 5
-        if character == enums.Character.KIRBY:
+        if character == Character.KIRBY:
             return 5
         return 1
 
@@ -104,15 +114,15 @@ class FrameData:
 
     def attackstate(self, character, action, frame):
         if not self.isattack(character, action):
-            return enums.AttackState.NOT_ATTACKING
+            return AttackState.NOT_ATTACKING
 
         if frame < self.firsthitboxframe(character, action):
-            return enums.AttackState.WINDUP
+            return AttackState.WINDUP
 
         if frame > self.lasthitboxframe(character, action):
-            return enums.AttackState.COOLDOWN
+            return AttackState.COOLDOWN
 
-        return enums.AttackState.ATTACKING
+        return AttackState.ATTACKING
 
     # Helper in case you want to use the current character states
     def inrange_simple(self, attacker, defender, future_frames=0):
@@ -127,7 +137,7 @@ class FrameData:
             attackingframe = self.getframe(attacker_character, attacker_action, attacker_action_frame)
             if attackingframe is None:
                 return False
-            if self.attackstate(attacker_character, attacker_action, attacker_action_frame) != enums.AttackState.ATTACKING:
+            if self.attackstate(attacker_character, attacker_action, attacker_action_frame) != AttackState.ATTACKING:
                 return False
             # Calculate the x and y positions of all 4 hitboxes
             hitbox_1_x = float(attackingframe["hitbox_1_x"])
@@ -178,6 +188,43 @@ class FrameData:
             return self.framedata[character][action][action_frame]
         return None
 
+    # Returns the last frame of the roll
+    # -1 if not a roll
+    def lastrollframe(self, character, action):
+        if not self.isroll(character, action):
+            return -1
+        frames = []
+        for action_frame in self.framedata[character][action]:
+            frames.append(action_frame)
+        return max(frames)
+
+    # Returns the x coordinate that the current roll will end in
+    def endrollposition(self, character_state, stage):
+        distance = 0
+        #TODO: Take current momentum into account
+        # Loop through each frame in the attack
+        for action_frame in self.framedata[character_state.character][character_state.action]:
+            # Only care about frames that haven't happened yet
+            if action_frame > character_state.action_frame:
+                distance += self.framedata[character_state.character][character_state.action][action_frame]["locomotion_x"]
+        # Do we need to flip around the distance?
+        #   I'm PRETTY sure that there aren't any rolls that start moving in one direction
+        #   and then go the other, with the exception on ledge rolls.
+        #   So let's use the initial self speed as a heuristic
+        #   for the direction the roll is going
+        isedgeroll = character_state.action in [Action.EDGE_GETUP_SLOW, \
+            Action.EDGE_GETUP_QUICK, Action.EDGE_ROLL_SLOW, Action.EDGE_ROLL_QUICK]
+        if isedgeroll and not character_state.facing:
+            distance = -distance
+        elif character_state.speed_ground_x_self < 0:
+            distance = -distance
+        position = character_state.x + distance
+
+        # Adjust the position to account for the fact that we can't roll off the stage
+        position = min(position, stages.edgegroundposition(stage))
+        position = max(position, -stages.edgegroundposition(stage))
+        return position
+
     #Returns the first frame that a hitbox appears for a given action
     #   returns -1 if no hitboxes (not an attack action)
     def firsthitboxframe(self, character, action):
@@ -206,7 +253,7 @@ class FrameData:
             return -1
         return max(hitboxes)
 
-    #This is a helper function to remove all the non-attacking actions
+    #This is a helper function to remove all the non-attacking, non-rolling actions
     def cleanupcsv(self):
         #Make a list of all the attacking action names
         attacks = []
@@ -219,10 +266,29 @@ class FrameData:
         #rows[:] = filterfalse(determine, somelist)
         #Make a second pass, removing anything not in the list
         for row in list(self.rows):
-            if row['action'] not in attacks:
+            if row['action'] not in attacks and not self.isroll(Character(row['character']), Action(row['action'])):
                 self.rows.remove(row)
 
     def recordframe(self, gamestate):
+        # So here's the deal... We don't want to count horizontal momentum for almost
+        #   all air moves. Except a few. So let's just enumerate those. It's ugly,
+        #   but whatever, you're not my boss
+        xspeed = 0
+        airmoves = gamestate.opponent_state.action in [Action.EDGE_ROLL_SLOW, Action.EDGE_ROLL_QUICK, Action.EDGE_GETUP_SLOW, \
+            Action.EDGE_GETUP_QUICK, Action. EDGE_ATTACK_SLOW, Action.EDGE_ATTACK_QUICK, \
+            Action.EDGE_JUMP_1_SLOW, Action.EDGE_JUMP_1_QUICK, Action.EDGE_JUMP_2_SLOW, Action.EDGE_JUMP_2_QUICK]
+
+        if gamestate.opponent_state.on_ground or airmoves:
+            xspeed = gamestate.opponent_state.x - gamestate.opponent_state.prev_x
+
+        # This is a bit strange, but here's why:
+        #   The vast majority of actions don't actually affect vertical speed
+        #   For most, the character just moves according to their normal momentum
+        #   Any exceptions can be manually edited in
+        #  However, there's plenty of attacks that make the character fly upward at a set
+        #   distance, like up-b's. So keep those around
+        yspeed = max(gamestate.opponent_state.y - gamestate.opponent_state.prev_y, 0)
+
         row = {'character': gamestate.opponent_state.character.value,
             'action': gamestate.opponent_state.action.value,
             'frame': gamestate.opponent_state.action_frame,
@@ -242,6 +308,8 @@ class FrameData:
             'hitbox_4_x': (gamestate.opponent_state.hitbox_4_x - gamestate.opponent_state.x),
             'hitbox_4_y': (gamestate.opponent_state.hitbox_4_y - gamestate.opponent_state.y),
             'hitbox_4_size' : gamestate.opponent_state.hitbox_4_size,
+            'locomotion_x' : xspeed,
+            'locomotion_y' : yspeed,
             }
 
         if not gamestate.opponent_state.hitbox_1_status:

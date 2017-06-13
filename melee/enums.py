@@ -220,6 +220,8 @@ class Action(Enum):
     EDGE_JUMP_2_SLOW = 0x105
     EDGE_JUMP_1_QUICK = 0x106
     EDGE_JUMP_2_QUICK = 0x107
+    TAUNT_RIGHT = 0x108
+    TAUNT_LEFT = 0x109
     ENTRY = 0x142    #Start of match. Can't move
     ENTRY_START = 0x143    #Start of match. Can't move
     ENTRY_END = 0x144    #Start of match. Can't move

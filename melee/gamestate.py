@@ -102,6 +102,13 @@ class GameState:
             #   important pieces of information that we don't want to make the
             #   user have to re-calculate on their own
             for i in self.player:
+                # Move current x,y over to prev
+                self.player[i].prev_x = self.player[i].x
+                self.player[i].prev_y = self.player[i].y
+                # Move future x,y over to current
+                self.player[i].x = self.player[i].next_x
+                self.player[i].y = self.player[i].next_y
+
                 if abs(self.player[i].x) > stages.edgegroundposition(self.stage):
                     self.player[i].off_stage = True
                 else:
@@ -140,10 +147,10 @@ class GameState:
             self.player[player_int].facing = not bool(self.player[player_int].facing >> 31)
             return False
         if label == "x":
-            self.player[player_int].x = unpack('<f', mem_update[1])[0]
+            self.player[player_int].next_x = unpack('<f', mem_update[1])[0]
             return False
         if label == "y":
-            self.player[player_int].y = unpack('<f', mem_update[1])[0]
+            self.player[player_int].next_y = unpack('<f', mem_update[1])[0]
             return False
         if label == "character":
             temp = unpack('<I', mem_update[1])[0] >> 24
@@ -404,6 +411,11 @@ class PlayerState:
     hitbox_3_y = 0
     hitbox_4_x = 0
     hitbox_4_y = 0
+    # For dev use only
+    next_x = 0
+    next_y = 0
+    prev_x = 0
+    prev_x = 0
 
     """Produces a list representation of the player's state"""
     def tolist(self):
