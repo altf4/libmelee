@@ -1,7 +1,7 @@
 import csv
 import os
 import math
-from melee.enums import Action, Character
+from melee.enums import Action, Character, AttackState
 from melee import stages
 from itertools import filterfalse
 from collections import defaultdict
