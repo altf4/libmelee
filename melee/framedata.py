@@ -85,8 +85,11 @@ class FrameData:
 
     #Returns boolean on if the given action is an attack (contains a hitbox)
     def isattack(self, character, action):
-        if self.framedata[character][action]:
-            return True
+        # For each frame...
+        for i, frame in self.framedata[character][action].items():
+            if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
+                or frame['hitbox_3_status'] or frame['hitbox_4_status']:
+                return True
         return False
 
     def isshield(self, action):
