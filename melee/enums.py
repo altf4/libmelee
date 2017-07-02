@@ -124,7 +124,11 @@ class Action(Enum):
     FTILT_LOW = 0x37
     UPTILT = 0x38
     DOWNTILT = 0x39
+    FSMASH_HIGH = 0x3a
+    FSMASH_MID_HIGH = 0x3b
     FSMASH_MID = 0x3c
+    FSMASH_MID_LOW = 0x3d
+    FSMASH_LOW = 0x3e
     UPSMASH = 0x3f
     DOWNSMASH = 0x40
     NAIR = 0x41

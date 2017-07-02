@@ -15,7 +15,7 @@ class FrameData:
                 'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
                 'hitbox_3_status', 'hitbox_3_size', 'hitbox_3_x', 'hitbox_3_y',
                 'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y',
-                'locomotion_x', 'locomotion_y']
+                'locomotion_x', 'locomotion_y', 'iasa']
             self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames)
             self.writer.writeheader()
             self.rows = []
@@ -49,7 +49,8 @@ class FrameData:
                     "hitbox_4_x": float(frame["hitbox_4_x"]), \
                     "hitbox_4_y": float(frame["hitbox_4_y"]), \
                     "locomotion_x": float(frame["locomotion_x"]), \
-                    "locomotion_y": float(frame["locomotion_y"])}
+                    "locomotion_y": float(frame["locomotion_y"]), \
+                    "iasa": frame["iasa"] == "True"}
 
         #read the character data csv
         self.characterdata = dict()
@@ -313,6 +314,7 @@ class FrameData:
             'hitbox_4_size' : gamestate.opponent_state.hitbox_4_size,
             'locomotion_x' : xspeed,
             'locomotion_y' : yspeed,
+            'iasa' : gamestate.opponent_state.iasa
             }
 
         if not gamestate.opponent_state.hitbox_1_status:
