@@ -243,6 +243,22 @@ class FrameData:
             return -1
         return min(hitboxes)
 
+    # Returns the first frame of an attack that the character is interruptible
+    #   returns -1 if not an attack
+    def iasa(self, character, action):
+        if not self.isattack(character, action):
+            return -1
+        iasaframes = []
+        allframes = []
+        for action_frame, frame in self.framedata[character][action].items():
+            #Does this frame have a hitbox?
+            allframes.append(action_frame)
+            if frame["iasa"]:
+                iasaframes.append(action_frame)
+        if not iasaframes:
+            return max(allframes)
+        return min(iasaframes)
+
     #Returns the last frame that a hitbox appears for a given action
     #   returns -1 if no hitboxes (not an attack action)
     def lasthitboxframe(self, character, action):
