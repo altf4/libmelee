@@ -344,3 +344,24 @@ class FrameData:
         self.cleanupcsv()
         self.writer.writerows(self.rows)
         self.csvfile.close()
+
+    """
+    How far will a character slide, given:
+        character: An enum value of the sliding character
+        initspeed: The initial speed of the character
+        frames: How many frames we want to calculate for
+    """
+    def slidedistance(self, character, initspeed, frames):
+        friction = self.characterdata[character]["Friction"]
+        totaldistance = 0
+        # Just the speed, not direction
+        absspeed = abs(initspeed)
+        for i in range(frames):
+            absspeed -= friction
+            if absspeed < 0:
+                break
+            totaldistance += absspeed
+        if initspeed < 0:
+            totaldistance = -totaldistance
+
+        return totaldistance
