@@ -6,7 +6,7 @@ Open API written in Python for making your own Smash Bros: Melee AI
 Linux / OSX only. (Windows coming soon)
 
 1. Install the Dolphin version here:
-https://github.com/altf4/dolphin/tree/memorywatcher
+https://github.com/altf4/dolphin/tree/memorywatcher-rebased
 This contains an important update to allow Dolphin to be able to read projectile information from Melee. Unfortunately, you'll have to build this from source until they accept my Pull Request:
 https://github.com/dolphin-emu/dolphin/pull/4407
 
