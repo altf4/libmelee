@@ -129,7 +129,7 @@ class GameState:
                 if self.player[i].action == Action.ON_HALO_WAIT:
                     self.player[i].invulnerability_left = 120
                 # Don't give invulnerability to the first descent
-                if self.player[i].action == Action.ON_HALO_DESCENT and self.frame < 150:
+                if self.player[i].action == Action.ON_HALO_DESCENT and self.frame > 150:
                     self.player[i].invulnerability_left = 120
                 if self.player[i].action == Action.EDGE_CATCHING and self.player[i].action_frame == 1:
                     self.player[i].invulnerability_left = 29
