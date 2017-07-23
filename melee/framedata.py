@@ -314,6 +314,10 @@ class FrameData:
             xspeed = 0
             yspeed = 0
 
+        # Some actions have their movement reversed compared to how we want to calculate it
+        if gamestate.opponent_state.action in [Action.BACKWARD_TECH]:
+            xspeed = -xspeed
+
         row = {'character': gamestate.opponent_state.character.value,
             'action': gamestate.opponent_state.action.value,
             'frame': gamestate.opponent_state.action_frame,
