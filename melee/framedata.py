@@ -309,6 +309,11 @@ class FrameData:
         #   distance, like up-b's. So keep those around
         yspeed = max(gamestate.opponent_state.y - gamestate.opponent_state.prev_y, 0)
 
+        # Some actions never have locomotion. Make sure to not count it
+        if gamestate.opponent_state.action in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
+            xspeed = 0
+            yspeed = 0
+
         row = {'character': gamestate.opponent_state.character.value,
             'action': gamestate.opponent_state.action.value,
             'frame': gamestate.opponent_state.action_frame,
