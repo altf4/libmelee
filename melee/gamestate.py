@@ -123,6 +123,17 @@ class GameState:
                     self.player[i].off_stage = True
                 else:
                     self.player[i].off_stage = False
+
+                # Keep track of a player's invulnerability due to respawn or ledge grab
+                self.player[i].invulnerability_left = max(0, self.player[i].invulnerability_left - 1)
+                if self.player[i].action == Action.ON_HALO_WAIT:
+                    self.player[i].invulnerability_left = 120
+                # Don't give invulnerability to the first descent
+                if self.player[i].action == Action.ON_HALO_DESCENT and self.frame < 150:
+                    self.player[i].invulnerability_left = 120
+                if self.player[i].action == Action.EDGE_CATCHING and self.player[i].action_frame == 1:
+                    self.player[i].invulnerability_left = 29
+
             #TODO: This needs updating in order to support >2 players
             xdist = self.ai_state.x - self.opponent_state.x
             ydist = self.ai_state.y - self.opponent_state.y
@@ -394,6 +405,7 @@ class PlayerState:
     action_counter = 0
     action_frame = 0
     invulnerable = False
+    invulnerability_left = 0
     hitlag_frames_left = 0
     hitstun_frames_left = 0
     charging_smash = 0
