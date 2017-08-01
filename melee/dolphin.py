@@ -175,7 +175,7 @@ class Dolphin:
             return linux_path
 
         #Are we on OSX?
-        osx_path = home_path + "/Library/Application Support/Dolphin/";
+        osx_path = home_path + "/Library/Application Support/Dolphin/Config/";
         if os.path.isdir(osx_path):
             return osx_path
 
