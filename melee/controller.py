@@ -120,6 +120,10 @@ class Controller:
         if not self.pipe:
             return
         command = "SET " + str(button.value) + " " + str(x) + " " + str(y) + "\n"
+        if button == enums.Button.BUTTON_MAIN:
+            self.current.main_stick = (x, y)
+        else:
+            self.current.c_stick = (x, y)
         if self.logger:
             self.logger.log("Buttons Pressed", command, concat=True)
         self.pipe.write(command)
