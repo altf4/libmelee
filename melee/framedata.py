@@ -275,7 +275,7 @@ class FrameData:
             distance = -distance
         position = character_state.x + distance
 
-        if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]
+        if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
             # Adjust the position to account for the fact that we can't roll off the stage
             position = min(position, stages.edgegroundposition(stage))
             position = max(position, -stages.edgegroundposition(stage))
