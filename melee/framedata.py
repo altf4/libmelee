@@ -497,10 +497,18 @@ class FrameData:
     def slidedistance(self, character, initspeed, frames):
         friction = self.characterdata[character]["Friction"]
         totaldistance = 0
+        walkspeed = self.characterdata[character]["MaxWalkSpeed"]
         # Just the speed, not direction
         absspeed = abs(initspeed)
+        multiplier = 1
         for i in range(frames):
-            absspeed -= friction
+            # If we're sliding faster than the character's walk speed, then
+            #   the slowdown is doubled
+            if absspeed > walkspeed:
+                multiplier = 2
+            else:
+                multiplier = 1
+            absspeed -= friction * multiplier
             if absspeed < 0:
                 break
             totaldistance += absspeed
