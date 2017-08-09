@@ -261,35 +261,41 @@ class FrameData:
         frames = []
         for action_frame in self.framedata[character][action]:
             frames.append(action_frame)
+        if not frames:
+            return -1
         return max(frames)
 
     # Returns the x coordinate that the current roll will end in
     def endrollposition(self, character_state, stage):
         distance = 0
-        #TODO: Take current momentum into account
-        # Loop through each frame in the attack
-        for action_frame in self.framedata[character_state.character][character_state.action]:
-            # Only care about frames that haven't happened yet
-            if action_frame > character_state.action_frame:
-                distance += self.framedata[character_state.character][character_state.action][action_frame]["locomotion_x"]
-        # Do we need to flip around the distance?
-        #   I'm PRETTY sure that there aren't any rolls that start moving in one direction
-        #   and then go the other, with the exception on ledge rolls.
-        #   So let's use the initial self speed as a heuristic
-        #   for the direction the roll is going
-        isedgeroll = character_state.action in [Action.EDGE_GETUP_SLOW, \
-            Action.EDGE_GETUP_QUICK, Action.EDGE_ROLL_SLOW, Action.EDGE_ROLL_QUICK]
-        if isedgeroll and not character_state.facing:
-            distance = -distance
-        elif character_state.speed_ground_x_self < 0:
-            distance = -distance
-        position = character_state.x + distance
+        try:
+            #TODO: Take current momentum into account
+            # Loop through each frame in the attack
+            for action_frame in self.framedata[character_state.character][character_state.action]:
+                # Only care about frames that haven't happened yet
+                if action_frame > character_state.action_frame:
+                    distance += self.framedata[character_state.character][character_state.action][action_frame]["locomotion_x"]
 
-        if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
-            # Adjust the position to account for the fact that we can't roll off the stage
-            position = min(position, stages.edgegroundposition(stage))
-            position = max(position, -stages.edgegroundposition(stage))
-        return position
+            # We can derive the direction we're supposed to be moving by xor'ing a few things together...
+            #   1) Current facing
+            #   2) Facing changed in the frame data
+            #   3) Is backwards roll
+            facingchanged = self.framedata[character_state.character][character_state.action][character_state.action_frame]["facing_changed"]
+            backroll = character_state.action in [Action.ROLL_BACKWARD, Action.GROUND_ROLL_BACKWARD_UP, \
+                Action.GROUND_ROLL_BACKWARD_DOWN, Action.BACKWARD_TECH]
+            if not (character_state.facing ^ facingchanged ^ backroll):
+                distance = -distance
+
+            position = character_state.x + distance
+
+            if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
+                # Adjust the position to account for the fact that we can't roll off the stage
+                position = min(position, stages.edgegroundposition(stage))
+                position = max(position, -stages.edgegroundposition(stage))
+            return position
+        # If we get a key error, just assume this animation doesn't go anywhere
+        except KeyError:
+            return character_state.x
 
     #Returns the first frame that a hitbox appears for a given action
     #   returns -1 if no hitboxes (not an attack action)
