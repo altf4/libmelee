@@ -48,7 +48,7 @@ class GameState:
             self.zero_indices = defaultdict(set)
             for line in actiondata:
                 if line["zeroindex"] == "True":
-                    self.zero_indices[line["character"]].add(line["action"])
+                    self.zero_indices[int(line["character"])].add(int(line["action"]))
         #Creates the socket if it does not exist, and then opens it.
         path = dolphin.get_memory_watcher_socket_path()
         try:
@@ -85,7 +85,7 @@ class GameState:
     #   Here we adjust all of the frames to be indexed at 1 (so math is easier)
     def fixframeindexing(self):
         for index, player in self.player.items():
-            if str(player.action) in self.zero_indices[str(player.character)]:
+            if player.action.value in self.zero_indices[player.character.value]:
                 player.action_frame = player.action_frame + 1
 
     # The IASA flag doesn't set or reset for special attacks.

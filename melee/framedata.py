@@ -7,7 +7,7 @@ from itertools import filterfalse
 from collections import defaultdict
 
 class FrameData:
-    def __init__(self, write):
+    def __init__(self, write=False):
         if write:
             self.csvfile = open('framedata.csv', 'a')
             fieldnames = ['character', 'action', 'frame',
@@ -15,10 +15,19 @@ class FrameData:
                 'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
                 'hitbox_3_status', 'hitbox_3_size', 'hitbox_3_x', 'hitbox_3_y',
                 'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y',
-                'locomotion_x', 'locomotion_y', 'iasa']
+                'locomotion_x', 'locomotion_y', 'iasa', 'facing_changed']
             self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames)
             self.writer.writeheader()
             self.rows = []
+
+            self.actionfile = open("actiondata.csv", "a")
+            fieldnames = ["character", "action", "zeroindex"]
+            self.actionwriter = csv.DictWriter(self.actionfile, fieldnames=fieldnames)
+            self.actionwriter.writeheader()
+            self.actionrows = []
+
+            self.prevfacing = {}
+
         #Read the existing framedata
         path = os.path.dirname(os.path.realpath(__file__))
         self.framedata = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
@@ -50,7 +59,8 @@ class FrameData:
                     "hitbox_4_y": float(frame["hitbox_4_y"]), \
                     "locomotion_x": float(frame["locomotion_x"]), \
                     "locomotion_y": float(frame["locomotion_y"]), \
-                    "iasa": frame["iasa"] == "True"}
+                    "iasa": frame["iasa"] == "True", \
+                    "facing_changed": frame["facing_changed"] == "True"}
 
         #read the character data csv
         self.characterdata = dict()
@@ -342,6 +352,25 @@ class FrameData:
                 self.rows.remove(row)
 
     def recordframe(self, gamestate):
+        # First, adjust and record zero-indexing
+        actionrow = {'character': gamestate.opponent_state.character.value, \
+            'action': gamestate.opponent_state.action.value, \
+            'zeroindex': False}
+
+        if gamestate.opponent_state.action_frame == 0:
+            actionrow["zeroindex"] = True
+            gamestate.opponent_state.action_frame += 1
+
+        alreadythere = False
+        for i in self.actionrows:
+            if i['character'] == actionrow['character'] and i['action'] == actionrow['action']:
+                alreadythere = True
+                if actionrow["zeroindex"]:
+                    gamestate.opponent_state.action_frame += 1
+
+        if not alreadythere:
+            self.actionrows.append(actionrow)
+
         # So here's the deal... We don't want to count horizontal momentum for almost
         #   all air moves. Except a few. So let's just enumerate those. It's ugly,
         #   but whatever, you're not my boss
@@ -366,10 +395,6 @@ class FrameData:
             xspeed = 0
             yspeed = 0
 
-        # Some actions have their movement reversed compared to how we want to calculate it
-        if gamestate.opponent_state.action in [Action.BACKWARD_TECH]:
-            xspeed = -xspeed
-
         row = {'character': gamestate.opponent_state.character.value,
             'action': gamestate.opponent_state.action.value,
             'frame': gamestate.opponent_state.action_frame,
@@ -391,8 +416,27 @@ class FrameData:
             'hitbox_4_size' : gamestate.opponent_state.hitbox_4_size,
             'locomotion_x' : xspeed,
             'locomotion_y' : yspeed,
-            'iasa' : gamestate.opponent_state.iasa
+            'iasa' : gamestate.opponent_state.iasa,
+            'facing_changed' : False
             }
+
+        # Do we already have the previous frame recorded?
+        for i in self.rows:
+            if i['character'] == row['character'] and i['action'] == row['action'] and i['frame'] == row['frame']-1:
+                # If the facing changed once, always have it changed
+                if i["facing_changed"]:
+                    row["facing_changed"] = True
+        # If the facing changed from last frame, set the facing changed bool
+        oldfacing = self.prevfacing.get(gamestate.opponent_state.action)
+        if (oldfacing != None) and (oldfacing != gamestate.opponent_state.facing):
+            row["facing_changed"] = True
+
+        if gamestate.opponent_state.facing == row["facing_changed"]:
+            row["locomotion_x"] = -row["locomotion_x"]
+        # If this is a backwards roll, flip it again
+        if gamestate.opponent_state.action in [Action.ROLL_BACKWARD, Action.GROUND_ROLL_BACKWARD_UP, \
+                Action.GROUND_ROLL_BACKWARD_DOWN, Action.BACKWARD_TECH]:
+            row["locomotion_x"] = -row["locomotion_x"]
 
         if not gamestate.opponent_state.hitbox_1_status:
             row['hitbox_1_x'] = 0
@@ -416,13 +460,27 @@ class FrameData:
             if i['character'] == row['character'] and i['action'] == row['action'] and i['frame'] == row['frame']:
                 alreadythere = True
 
+        # Kludgey changes below:
+        #   Marth's neutral attack 1 technically doesn't IASA until the last two frames,
+        #       but it "loops" much sooner. Let's just call "looping" the same as IASA
+        if row["character"] == Character.MARTH.value and row["action"] == Action.NEUTRAL_ATTACK_1.value \
+                and row["frame"] >= 20:
+            row["iasa"] = True
+        if row["character"] == Character.PIKACHU.value and row["action"] == Action.NEUTRAL_ATTACK_1.value \
+                and row["frame"] >= 6:
+            row["iasa"] = True
+
         if not alreadythere:
             self.rows.append(row)
+
+        self.prevfacing[gamestate.opponent_state.action] = gamestate.opponent_state.facing
 
     def saverecording(self):
         self.cleanupcsv()
         self.writer.writerows(self.rows)
+        self.actionwriter.writerows(self.actionrows)
         self.csvfile.close()
+        self.actionfile.close()
 
     """
     How far will a character slide, given:

@@ -274,6 +274,7 @@ class Action(Enum):
     SHINE_RELEASE_AIR = 0x170
     UP_B_AIR = 0x170    #The upswing of the UP-B. (At least for marth)
     MARTH_COUNTER = 0x171
+    PARASOL_FALLING = 0x172
     MARTH_COUNTER_FALLING = 0x173
     WAVEDASH_SLIDE = 0x176
     UNKNOWN_ANIMATION = 0xffff

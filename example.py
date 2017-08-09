@@ -92,7 +92,10 @@ while True:
         #XXX: This is where your AI does all of its stuff!
         #This line will get hit once per frame, so here is where you read
         #   in the gamestate and decide what buttons to push on the controller
-        melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
+        if args.framerecord:
+            melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
+        else:
+            melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
