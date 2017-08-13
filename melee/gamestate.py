@@ -1,5 +1,5 @@
 from melee import enums, stages
-from melee.enums import Action
+from melee.enums import Action, Character
 import csv
 from struct import *
 import binascii
@@ -49,6 +49,17 @@ class GameState:
             for line in actiondata:
                 if line["zeroindex"] == "True":
                     self.zero_indices[int(line["character"])].add(int(line["action"]))
+        #read the character data csv
+        self.characterdata = dict()
+        path = os.path.dirname(os.path.realpath(__file__))
+        with open(path + "/characterdata.csv") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for line in reader:
+                del line["Character"]
+                #Convert all fields to numbers
+                for key, value in line.items():
+                    line[key] = float(value)
+                self.characterdata[Character(line["CharacterIndex"])] = line
         #Creates the socket if it does not exist, and then opens it.
         path = dolphin.get_memory_watcher_socket_path()
         try:
@@ -237,8 +248,12 @@ class GameState:
             temp = temp >> 24
             #This value is actually the number of jumps USED
             #   so we have to do some quick math to turn this into what we want
-            #TODO = characterstats.maxjumps(self.player[player_int].character) - temp + 1
-            self.player[player_int].jumps_left = temp
+            try:
+                totaljumps = int(self.characterdata[self.player[player_int].character]["Jumps"])
+                self.player[player_int].jumps_left = totaljumps - temp + 1
+            # Key error will be expected when we first start
+            except KeyError:
+                self.player[player_int].jumps_left = 1
             return False
         if label == "on_ground":
             temp = unpack('<I', mem_update[1])[0]
