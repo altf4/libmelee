@@ -37,7 +37,7 @@ log = None
 if args.debug:
     log = melee.logger.Logger()
 
-framedata = melee.framedata.FrameData(args.framerecord != None)
+framedata = melee.framedata.FrameData(args.framerecord)
 
 #Options here are:
 #   "Standard" input is what dolphin calls the type of input that we use

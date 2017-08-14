@@ -311,6 +311,29 @@ class FrameData:
             return -1
         return min(hitboxes)
 
+    # Returns the number of hitboxes an attack has
+    #   By this we mean is it a multihit attack? (Peach's down B?)
+    #       or a single-hit attack? (Marth's fsmash?)
+    def hitboxcount(self, character, action):
+        # Grab only the subset that have a hitbox
+        hitboxes = []
+        for action_frame, frame in self.framedata[character][action].items():
+            #Does this frame have a hitbox?
+            if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
+                or frame['hitbox_3_status'] or frame['hitbox_4_status']:
+                hitboxes.append(action_frame)
+        if not hitboxes:
+            return 0
+        hashitbox = False
+        count = 0
+        # Every time we go from NOT having a hit box to having one, up the count
+        for i in range(1, max(hitboxes)+1):
+            hashitbox_new = i in hitboxes
+            if hashitbox_new and not hashitbox:
+                count += 1
+            hashitbox = hashitbox_new
+        return count
+
     # Returns the first frame of an attack that the character is interruptible
     #   returns -1 if not an attack
     def iasa(self, character, action):
