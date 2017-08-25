@@ -517,20 +517,29 @@ class FrameData:
         initspeed: The initial speed of the character
         frames: How many frames we want to calculate for
     """
-    def slidedistance(self, character, initspeed, frames):
-        friction = self.characterdata[character]["Friction"]
+    def slidedistance(self, character_state, initspeed, frames):
+        normalfriction = self.characterdata[character_state.character]["Friction"]
+        friction = normalfriction
         totaldistance = 0
-        walkspeed = self.characterdata[character]["MaxWalkSpeed"]
+        walkspeed = self.characterdata[character_state.character]["MaxWalkSpeed"]
         # Just the speed, not direction
         absspeed = abs(initspeed)
         multiplier = 1
         for i in range(frames):
+            # Special case for these two damn animations, for some reason. Thanks melee
+            if character_state.action in [Action.TECH_MISS_UP]:
+                if character_state.action_frame + i < 18:
+                    friction = .051
+                    multiplier = 1
+                else:
+                    friction = normalfriction
             # If we're sliding faster than the character's walk speed, then
             #   the slowdown is doubled
-            if absspeed > walkspeed:
+            elif absspeed > walkspeed:
                 multiplier = 2
             else:
                 multiplier = 1
+
             absspeed -= friction * multiplier
             if absspeed < 0:
                 break
