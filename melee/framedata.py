@@ -75,6 +75,26 @@ class FrameData:
                 self.characterdata[Character(line["CharacterIndex"])] = line
 
     #Returns boolean on if the given action is a roll
+    def isgrab(self, character, action):
+        if action in [Action.GRAB, Action.GRAB_RUNNING]:
+            return True
+
+        # Yea, I know. The sword dance isn't the right name
+        if character in [Character.CPTFALCON, Character.GANONDORF] and \
+                action in [Action.SWORD_DANCE_3_MID, Action.SWORD_DANCE_3_LOW]:
+            return True
+
+        if character == Character.BOWSER and \
+                action in [Action.NEUTRAL_B_ATTACKING_AIR, Action.SWORD_DANCE_3_MID]:
+            return True
+
+        if character == Character.YOSHI and \
+                action in [Action.NEUTRAL_B_CHARGING_AIR, Action.SWORD_DANCE_2_MID]:
+            return True
+
+        return False
+
+    #Returns boolean on if the given action is a roll
     def isroll(self, character, action):
         # Marth counter
         if character == Character.MARTH and action == Action.MARTH_COUNTER:
