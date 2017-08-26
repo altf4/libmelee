@@ -1,6 +1,7 @@
 """Helper functions for navigating the Melee menus in ways that would be
     cumbersome to do on your own."""
 from melee import enums
+import math
 
 """Choose a character from the character select menu
     Intended to be called each frame while in the character select menu
@@ -16,6 +17,7 @@ def choosecharacter(character, gamestate, controller, swag=False, start=False):
     #NOTE: This assumes you have all characters unlocked
     #Positions will be totally wrong if something is not unlocked
     ai_state = gamestate.ai_state
+    opponent_state = gamestate.opponent_state
     row = character.value // 9
     column = character.value % 9
     #The random slot pushes the bottom row over a slot, so compensate for that
@@ -36,6 +38,34 @@ def choosecharacter(character, gamestate, controller, swag=False, start=False):
     target_x = -32.5 + 3.5 + (column * 7.0)
     #Wiggle room in positioning character
     wiggleroom = 1.5
+
+    # We are already set, so let's taunt our opponent
+    if ai_state.character == character and swag and not start:
+        delta_x = 3 * math.cos(gamestate.frame / 1.5)
+        delta_y = 3 * math.sin(gamestate.frame / 1.5)
+
+        target_x = opponent_state.cursor_x + delta_x
+        target_y = opponent_state.cursor_y + delta_y
+
+        diff_x = abs(target_x - ai_state.cursor_x)
+        diff_y = abs(target_y - ai_state.cursor_y)
+        larger_magnitude = max(diff_x, diff_y)
+
+        # Scale down values to between 0 and 1
+        x = diff_x / larger_magnitude
+        y = diff_y / larger_magnitude
+
+        # Now scale down to be between .5 and 1
+        if ai_state.cursor_x < target_x:
+            x = (x/2) + 0.5
+        else:
+            x = 0.5 - (x/2)
+        if ai_state.cursor_y < target_y:
+            y = (y/2) + 0.5
+        else:
+            y = 0.5 - (y/2)
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, x, y)
+        return
 
     #We want to get to a state where the cursor is NOT over the character,
     # but it's selected. Thus ensuring the token is on the character
