@@ -384,7 +384,7 @@ class GameState:
             try:
                 proj.subtype = enums.ProjectileSubtype(unpack('>I', mem_update[1][0x10:0x14])[0])
             except ValueError:
-                proj.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
+                return False
             self.projectiles.append(proj)
         return False
 
