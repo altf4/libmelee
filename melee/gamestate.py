@@ -201,7 +201,10 @@ class GameState:
         #Player variables
         if label == "percent":
             if player_int > 4:
-                self.player[player_int].percent = int(unpack('<f', mem_update[1])[0])
+                try:
+                    self.player[player_int].percent = int(unpack('<f', mem_update[1])[0])
+                except ValueError:
+                    self.player[player_int].percent = 0
                 return False
             self.player[player_int].percent = unpack('<I', mem_update[1])[0]
             self.player[player_int].percent = self.player[player_int].percent >> 16
