@@ -36,6 +36,10 @@ class GameState:
         self.player[2] = PlayerState()
         self.player[3] = PlayerState()
         self.player[4] = PlayerState()
+        self.player[5] = PlayerState()
+        self.player[6] = PlayerState()
+        self.player[7] = PlayerState()
+        self.player[8] = PlayerState()
         self.newframe = True
         #Helper names to keep track of us and our opponent
         self.ai_state = self.player[dolphin.ai_port]
@@ -146,6 +150,33 @@ class GameState:
                 if self.player[i].action == Action.EDGE_CATCHING and self.player[i].action_frame == 1:
                     self.player[i].invulnerability_left = 29
 
+                # Which character are we right now?
+                if self.player[i].character in [Character.SHEIK, Character.ZELDA]:
+                    if self.player[i].transformed == self.player[i].iszelda:
+                        self.player[i].character = Character.SHEIK
+                    else:
+                        self.player[i].character = Character.ZELDA
+                # If the player is transformed, then copy over the sub-character attributes
+                if self.player[i].transformed:
+                    self.player[i].action = self.player[i+4].action
+                    self.player[i].action_counter = self.player[i+4].action_counter
+                    self.player[i].action_frame = self.player[i+4].action_frame
+                    self.player[i].invulnerable = self.player[i+4].invulnerable
+                    self.player[i].hitlag_frames_left = self.player[i+4].hitlag_frames_left
+                    self.player[i].hitstun_frames_left = self.player[i+4].hitstun_frames_left
+                    self.player[i].charging_smash = self.player[i+4].charging_smash
+                    self.player[i].jumps_left = self.player[i+4].jumps_left
+                    self.player[i].on_ground = self.player[i+4].on_ground
+                    self.player[i].speed_air_x_self = self.player[i+4].speed_air_x_self
+                    self.player[i].speed_y_self = self.player[i+4].speed_y_self
+                    self.player[i].speed_x_attack = self.player[i+4].speed_x_attack
+                    self.player[i].speed_y_attack = self.player[i+4].speed_y_attack
+                    self.player[i].speed_ground_x_self = self.player[i+4].speed_ground_x_self
+                    self.player[i].x = self.player[i+4].x
+                    self.player[i].y = self.player[i+4].y
+                    self.player[i].percent = self.player[i+4].percent
+                    self.player[i].facing = self.player[i+4].facing
+
             #TODO: This needs updating in order to support >2 players
             xdist = self.ai_state.x - self.opponent_state.x
             ydist = self.ai_state.y - self.opponent_state.y
@@ -169,6 +200,9 @@ class GameState:
             return False
         #Player variables
         if label == "percent":
+            if player_int > 4:
+                self.player[player_int].percent = int(unpack('<f', mem_update[1])[0])
+                return False
             self.player[player_int].percent = unpack('<I', mem_update[1])[0]
             self.player[player_int].percent = self.player[player_int].percent >> 16
             return False
@@ -366,6 +400,20 @@ class GameState:
         if label == "iasa":
             self.player[player_int].iasa = bool(unpack('<I', mem_update[1])[0] >> 31)
             return False
+        if label == "transformed":
+            temp = unpack('<I', mem_update[1])[0]
+            status = False
+            if temp == 16777216:
+                status = True
+            self.player[player_int].transformed = status
+            return False
+        if label == "iszelda":
+            temp = unpack('<I', mem_update[1])[0]
+            status = False
+            if temp == 18:
+                status = True
+            self.player[player_int].iszelda = status
+            return False
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
             if self.newframe:
@@ -437,6 +485,8 @@ class PlayerState:
     coin_down = False
     controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
     off_stage = False
+    transformed = False
+    iszelda = False
     iasa = 0
     hitbox_1_size = 0
     hitbox_2_size = 0

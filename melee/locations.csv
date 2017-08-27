@@ -122,3 +122,84 @@
 "iasa","00453FC0 2278",2
 "iasa","00454E50 2278",3
 "iasa","00455CE0 2278",4
+"transformed","0045308C",1
+"transformed","00453F1C",2
+"transformed","00454DAC",3
+"transformed","00455C3C",4
+"action","00453134 70",5
+"action_counter","00453134 20CC",5
+"action_frame","00453134 8F4",5
+"invulnerable","00453134 19EC",5
+"hitlag_frames_left","00453134 19BC",5
+"hitstun_frames_left","00453134 23a0",5
+"charging_smash","00453134 2174",5
+"jumps_left","00453134 19C8",5
+"on_ground","00453134 140",5
+"speed_air_x_self","00453134 E0",5
+"speed_y_self","00453134 E4",5
+"speed_x_attack","00453134 EC",5
+"speed_y_attack","00453134 F0",5
+"speed_ground_x_self","00453134 14C",5
+"percent","00453134 1890",5
+"facing","00453134 8C",5
+"x","00453134 110",5
+"y","00453134 114",5
+"action","00453FC4 70",6
+"action_counter","00453FC4 20CC",6
+"action_frame","00453FC4 8F4",6
+"invulnerable","00453FC4 19EC",6
+"hitlag_frames_left","00453FC4 19BC",6
+"hitstun_frames_left","00453FC4 23a0",6
+"charging_smash","00453FC4 2174",6
+"jumps_left","00453FC4 19C8",6
+"on_ground","00453FC4 140",6
+"speed_air_x_self","00453FC4 E0",6
+"speed_y_self","00453FC4 E4",6
+"speed_x_attack","00453FC4 EC",6
+"speed_y_attack","00453FC4 F0",6
+"speed_ground_x_self","00453FC4 14C",6
+"percent","00453FC4 1890",6
+"facing","00453FC4 8C",6
+"x","00453FC4 110",6
+"y","00453FC4 114",6
+"action","00454E54 70",7
+"action_counter","00454E54 20CC",7
+"action_frame","00454E54 8F4",7
+"invulnerable","00454E54 19EC",7
+"hitlag_frames_left","00454E54 19BC",7
+"hitstun_frames_left","00454E54 23a0",7
+"charging_smash","00454E54 2174",7
+"jumps_left","00454E54 19C8",7
+"on_ground","00454E54 140",7
+"speed_air_x_self","00454E54 E0",7
+"speed_y_self","00454E54 E4",7
+"speed_x_attack","00454E54 EC",7
+"speed_y_attack","00454E54 F0",7
+"speed_ground_x_self","00454E54 14C",7
+"percent","00454E54 1890",7
+"facing","00454E54 8C",7
+"x","00454E54 110",7
+"y","00454E54 114",7
+"action","00455CE4 70",8
+"action_counter","00455CE4 20CC",8
+"action_frame","00455CE4 8F4",8
+"invulnerable","00455CE4 19EC",8
+"hitlag_frames_left","00455CE4 19BC",8
+"hitstun_frames_left","00455CE4 23a0",8
+"charging_smash","00455CE4 2174",8
+"jumps_left","00455CE4 19C8",8
+"on_ground","00455CE4 140",8
+"speed_air_x_self","00455CE4 E0",8
+"speed_y_self","00455CE4 E4",8
+"speed_x_attack","00455CE4 EC",8
+"speed_y_attack","00455CE4 F0",8
+"speed_ground_x_self","00455CE4 14C",8
+"percent","00455CE4 1890",8
+"facing","00455CE4 8C",8
+"x","00455CE4 110",8
+"y","00455CE4 114",8
+"percent","00455CE4 1890",8
+"iszelda","00453084",1
+"iszelda","00453F14",2
+"iszelda","00454DA4",3
+"iszelda","00455C34",4
