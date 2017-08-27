@@ -410,6 +410,17 @@ class FrameData:
             return -1
         return max(hitboxes)
 
+    """
+    Returns the count of total frames in the given action.
+    """
+    def lastframe(self, character, action):
+        frames = []
+        for action_frame, frame in self.framedata[character][action].items():
+            frames.append(action_frame)
+        if not frames:
+            return -1
+        return max(frames)
+
     #This is a helper function to remove all the non-attacking, non-rolling, non-B move actions
     def cleanupcsv(self):
         #Make a list of all the attacking action names
