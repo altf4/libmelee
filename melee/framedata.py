@@ -290,6 +290,66 @@ class FrameData:
                     return i
         return 0
 
+    """
+    Returns the height the character's next double jump will take them
+    """
+    def getdjheight(self, character, jumps_left):
+        # Peach's DJ doesn't follow normal physics rules. Hardcoded it
+        if character == Character.PEACH:
+            return 33.18862915
+
+        gravity = self.characterdata[character]["Gravity"]
+        initdjspeed = self.characterdata[character]["InitDJSpeed"]
+
+        if character == Character.JIGGLYPUFF:
+            if jumps_left >= 5:
+                initdjspeed = 1.586
+            if jumps_left == 4:
+                initdjspeed = 1.526
+            if jumps_left == 3:
+                initdjspeed = 1.406
+            if jumps_left == 2:
+                initdjspeed = 1.296
+            if jumps_left <= 1:
+                initdjspeed = 1.186
+
+        distance = 0
+        while initdjspeed > 0:
+            distance += initdjspeed
+            initdjspeed -= gravity
+        return distance
+
+    """
+    Return the number of frames it takes for the character to reach the apex of
+        their double jump
+    """
+    def getdjapexframes(self, character, jumps_left):
+        # Peach's DJ doesn't follow normal physics rules. Hardcoded it
+        # She can float-cancel, so she can be falling at any time during the jump
+        if character == Character.PEACH:
+            return 1
+
+        gravity = self.characterdata[character]["Gravity"]
+        initdjspeed = self.characterdata[character]["InitDJSpeed"]
+
+        if character == Character.JIGGLYPUFF:
+            if jumps_left >= 5:
+                initdjspeed = 1.586
+            if jumps_left == 4:
+                initdjspeed = 1.526
+            if jumps_left == 3:
+                initdjspeed = 1.406
+            if jumps_left == 2:
+                initdjspeed = 1.296
+            if jumps_left <= 1:
+                initdjspeed = 1.186
+
+        frames = 0
+        while initdjspeed > 0:
+            frames += 1
+            initdjspeed -= gravity
+        return frames
+
     # Returns a frame dict for the specified frame
     def getframe(self, character, action, action_frame):
         if self.framedata[character][action][action_frame]:
