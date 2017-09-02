@@ -420,6 +420,12 @@ class FrameData:
     #       or a single-hit attack? (Marth's fsmash?)
     def hitboxcount(self, character, action):
         # Grab only the subset that have a hitbox
+
+        # This math doesn't work for Samu's UP_B
+        #   Because the hitboxes are contiguous
+        if character == Character.SAMUS and action in [Action.SWORD_DANCE_3_MID, Action.SWORD_DANCE_3_LOW]:
+            return 7
+
         hitboxes = []
         for action_frame, frame in self.framedata[character][action].items():
             #Does this frame have a hitbox?
