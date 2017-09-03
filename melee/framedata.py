@@ -632,6 +632,10 @@ class FrameData:
                 and row["frame"] >= 6:
             row["iasa"] = True
 
+        # Don't count the projectile during samus's charging
+        if row["character"] == Character.SAMUS.value and row["action"] == Action.NEUTRAL_B_ATTACKING.value:
+            row["projectile"] = False
+
         if not alreadythere:
             self.rows.append(row)
 
