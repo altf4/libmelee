@@ -291,29 +291,40 @@ class FrameData:
         return 0
 
     """
-    Returns the height the character's next double jump will take them
+    Returns the height the character's double jump will take them.
+        If character is in jump already, returns how heigh that one goes
     """
-    def getdjheight(self, character, jumps_left):
+    def getdjheight(self, character_state):
         # Peach's DJ doesn't follow normal physics rules. Hardcoded it
-        if character == Character.PEACH:
-            return 33.18862915
+        if character_state.character == Character.PEACH:
+            # She can't get height if not in the jump action
+            if character_state.action != Action.JUMPING_ARIAL_FORWARD:
+                if character_state.jumps_left == 0:
+                    return 0
+                else:
+                    return 33.218964577
+            # This isn't exact. But it's close
+            return 33.218964577 * (1 - (character_state.action_frame / 60))
 
-        gravity = self.characterdata[character]["Gravity"]
-        initdjspeed = self.characterdata[character]["InitDJSpeed"]
+        gravity = self.characterdata[character_state.character]["Gravity"]
+        initdjspeed = self.characterdata[character_state.character]["InitDJSpeed"]
+        if character_state.jumps_left == 0:
+            initdjspeed = character_state.speed_y_self - gravity
 
-        if character == Character.JIGGLYPUFF:
-            if jumps_left >= 5:
+        if character_state.character == Character.JIGGLYPUFF:
+            if character_state.jumps_left >= 5:
                 initdjspeed = 1.586
-            if jumps_left == 4:
+            if character_state.jumps_left == 4:
                 initdjspeed = 1.526
-            if jumps_left == 3:
+            if character_state.jumps_left == 3:
                 initdjspeed = 1.406
-            if jumps_left == 2:
+            if character_state.jumps_left == 2:
                 initdjspeed = 1.296
-            if jumps_left <= 1:
+            if character_state.jumps_left <= 1:
                 initdjspeed = 1.186
 
         distance = 0
+
         while initdjspeed > 0:
             distance += initdjspeed
             initdjspeed -= gravity
@@ -321,27 +332,30 @@ class FrameData:
 
     """
     Return the number of frames it takes for the character to reach the apex of
-        their double jump
+        their double jump. If they haven't used it yet, then calculate it as if they
+        jumped right now.
     """
-    def getdjapexframes(self, character, jumps_left):
+    def getdjapexframes(self, character_state):
         # Peach's DJ doesn't follow normal physics rules. Hardcoded it
         # She can float-cancel, so she can be falling at any time during the jump
-        if character == Character.PEACH:
+        if character_state.character == Character.PEACH:
             return 1
 
-        gravity = self.characterdata[character]["Gravity"]
-        initdjspeed = self.characterdata[character]["InitDJSpeed"]
+        gravity = self.characterdata[character_state.character]["Gravity"]
+        initdjspeed = self.characterdata[character_state.character]["InitDJSpeed"]
+        if character_state.jumps_left == 0:
+            initdjspeed = character_state.speed_y_self - gravity
 
-        if character == Character.JIGGLYPUFF:
-            if jumps_left >= 5:
+        if character_state.character == Character.JIGGLYPUFF:
+            if character_state.jumps_left >= 5:
                 initdjspeed = 1.586
-            if jumps_left == 4:
+            if character_state.jumps_left == 4:
                 initdjspeed = 1.526
-            if jumps_left == 3:
+            if character_state.jumps_left == 3:
                 initdjspeed = 1.406
-            if jumps_left == 2:
+            if character_state.jumps_left == 2:
                 initdjspeed = 1.296
-            if jumps_left <= 1:
+            if character_state.jumps_left <= 1:
                 initdjspeed = 1.186
 
         frames = 0
