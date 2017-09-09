@@ -180,6 +180,53 @@ class FrameData:
 
         return AttackState.ATTACKING
 
+
+    """
+    Returns the maximum remaining range of the given attack, in the forward direction
+        (relative to how the character starts facing)
+        Range "remaining" means that it won't consider hitboxes that we've already passed.
+    """
+    def getrange_forward(self, character, action, frame):
+        attackrange = 0
+        lastframe = self.lasthitboxframe(character, action)
+        for i in range(frame+1, lastframe+1):
+            attackingframe = self.getframe(character, action, i)
+            if attackingframe is None:
+                continue
+
+            if attackingframe['hitbox_1_status']:
+                attackrange = max(attackingframe["hitbox_1_size"] + attackingframe["hitbox_1_x"], attackrange)
+            if attackingframe['hitbox_2_status']:
+                attackrange = max(attackingframe["hitbox_2_size"] + attackingframe["hitbox_2_x"], attackrange)
+            if attackingframe['hitbox_3_status']:
+                attackrange = max(attackingframe["hitbox_3_size"] + attackingframe["hitbox_3_x"], attackrange)
+            if attackingframe['hitbox_4_status']:
+                attackrange = max(attackingframe["hitbox_4_size"] + attackingframe["hitbox_4_x"], attackrange)
+        return attackrange
+
+    """
+    Returns the maximum remaining range of the given attack, in the backwards direction
+        (relative to how the character starts facing)
+        Range "remaining" means that it won't consider hitboxes that we've already passed.
+    """
+    def getrange_backward(self, character, action, frame):
+        attackrange = 0
+        lastframe = self.lasthitboxframe(character, action)
+        for i in range(frame+1, lastframe+1):
+            attackingframe = self.getframe(character, action, i)
+            if attackingframe is None:
+                continue
+
+            if attackingframe['hitbox_1_status']:
+                attackrange = min(-attackingframe["hitbox_1_size"] + attackingframe["hitbox_1_x"], attackrange)
+            if attackingframe['hitbox_2_status']:
+                attackrange = min(-attackingframe["hitbox_2_size"] + attackingframe["hitbox_2_x"], attackrange)
+            if attackingframe['hitbox_3_status']:
+                attackrange = min(-attackingframe["hitbox_3_size"] + attackingframe["hitbox_3_x"], attackrange)
+            if attackingframe['hitbox_4_status']:
+                attackrange = min(-attackingframe["hitbox_4_size"] + attackingframe["hitbox_4_x"], attackrange)
+        return abs(attackrange)
+
     # Returns the frame that the specified attack will hit the defender
     #   Returns 0 if it won't hit
     # NOTE: This considers the defending character to have a single hurtbox, centered
