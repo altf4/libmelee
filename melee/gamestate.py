@@ -177,6 +177,14 @@ class GameState:
                     self.player[i].percent = self.player[i+4].percent
                     self.player[i].facing = self.player[i+4].facing
 
+                # The pre-warning occurs when we first start a dash dance.
+                if self.player[i].action == Action.DASHING and self.player[i].prev_action not in [Action.DASHING, Action.TURNING]:
+                    self.player[i].moonwalkwarning = True
+
+                # Take off the warning if the player does an action other than dashing
+                if self.player[i].action != Action.DASHING:
+                    self.player[i].moonwalkwarning = False
+
             #TODO: This needs updating in order to support >2 players
             xdist = self.ai_state.x - self.opponent_state.x
             ydist = self.ai_state.y - self.opponent_state.y
@@ -239,6 +247,8 @@ class GameState:
         if label == "action":
             temp = unpack('<I', mem_update[1])[0]
             try:
+                # Keep track of old action
+                self.player[player_int].prev_action = self.player[player_int].action
                 self.player[player_int].action = enums.Action(temp)
             except ValueError:
                 self.player[player_int].action = enums.Action.UNKNOWN_ANIMATION
@@ -491,6 +501,7 @@ class PlayerState:
     transformed = False
     iszelda = False
     iasa = 0
+    moonwalkwarning = False
     hitbox_1_size = 0
     hitbox_2_size = 0
     hitbox_3_size = 0
@@ -512,6 +523,8 @@ class PlayerState:
     next_y = 0
     prev_x = 0
     prev_x = 0
+    # Start from a standing state
+    prev_action = Action.UNKNOWN_ANIMATION
 
     """Produces a list representation of the player's state"""
     def tolist(self):
