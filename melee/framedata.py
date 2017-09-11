@@ -140,9 +140,10 @@ class FrameData:
     def isattack(self, character, action):
         # For each frame...
         for i, frame in self.framedata[character][action].items():
-            if frame['hitbox_1_status'] or frame['hitbox_2_status'] or frame['hitbox_3_status'] or \
-                    frame['hitbox_4_status'] or frame['projectile']:
-                return True
+            if frame:
+                if frame['hitbox_1_status'] or frame['hitbox_2_status'] or frame['hitbox_3_status'] or \
+                        frame['hitbox_4_status'] or frame['projectile']:
+                    return True
         return False
 
     def isshield(self, action):
@@ -467,11 +468,12 @@ class FrameData:
         # Grab only the subset that have a hitbox
         hitboxes = []
         for action_frame, frame in self.framedata[character][action].items():
-            #Does this frame have a hitbox?
-            if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
-                or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
-                    frame['projectile']:
-                hitboxes.append(action_frame)
+            if frame:
+                #Does this frame have a hitbox?
+                if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
+                    or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
+                        frame['projectile']:
+                    hitboxes.append(action_frame)
         if not hitboxes:
             return -1
         return min(hitboxes)
@@ -489,11 +491,12 @@ class FrameData:
 
         hitboxes = []
         for action_frame, frame in self.framedata[character][action].items():
-            #Does this frame have a hitbox?
-            if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
-                or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
-                    frame['projectile']:
-                hitboxes.append(action_frame)
+            if frame:
+                #Does this frame have a hitbox?
+                if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
+                    or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
+                        frame['projectile']:
+                    hitboxes.append(action_frame)
         if not hitboxes:
             return 0
         hashitbox = False
@@ -514,10 +517,11 @@ class FrameData:
         iasaframes = []
         allframes = []
         for action_frame, frame in self.framedata[character][action].items():
-            #Does this frame have a hitbox?
-            allframes.append(action_frame)
-            if frame["iasa"]:
-                iasaframes.append(action_frame)
+            if frame:
+                #Does this frame have a hitbox?
+                allframes.append(action_frame)
+                if frame["iasa"]:
+                    iasaframes.append(action_frame)
         if not iasaframes:
             return max(allframes)
         return min(iasaframes)
@@ -528,11 +532,12 @@ class FrameData:
         # Grab only the subset that have a hitbox
         hitboxes = []
         for action_frame, frame in self.framedata[character][action].items():
-            #Does this frame have a hitbox?
-            if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
-                or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
-                    frame['projectile']:
-                hitboxes.append(action_frame)
+            if frame:
+                #Does this frame have a hitbox?
+                if frame['hitbox_1_status'] or frame['hitbox_2_status'] \
+                    or frame['hitbox_3_status'] or frame['hitbox_4_status'] or \
+                        frame['projectile']:
+                    hitboxes.append(action_frame)
         if not hitboxes:
             return -1
         return max(hitboxes)
