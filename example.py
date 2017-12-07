@@ -99,7 +99,7 @@ while True:
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-            gamestate=gamestate, controller=controller, swag=True, start=True)
+            gamestate=gamestate, port=args.port, opponent_port=args.opponent, controller=controller, swag=True, start=True)
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
         melee.menuhelper.skippostgame(controller=controller)

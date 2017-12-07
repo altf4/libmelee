@@ -12,12 +12,12 @@ import math
     start = Automatically start the match when it's ready
         NOTE: All controller cursors must be above the character level for this
         to work. The match won't start otherwise."""
-def choosecharacter(character, gamestate, controller, swag=False, start=False):
+def choosecharacter(character, gamestate, port, opponent_port, controller, swag=False, start=False):
     #Figure out where the character is on the select screen
     #NOTE: This assumes you have all characters unlocked
     #Positions will be totally wrong if something is not unlocked
-    ai_state = gamestate.ai_state
-    opponent_state = gamestate.opponent_state
+    ai_state = gamestate.player[port]
+    opponent_state = gamestate.player[opponent_port]
     row = character.value // 9
     column = character.value % 9
     #The random slot pushes the bottom row over a slot, so compensate for that
@@ -114,7 +114,7 @@ def choosecharacter(character, gamestate, controller, swag=False, start=False):
         if ai_state.cursor_y < target_y - wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
             return
-        #Move downn if we're too high
+        #Move down if we're too high
         if ai_state.cursor_y > target_y + wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
@@ -193,24 +193,24 @@ WARNING: There's a condition on this you need to know. The way controllers work
     go to uplugged. If you've ever played Melee, you probably know this. If your
     friend walks away, you have to press the A button on THEIR controller. (or
     else actually unplug the controller) No way around it."""
-def changecontrollerstatus(controller, gamestate, port, status, character=None):
-    ai_state = gamestate.ai_state
+def changecontrollerstatus(controller, gamestate, targetport, port, status, character=None):
+    ai_state = gamestate.player[port]
     target_x, target_y = 0,-2.2
-    if port == 1:
+    if targetport == 1:
         target_x = -31.5
-    if port == 2:
+    if targetport == 2:
         target_x = -16.5
-    if port == 3:
+    if targetport == 3:
         target_x = -1
-    if port == 4:
+    if targetport == 4:
         target_x = 14
     wiggleroom = 1.5
 
     correctcharacter = (character == None) or \
-        (character == gamestate.player[port].character)
+        (character == gamestate.player[targetport].character)
 
     #if we're in the right state already, do nothing
-    if gamestate.player[port].controller_status == status and correctcharacter:
+    if gamestate.player[targetport].controller_status == status and correctcharacter:
         controller.empty_input()
         return
 
