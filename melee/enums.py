@@ -14,6 +14,7 @@ class Menu(Enum):
     CHARACTER_SELECT = 0
     STAGE_SELECT = 1
     IN_GAME = 2
+    SUDDEN_DEATH = 3
     POSTGAME_SCORES = 4
 
 class ControllerStatus(Enum):
