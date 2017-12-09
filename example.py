@@ -29,7 +29,7 @@ parser.add_argument('--live', '-l',
 parser.add_argument('--debug', '-d', action='store_true',
                     help='Debug mode. Creates a CSV of all game state')
 parser.add_argument('--framerecord', '-r', default=False, action='store_true',
-                    help='Records frame data from the match, stores into framedata.csv')
+                    help='(DEVELOPMENT ONLY) Records frame data from the match, stores into framedata.csv.')
 
 args = parser.parse_args()
 
@@ -49,8 +49,10 @@ if args.live:
     opponent_type = melee.enums.ControllerType.GCN_ADAPTER
 
 #Create our Dolphin object. This will be the primary object that we will interface with
-dolphin = melee.dolphin.Dolphin(ai_port=args.port, opponent_port=args.opponent,
-    opponent_type=opponent_type, logger=log)
+dolphin = melee.dolphin.Dolphin(ai_port=args.port,
+                                opponent_port=args.opponent,
+                                opponent_type=opponent_type,
+                                logger=log)
 #Create our GameState object for the dolphin instance
 gamestate = melee.gamestate.GameState(dolphin)
 #Create our Controller object that we can press buttons on
@@ -99,14 +101,20 @@ while True:
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-            gamestate=gamestate, port=args.port, opponent_port=args.opponent, controller=controller, swag=True, start=True)
+                                        gamestate=gamestate,
+                                        port=args.port,
+                                        opponent_port=args.opponent,
+                                        controller=controller,
+                                        swag=True,
+                                        start=True)
     #If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
         melee.menuhelper.skippostgame(controller=controller)
     #If we're at the stage select screen, choose a stage
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
         melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
-            gamestate=gamestate, controller=controller)
+                                    gamestate=gamestate,
+                                    controller=controller)
     #Flush any button presses queued up
     controller.flush()
     if log:
