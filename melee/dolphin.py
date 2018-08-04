@@ -1,4 +1,4 @@
-import os, pwd, shutil, subprocess
+import os, pwd, shutil, subprocess, sys
 import configparser
 from melee import enums
 
