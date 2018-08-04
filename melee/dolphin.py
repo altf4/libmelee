@@ -122,10 +122,10 @@ class Dolphin:
             #Use the "Null" renderer
             command.append("-v")
             command.append("Null")
-        if movie_path != None:
+        if movie_path is not None:
             command.append("-m")
             command.append(movie_path)
-        if iso_path != None:
+        if iso_path is not None:
             command.append("-e")
             command.append(iso_path)
         self.process = subprocess.Popen(command)
