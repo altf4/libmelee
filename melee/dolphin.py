@@ -1,4 +1,4 @@
-import os, pwd, shutil, subprocess
+import os, pwd, shutil, subprocess, sys
 import configparser
 from melee import enums
 
@@ -116,18 +116,24 @@ class Dolphin:
             config.write(dolphinfile)
 
     """Run dolphin-emu"""
-    def run(self, render=True, iso_path=None, movie_path=None):
-        command = ["dolphin-emu"]
+    def run(self, render=True, iso_path=None, movie_path=None, dolphin_executable_path=None, dolphin_config_path=None):
+        if dolphin_executable_path is not None:
+            command = [dolphin_executable_path]
+        else:
+            command = ["dolphin-emu"]
         if not render:
             #Use the "Null" renderer
             command.append("-v")
             command.append("Null")
-        if movie_path != None:
+        if movie_path is not None:
             command.append("-m")
             command.append(movie_path)
-        if iso_path != None:
+        if iso_path is not None:
             command.append("-e")
             command.append(iso_path)
+        if dolphin_config_path is not None:
+            command.append("-u")
+            command.append(dolphin_config_path)
         self.process = subprocess.Popen(command)
 
     """Terminate the dolphin process"""
