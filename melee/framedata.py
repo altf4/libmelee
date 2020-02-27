@@ -599,7 +599,7 @@ class FrameData:
             Action.EDGE_JUMP_1_SLOW, Action.EDGE_JUMP_1_QUICK, Action.EDGE_JUMP_2_SLOW, Action.EDGE_JUMP_2_QUICK]
 
         if gamestate.opponent_state.on_ground or airmoves:
-            xspeed = gamestate.opponent_state.x - gamestate.opponent_state.prev_x
+            xspeed = gamestate.opponent_state.x - gamestate.opponent_state.__prev_x
 
         # This is a bit strange, but here's why:
         #   The vast majority of actions don't actually affect vertical speed
@@ -607,7 +607,7 @@ class FrameData:
         #   Any exceptions can be manually edited in
         #  However, there's plenty of attacks that make the character fly upward at a set
         #   distance, like up-b's. So keep those around
-        yspeed = max(gamestate.opponent_state.y - gamestate.opponent_state.prev_y, 0)
+        yspeed = max(gamestate.opponent_state.y - gamestate.opponent_state.__prev_y, 0)
 
         # Some actions never have locomotion. Make sure to not count it
         if gamestate.opponent_state.action in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
