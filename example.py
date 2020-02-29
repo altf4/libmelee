@@ -30,7 +30,10 @@ parser.add_argument('--framerecord', '-r', default=False, action='store_true',
                     help='(DEVELOPMENT ONLY) Records frame data from the match,' \
                     'stores into framedata.csv.')
 parser.add_argument('--console', '-c', default="dolphin",
-                    help='Debug mode. Creates a CSV of all game states')
+                    help='Do you want to play on an Emulator (dolphin) or ' \
+                    'hardware console (wii)')
+parser.add_argument('--address', '-a', default="",
+                    help='IP address of Slippi/Wii')
 
 args = parser.parse_args()
 
@@ -68,6 +71,9 @@ elif args.console == "wii":
                             opponent_port=args.opponent,
                             opponent_type=opponent_type,
                             logger=log)
+    # If not set by the user, this will be an empty string, which will trigger
+    #   an autodiscover process
+    console.slippi_address = args.address
 else:
     print("ERROR: Argument --console must be either 'dolphin' or 'wii'.")
     sys.exit(-1)
@@ -94,7 +100,9 @@ signal.signal(signal.SIGINT, signal_handler)
 # Run the console
 #   For Dolphin, this will start the Dolphin program
 #   For Wii, this will connect to the Slippi networking port
-console.run()
+if not console.run():
+    print("ERROR: Failed to start / connect to the console.")
+    sys.exit(-1)
 
 # Plug our controller in
 #   Due to how named pipes work, this has to come AFTER running dolphin
@@ -107,7 +115,8 @@ while True:
     # "step" to the next frame
     gamestate = console.step()
 
-    print(gamestate.ai_state.x, gamestate.ai_state.y)
+    print(gamestate.ai_state.character, "\n")
+
 
     if(console.processingtime * 1000 > 12):
         print("WARNING: Last frame took " +

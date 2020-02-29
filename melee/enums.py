@@ -34,33 +34,92 @@ class AttackState(Enum):
     NOT_ATTACKING = 3
 
 class Character(Enum):
-    DOC = 0x00
-    MARIO = 0x01
-    LUIGI = 0x02
-    BOWSER = 0x03
-    PEACH = 0x04
-    YOSHI = 0x05
-    DK = 0x06
-    CPTFALCON = 0x07
-    GANONDORF = 0x08
-    FALCO = 0x09
-    FOX = 0x0a
-    NESS = 0x0b
-    ICECLIMBERS = 0x0c
-    KIRBY = 0x0d
-    SAMUS = 0x0e
-    ZELDA = 0x0f
-    LINK = 0x10
-    YLINK = 0x11
-    PICHU = 0x12
-    PIKACHU = 0x13
-    JIGGLYPUFF = 0x14
-    MEWTWO = 0x15
-    GAMEANDWATCH = 0x16
-    MARTH = 0x17
-    ROY = 0x18
-    SHEIK = 0x42 # We added this
+    MARIO = 0x00
+    FOX = 0x01
+    CPTFALCON = 0x02
+    DK = 0x03
+    KIRBY = 0x04
+    BOWSER = 0x05
+    LINK = 0x06
+    SHEIK = 0x07
+    NESS = 0x08
+    PEACH = 0x09
+    POPO = 0x0a
+    NANA = 0x0b
+    PIKACHU = 0x0c
+    SAMUS = 0x0d
+    YOSHI = 0x0e
+    JIGGLYPUFF = 0x0f
+    MEWTWO = 0x10
+    LUIGI = 0x11
+    MARTH = 0x12
+    ZELDA = 0x13
+    YLINK = 0x14
+    DOC = 0x15
+    FALCO = 0x16
+    PICHU = 0x17
+    GAMEANDWATCH = 0x18
+    GANONDORF = 0x19
+    ROY = 0x1a
+    WIREFRAME_MALE = 0x1d
+    WIREFRAME_FEMALE = 0x1e
+    GIGA_BOWSER = 0x1f
+    SANDBAG = 0x20
     UNKNOWN_CHARACTER = 0xff
+
+def convertToInternalCharacterID(id):
+    """ Converts a character select-screen ID to an 'internal ID' enum """
+    if id == 0x00:
+        return Character.DOC
+    if id == 0x01:
+        return Character.MARIO
+    if id == 0x02:
+        return Character.LUIGI
+    if id == 0x03:
+        return Character.BOWSER
+    if id == 0x04:
+        return Character.PEACH
+    if id == 0x05:
+        return Character.YOSHI
+    if id == 0x06:
+        return Character.DK
+    if id == 0x07:
+        return Character.CPTFALCON
+    if id == 0x08:
+        return Character.GANONDORF
+    if id == 0x09:
+        return Character.FALCO
+    if id == 0x0a:
+        return Character.FOX
+    if id == 0x0b:
+        return Character.NESS
+    if id == 0x0c:
+        return Character.POPO
+    if id == 0x0d:
+        return Character.KIRBY
+    if id == 0x0e:
+        return Character.SAMUS
+    if id == 0x0f:
+        return Character.ZELDA
+    if id == 0x10:
+        return Character.LINK
+    if id == 0x11:
+        return Character.YLINK
+    if id == 0x12:
+        return Character.PICHU
+    if id == 0x13:
+        return Character.PIKACHU
+    if id == 0x14:
+        return Character.JIGGLYPUFF
+    if id == 0x15:
+        return Character.MEWTWO
+    if id == 0x16:
+        return Character.GAMEANDWATCH
+    if id == 0x17:
+        return Character.MARTH
+    if id == 0x18:
+        return Character.ROY
+    return Character.UNKNOWN_CHARACTER
 
 class Button(Enum):
     BUTTON_A = "A"

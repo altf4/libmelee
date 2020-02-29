@@ -44,17 +44,27 @@ class GameState:
 """Represents the state of a single player"""
 class PlayerState:
     def __init__(self):
+        # This value is what the character currently is IN GAME
+        #   So this will have no meaning while in menus
+        #   Also, this will change dynamically if you change characters
+        #       IE: Shiek/Zelda
         self.character = enums.Character.UNKNOWN_CHARACTER
+        # This value is what character is selected at the character select screen
+        #   Don't use this value when in-game
+        self.character_selected = enums.Character.UNKNOWN_CHARACTER
         self.x = 0
         self.y = 0
         self.percent = 0
         self.stock = 0
+        # Facingis a bool here for convenience.
+        #   True -> Facing right
+        #   False -> Facing left
         self.facing = True
         self.action = enums.Action.UNKNOWN_ANIMATION
         self.action_frame = 0
         self.invulnerable = False
         self.invulnerability_left = 0
-        self.hitlag_frames_left = 0
+        self.hitlag = False
         self.hitstun_frames_left = 0
         self.charging_smash = 0
         self.jumps_left = 0
@@ -109,7 +119,7 @@ class PlayerState:
         thelist.append(self.action.value)
         thelist.append(self.action_frame)
         thelist.append(int(self.invulnerable))
-        thelist.append(self.hitlag_frames_left)
+        thelist.append(self.hitlag)
         thelist.append(self.hitstun_frames_left)
         thelist.append(int(self.charging_smash))
         thelist.append(self.jumps_left)
