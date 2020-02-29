@@ -25,7 +25,6 @@
 "invulnerable","00453130 19EC",1
 "hitlag","00453130 19BC",1
 "hitstun_frames_left","00453130 23a0",1
-"charging_smash","00453130 2174",1
 "jumps_left","00453130 19C8",1
 "on_ground","00453130 140",1
 "speed_air_x_self","00453130 E0",1
@@ -39,7 +38,6 @@
 "invulnerable","00453FC0 19EC",2
 "hitlag","00453FC0 19BC",2
 "hitstun_frames_left","00453FC0 23a0",2
-"charging_smash","00453FC0 2174",2
 "jumps_left","00453FC0 19C8",2
 "on_ground","00453FC0 140",2
 "speed_air_x_self","00453FC0 E0",2
@@ -53,7 +51,6 @@
 "invulnerable","00454E50 19EC",3
 "hitlag","00454E50 19BC",3
 "hitstun_frames_left","00454E50 23a0",3
-"charging_smash","00454E50 2174",3
 "jumps_left","00454E50 19C8",3
 "on_ground","00454E50 140",3
 "speed_air_x_self","00454E50 E0",3
@@ -67,7 +64,6 @@
 "invulnerable","00455CE0 19EC",4
 "hitlag","00455CE0 19BC",4
 "hitstun_frames_left","00455CE0 23a0",4
-"charging_smash","00455CE0 2174",4
 "jumps_left","00455CE0 19C8",4
 "on_ground","00455CE0 140",4
 "speed_air_x_self","00455CE0 E0",4
@@ -132,7 +128,6 @@
 "invulnerable","00453134 19EC",5
 "hitlag","00453134 19BC",5
 "hitstun_frames_left","00453134 23a0",5
-"charging_smash","00453134 2174",5
 "jumps_left","00453134 19C8",5
 "on_ground","00453134 140",5
 "speed_air_x_self","00453134 E0",5
@@ -150,7 +145,6 @@
 "invulnerable","00453FC4 19EC",6
 "hitlag","00453FC4 19BC",6
 "hitstun_frames_left","00453FC4 23a0",6
-"charging_smash","00453FC4 2174",6
 "jumps_left","00453FC4 19C8",6
 "on_ground","00453FC4 140",6
 "speed_air_x_self","00453FC4 E0",6
@@ -168,7 +162,6 @@
 "invulnerable","00454E54 19EC",7
 "hitlag","00454E54 19BC",7
 "hitstun_frames_left","00454E54 23a0",7
-"charging_smash","00454E54 2174",7
 "jumps_left","00454E54 19C8",7
 "on_ground","00454E54 140",7
 "speed_air_x_self","00454E54 E0",7
@@ -186,7 +179,6 @@
 "invulnerable","00455CE4 19EC",8
 "hitlag","00455CE4 19BC",8
 "hitstun_frames_left","00455CE4 23a0",8
-"charging_smash","00455CE4 2174",8
 "jumps_left","00455CE4 19C8",8
 "on_ground","00455CE4 140",8
 "speed_air_x_self","00455CE4 E0",8

@@ -327,7 +327,6 @@ class Dolphin(Console):
                     gamestate.player[i].invulnerable = gamestate.player[i+4].invulnerable
                     gamestate.player[i].hitlag = gamestate.player[i+4].hitlag
                     gamestate.player[i].hitstun_frames_left = gamestate.player[i+4].hitstun_frames_left
-                    gamestate.player[i].charging_smash = gamestate.player[i+4].charging_smash
                     gamestate.player[i].jumps_left = gamestate.player[i+4].jumps_left
                     gamestate.player[i].on_ground = gamestate.player[i+4].on_ground
                     gamestate.player[i].speed_air_x_gamestate = gamestate.player[i+4].speed_air_x_self
@@ -450,13 +449,6 @@ class Dolphin(Console):
                 gamestate.player[player_int].hitstun_frames_left = int(temp)
             except ValueError:
                 pass
-            return False
-        if label == "charging_smash":
-            temp = unpack('<I', mem_update[1])[0]
-            if temp == 2:
-                gamestate.player[player_int].charging_smash = True
-            else:
-                gamestate.player[player_int].charging_smash = False
             return False
         if label == "jumps_left":
             temp = unpack('<I', mem_update[1])[0]

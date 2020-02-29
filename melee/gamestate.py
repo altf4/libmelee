@@ -66,7 +66,6 @@ class PlayerState:
         self.invulnerability_left = 0
         self.hitlag = False
         self.hitstun_frames_left = 0
-        self.charging_smash = 0
         self.jumps_left = 0
         self.on_ground = True
         self.speed_air_x_self = 0
@@ -121,7 +120,6 @@ class PlayerState:
         thelist.append(int(self.invulnerable))
         thelist.append(self.hitlag)
         thelist.append(self.hitstun_frames_left)
-        thelist.append(int(self.charging_smash))
         thelist.append(self.jumps_left)
         thelist.append(int(self.on_ground))
         #We're combining speeds here for simplicity's sake
