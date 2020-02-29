@@ -10,7 +10,6 @@ def multishine(ai_state, controller):
         return
 
     #Shine on frame 3 of knee bend, else nothing
-    print("Should jump?", ai_state.action, ai_state.action_frame)
     if ai_state.action == enums.Action.KNEE_BEND:
         if ai_state.action_frame == 3:
             controller.press_button(enums.Button.BUTTON_B)

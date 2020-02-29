@@ -285,7 +285,7 @@ class Dolphin(Console):
         player_int = int(self.locations[mem_update[0]][1])
         if label == "frame":
             gamestate.frame = unpack('<I', mem_update[1])[0]
-            gamestate.newframe = True
+            gamestate._newframe = True
             #Now that the frame is ready, let's calculate some derived information
             #   These are not stored inside Melee anywhere, but are nonetheless
             #   important pieces of information that we don't want to make the
@@ -575,11 +575,11 @@ class Dolphin(Console):
             return False
         if label == "projectiles":
             #Only once per new frame that we get a projectile, clear the list out
-            if gamestate.newframe:
+            if gamestate._newframe:
                 gamestate.projectiles.clear()
                 gamestate.i = 0
             gamestate.i += 1
-            gamestate.newframe = False
+            gamestate._newframe = False
             if len(mem_update[1]) < 10:
                 gamestate.projectiles.clear()
                 return False

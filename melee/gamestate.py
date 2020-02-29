@@ -13,7 +13,6 @@ class GameState:
         self.stage_select_cursor_y = 0.0
         self.ready_to_start = False
         self.distance = 0.0
-        self.sock = None
         self.player[1] = PlayerState()
         self.player[2] = PlayerState()
         self.player[3] = PlayerState()
@@ -22,7 +21,7 @@ class GameState:
         self.player[6] = PlayerState()
         self.player[7] = PlayerState()
         self.player[8] = PlayerState()
-        self.newframe = True
+        self._newframe = True
         #Helper names to keep track of us and our opponent
         self.ai_state = self.player[ai_port]
         self.opponent_state = self.player[opponent_port]

@@ -24,7 +24,6 @@ class Wii:
 
         Returns boolean of success """
         # TODO: Connect to the Slippi networking port
-        print("Making SlippstreamClient...")
         self.slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
         return self.slippstream.connect()
 
@@ -44,6 +43,7 @@ class Wii:
                 if (CommType(msg['type']) == CommType.REPLAY):
                     events = msg['payload']['data']
                     self.__handle_slippstream_events(events, gamestate)
+                    # TODO: Fix frame indexing and iasa
                     return gamestate
 
                 # We can basically just ignore keepalives
@@ -104,19 +104,26 @@ class Wii:
                 gamestate.player[controller_port].y = unpack(">f", event_bytes[0xe:0xe+4])[0]
 
                 gamestate.player[controller_port].character = enums.Character(unpack(">B", event_bytes[0x7:0x7+1])[0])
-                gamestate.player[controller_port].action = enums.Action(unpack(">H", event_bytes[0x8:0x8+2])[0])
+                try:
+                    gamestate.player[controller_port].action = enums.Action(unpack(">H", event_bytes[0x8:0x8+2])[0])
+                except ValueError:
+                    gamestate.player[controller_port].action = enums.Action.UNKNOWN_ANIMATION
 
                 # Melee stores this in a float for no good reason. So we have to convert
                 facing_float = unpack(">f", event_bytes[0x12:0x12+4])[0]
                 gamestate.player[controller_port].facing = facing_float > 0
 
-                gamestate.player[controller_port].percent = unpack(">f", event_bytes[0x16:0x16+4])[0]
+                gamestate.player[controller_port].percent = int(unpack(">f", event_bytes[0x16:0x16+4])[0])
                 gamestate.player[controller_port].stock = unpack(">B", event_bytes[0x21:0x21+1])[0]
-                gamestate.player[controller_port].action_frame = unpack(">f", event_bytes[0x22:0x22+4])[0]
+                gamestate.player[controller_port].action_frame = int(unpack(">f", event_bytes[0x22:0x22+4])[0])
 
                 # Extract the bit at mask 0x20
                 bitflags2 = unpack(">B", event_bytes[0x27:0x27+1])[0]
                 gamestate.player[controller_port].hitlag = bool(bitflags2 & 0x20)
+
+                gamestate.player[controller_port].hitstun_frames_left = int(unpack(">f", event_bytes[0x2b:0x2b+4])[0])
+                gamestate.player[controller_port].on_ground = not bool(unpack(">B", event_bytes[0x2f:0x2f+1])[0])
+                gamestate.player[controller_port].jumps_left = unpack(">B", event_bytes[0x32:0x32+1])[0]
 
                 event_bytes = event_bytes[event_size:]
                 continue
@@ -130,6 +137,7 @@ class Wii:
                 continue
 
             elif (EventType(event_bytes[0]) == EventType.ITEM_UPDATE):
+                # TODO projectiles
                 event_bytes = event_bytes[event_size:]
                 continue
 

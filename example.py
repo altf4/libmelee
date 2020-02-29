@@ -115,9 +115,6 @@ while True:
     # "step" to the next frame
     gamestate = console.step()
 
-    print(gamestate.ai_state.character, "\n")
-
-
     if(console.processingtime * 1000 > 12):
         print("WARNING: Last frame took " +
             str(console.processingtime*1000) + "ms to process.")
