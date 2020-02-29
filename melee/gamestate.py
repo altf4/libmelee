@@ -79,7 +79,6 @@ class PlayerState:
         self.controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
         self.off_stage = False
         self.transformed = False
-        self.iszelda = False
         self.iasa = 0
         self.moonwalkwarning = False
         self.hitbox_1_size = 0
