@@ -1,4 +1,6 @@
 import copy
+import serial
+from struct import pack
 
 from melee import enums, logger
 from melee.dolphin import Dolphin
@@ -29,6 +31,45 @@ class ControllerState:
         self.l_shoulder = 0
         self.r_shoulder = 0
 
+    def toBytes(self):
+        """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
+        buttons_total = 0x0080
+        if self.button[enums.Button.BUTTON_A]:
+            buttons_total += 0x0100
+        if self.button[enums.Button.BUTTON_B]:
+            buttons_total += 0x0200
+        if self.button[enums.Button.BUTTON_X]:
+            buttons_total += 0x0400
+        if self.button[enums.Button.BUTTON_Y]:
+            buttons_total += 0x0800
+        if self.button[enums.Button.BUTTON_Z]:
+            buttons_total += 0x1000
+        if self.button[enums.Button.BUTTON_L]:
+            buttons_total += 0x0002
+        if self.button[enums.Button.BUTTON_R]:
+            buttons_total += 0x0004
+
+        buffer = pack(">H", buttons_total)
+
+        # Convert from a float 0-1 to int 1-255
+        val = pack(">B", (int((max(min(self.main_stick[0], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.main_stick[1], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.c_stick[0], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.c_stick[1], 1), 0) * 254)) + 1))
+        buffer += val
+
+        # Convert from a float 0-1 to int 0-255
+        #   The max/min thing just ensures the value is between 0 and 1
+        val = pack(">B", int(max(min(self.l_shoulder, 1), 0) * 255))
+        buffer += val
+        val = pack(">B", int(max(min(self.r_shoulder, 1), 0) * 255))
+        buffer += val
+        print("sending: ", buffer)
+        return buffer
+
     def __str__(self):
         string = ""
         for val in self.button:
@@ -43,31 +84,54 @@ class ControllerState:
 class Controller:
     """Utility class that manages virtual controller state and button presses"""
 
-    def __init__(self, console, port):
-        self.is_dolphin = isinstance(console, Dolphin)
-        if self.is_dolphin:
+    def __init__(self, console, port, serial_device="/dev/ttyACM0"):
+        self._is_dolphin = isinstance(console, Dolphin)
+        if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
+        else:
+            self.tastm32 = serial.Serial(serial_device, 115200, timeout=0.1)
+
         self.prev = ControllerState()
         self.current = ControllerState()
         self.logger = console.logger
 
     def connect(self):
         """Connect the controller to the console """
-        if self.is_dolphin:
+        if self._is_dolphin:
             self.pipe = open(self.pipe_path, "w")
+            return True
         else:
-            # TODO: Initialize connection to the TAStm32
-            pass
+            # Read any extra garbage that might have accumulated in the buffer
+            self.tastm32.timeout = 1
+            self.tastm32.read(10000)
+            self.tastm32.timeout = None
+
+            # Send reset command
+            self.tastm32.write(b'R')
+            cmd = self.tastm32.read(2)
+            if cmd != b'\x01R':
+                # TODO Better error handling logic here
+                print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
+                return False
+            # Set to gamecube mode
+            self.tastm32.write(b'SAG\x80\x00')
+            cmd = self.tastm32.read(2)
+            if cmd != b'\x01S':
+                # TODO Better error handling logic here
+                print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
+                return False
+            return True
 
     def disconnect(self):
         """Disconnects the controller from the console """
-        if self.is_dolphin:
+        if self._is_dolphin:
             if self.pipe:
                 self.pipe.close()
                 self.pipe = None
         else:
             # TODO: Tear down connection to TAStm32
+            self.tastm32.close()
             pass
 
     def simple_press(self, x, y, button):
@@ -81,7 +145,7 @@ class Controller:
                 x = 0 (left) to 1 (right) on the main stick
                 y = 0 (down) to 1 (up) on the main stick
                 button = the button to press. Enter None for no button"""
-        if self.is_dolphin:
+        if self._is_dolphin:
             if not self.pipe:
                 return
             #Tilt the main stick
@@ -110,34 +174,29 @@ class Controller:
 
         If already pressed, this has no effect
         """
-        if self.is_dolphin:
+        print("press: ", button)
+        self.current.button[button] = True
+        if self._is_dolphin:
             if not self.pipe:
                 return
             command = "PRESS " + str(button.value) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.current.button[button] = True
             self.pipe.write(command)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def release_button(self, button):
         """ Unpress a single button
 
         If already released, this has no effect
         """
-        if self.is_dolphin:
+        self.current.button[button] = False
+        if self._is_dolphin:
             if not self.pipe:
                 return
             command = "RELEASE " + str(button.value) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.current.button[button] = False
             self.pipe.write(command)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def press_shoulder(self, button, amount):
         """ Press the analog shoulder buttons to a given amount
@@ -149,20 +208,17 @@ class Controller:
             as normal button presses. Pressing the shoulder all the way in
             will not cause the digital button to press
         """
-        if self.is_dolphin:
+        if button == enums.Button.BUTTON_L:
+            self.current.l_shoulder = amount
+        elif button == enums.Button.BUTTON_R:
+            self.current.r_shoulder = amount
+        if self._is_dolphin:
             if not self.pipe:
                 return
             command = "SET " + str(button.value) + " " + str(amount) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            if button == enums.Button.BUTTON_L:
-                self.current.l_shoulder = amount
-            elif button == enums.Button.BUTTON_R:
-                self.current.r_shoulder = amount
             self.pipe.write(command)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def tilt_analog(self, button, x, y):
         """ Tilt one of the analog sticks to a given (x,y) value
@@ -171,27 +227,41 @@ class Controller:
         x - Float between 0 (left) and 1 (right)
         y - Float between 0 (down) and 1 (up)
         """
-        if self.is_dolphin:
+        if button == enums.Button.BUTTON_MAIN:
+            self.current.main_stick = (x, y)
+        else:
+            self.current.c_stick = (x, y)
+        if self._is_dolphin:
             if not self.pipe:
                 return
             command = "SET " + str(button.value) + " " + str(x) + " " + str(y) + "\n"
-            if button == enums.Button.BUTTON_MAIN:
-                self.current.main_stick = (x, y)
-            else:
-                self.current.c_stick = (x, y)
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
             self.pipe.write(command)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def empty_input(self):
         """ Helper function to reset the controller to a resting state
 
         All buttons are released, all sticks set to 0.5
         """
-        if self.is_dolphin:
+        #Set the internal state back to neutral
+        self.current.button[enums.Button.BUTTON_A] = False
+        self.current.button[enums.Button.BUTTON_B] = False
+        self.current.button[enums.Button.BUTTON_X] = False
+        self.current.button[enums.Button.BUTTON_Y] = False
+        self.current.button[enums.Button.BUTTON_Z] = False
+        self.current.button[enums.Button.BUTTON_L] = False
+        self.current.button[enums.Button.BUTTON_R] = False
+        self.current.button[enums.Button.BUTTON_START] = False
+        self.current.button[enums.Button.BUTTON_D_UP] = False
+        self.current.button[enums.Button.BUTTON_D_DOWN] = False
+        self.current.button[enums.Button.BUTTON_D_LEFT] = False
+        self.current.button[enums.Button.BUTTON_D_RIGHT] = False
+        self.current.main_stick = (.5, .5)
+        self.current.c_stick = (.5, .5)
+        self.current.l_shoulder = 0
+        self.current.r_shoulder = 0
+        if self._is_dolphin:
             if not self.pipe:
                 return
             command = "RELEASE A" + "\n"
@@ -210,30 +280,10 @@ class Controller:
             command += "SET C .5 .5" + "\n"
             command += "SET L 0" + "\n"
             command += "SET R 0" + "\n"
-            #Set the internal state back to neutral
-            self.current.button[enums.Button.BUTTON_A] = False
-            self.current.button[enums.Button.BUTTON_B] = False
-            self.current.button[enums.Button.BUTTON_X] = False
-            self.current.button[enums.Button.BUTTON_Y] = False
-            self.current.button[enums.Button.BUTTON_Z] = False
-            self.current.button[enums.Button.BUTTON_L] = False
-            self.current.button[enums.Button.BUTTON_R] = False
-            self.current.button[enums.Button.BUTTON_START] = False
-            self.current.button[enums.Button.BUTTON_D_UP] = False
-            self.current.button[enums.Button.BUTTON_D_DOWN] = False
-            self.current.button[enums.Button.BUTTON_D_LEFT] = False
-            self.current.button[enums.Button.BUTTON_D_RIGHT] = False
-            self.current.main_stick = (.5, .5)
-            self.current.c_stick = (.5, .5)
-            self.current.l_shoulder = 0
-            self.current.r_shoulder = 0
             #Send the presses to dolphin
             self.pipe.write(command)
             if self.logger:
                 self.logger.log("Buttons Pressed", "Empty Input", concat=True)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def flush(self):
         """ Actually send the button presses to the console
@@ -241,12 +291,16 @@ class Controller:
         Up until this point, any buttons you 'press' are just queued in a pipe.
         It doesn't get sent to the console until you flush
         """
-        if self.is_dolphin:
+        if self._is_dolphin:
             if not self.pipe:
                 return
             self.pipe.flush()
             # Move the current controller state into the previous one
             self.prev = copy.copy(self.current)
         else:
-            # TODO Tastm32 button presses
-            pass
+            # Command for "send single controller poll" is 'A'
+            # Serialize controller state into bytes and send
+            self.tastm32.write(b'A')
+            self.tastm32.write(self.current.toBytes())
+            cmd = self.tastm32.read(2)
+            print("Got data response: ", cmd)

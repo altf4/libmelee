@@ -1,7 +1,24 @@
 # libmelee
 Open API written in Python for making your own Smash Bros: Melee AI
 
-## Setup Instructions
+## Console Setup Instructions
+
+1. Get yourself a hacked Wii Slippi setup. Doing so is outside the scope of this document.
+Checkout https://slippi.gg.
+
+2. Get yourself a USB Ethernet adapter for your Wii. The Wii has Wi-Fi, but it is not good. It drops out randomly and is super slow. Only ethernet will be fast and reliable enough. Buy this adapter, as not every adapter will work with a Wii:
+
+https://www.amazon.com/UGREEN-Ethernet-Adapter-Nintendo-Chromebook/dp/B00MYT481C/
+
+3. In the Slippi Melee settings, turn `Slippi Networking` to `Yes`.
+
+4. In the Slippi Melee settings, turn `Lag Reduction` to `PD` or `PD+VB`. (VB only works if you have a progressive-scan setup, FYI)
+
+5. (Linux) Add your user to the `dialout` group, so you can access the TAStm32 without root.
+
+`sudo usermod -a -G dialout YOUR_USER_NAME`
+
+## Dolphin Setup Instructions
 
 Linux / OSX only. (Windows coming soon)
 

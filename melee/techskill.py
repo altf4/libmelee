@@ -3,6 +3,8 @@ from melee import enums
 
 """Frame-perfect Multishines as Fox"""
 def multishine(ai_state, controller):
+    print("Currently: ", ai_state.action, ai_state.action_frame)
+
     #If standing, shine
     if ai_state.action == enums.Action.STANDING:
         controller.press_button(enums.Button.BUTTON_B)
@@ -11,7 +13,7 @@ def multishine(ai_state, controller):
 
     #Shine on frame 3 of knee bend, else nothing
     if ai_state.action == enums.Action.KNEE_BEND:
-        if ai_state.action_frame == 3:
+        if ai_state.action_frame == 2:
             controller.press_button(enums.Button.BUTTON_B)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return

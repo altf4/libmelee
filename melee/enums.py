@@ -345,6 +345,13 @@ class Action(Enum):
     NEUTRAL_B_CHARGING_AIR = 0x15A
     NEUTRAL_B_ATTACKING_AIR = 0x15B
     NEUTRAL_B_FULL_CHARGE_AIR = 0x15C
+    DOWN_B_GROUND_START = 0x168
+    DOWN_B_GROUND = 0x169
+    SHINE_TURN = 0x16c
+    DOWN_B_STUN = 0x16d #Fox is stunned in these frames
+    DOWN_B_AIR = 0x16e
+    UP_B_GROUND = 0x16f
+    SHINE_RELEASE_AIR = 0x170
     SWORD_DANCE_1 = 0x15d
     SWORD_DANCE_2_HIGH = 0x15e
     SWORD_DANCE_2_MID = 0x15f
@@ -370,13 +377,6 @@ class Action(Enum):
     FIREFOX_WAIT_AIR = 0x162 #Firefox wait in the air
     FIREFOX_GROUND = 0x163 #Firefox on the ground
     FIREFOX_AIR = 0x164 #Firefox in the air
-    DOWN_B_GROUND_START = 0x168
-    DOWN_B_GROUND = 0x169
-    SHINE_TURN = 0x16c
-    DOWN_B_STUN = 0x16d #Fox is stunned in these frames
-    DOWN_B_AIR = 0x16e
-    UP_B_GROUND = 0x16f
-    SHINE_RELEASE_AIR = 0x170
     UP_B_AIR = 0x170    #The upswing of the UP-B. (At least for marth)
     MARTH_COUNTER = 0x171
     PARASOL_FALLING = 0x172

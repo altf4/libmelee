@@ -108,7 +108,9 @@ if not console.run():
 #   Due to how named pipes work, this has to come AFTER running dolphin
 #   NOTE: If you're loading a movie file, don't connect the controller,
 #   dolphin will hang waiting for input and never receive it
-controller.connect()
+if not controller.connect():
+    print("ERROR: Failed to connect the controller.")
+    sys.exit(-1)
 
 # Main loop
 while True:
@@ -120,7 +122,20 @@ while True:
             str(console.processingtime*1000) + "ms to process.")
 
     # What menu are we in?
-    if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
+    # If this is a Wii, just assume we're in game
+    if args.console == "wii":
+        print("\n", gamestate.frame)
+        print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
+        if (gamestate.frame % 60) > 30:
+            controller.press_button(melee.enums.Button.BUTTON_Y)
+        else:
+            controller.release_button(melee.enums.Button.BUTTON_Y)
+        # if (gamestate.frame % 8) > 3:
+        #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
+        # else:
+        #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
+
+    elif gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
         if args.framerecord:
             framedata.recordframe(gamestate)
         # XXX: This is where your AI does all of its stuff!
