@@ -112,11 +112,21 @@ if not controller.connect():
     print("ERROR: Failed to connect the controller.")
     sys.exit(-1)
 
+import time
+start = time.time()
+i = 0
 # Main loop
 while True:
+    i += 1
     # "step" to the next frame
     gamestate = console.step()
 
+    if i % 200 == 0:
+        end = time.time()
+        print("took:", ((end - start) * 1000) / 200, "ms per frame")
+        start = time.time()
+
+    # print("took: ", console.processingtime * 1000, "ms")
     if(console.processingtime * 1000 > 12):
         print("WARNING: Last frame took " +
             str(console.processingtime*1000) + "ms to process.")
@@ -124,12 +134,14 @@ while True:
     # What menu are we in?
     # If this is a Wii, just assume we're in game
     if args.console == "wii":
-        print("\n", gamestate.frame)
-        print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
-        if (gamestate.frame % 60) > 30:
-            controller.press_button(melee.enums.Button.BUTTON_Y)
+        # print("\n", gamestate.frame)
+        # print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
+        if (gamestate.frame % 20) >= 10:
+            # print("Go left")
+            controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
         else:
-            controller.release_button(melee.enums.Button.BUTTON_Y)
+            # print("Go right")
+            controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 1)
         # if (gamestate.frame % 8) > 3:
         #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
         # else:

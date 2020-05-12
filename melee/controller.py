@@ -1,5 +1,7 @@
 import copy
 import serial
+import sys
+import time
 from struct import pack
 
 from melee import enums, logger
@@ -67,7 +69,7 @@ class ControllerState:
         buffer += val
         val = pack(">B", int(max(min(self.r_shoulder, 1), 0) * 255))
         buffer += val
-        print("sending: ", buffer)
+        # print("sending: ", buffer)
         return buffer
 
     def __str__(self):
@@ -90,7 +92,12 @@ class Controller:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
         else:
-            self.tastm32 = serial.Serial(serial_device, 115200, timeout=0.1)
+            try:
+                self.tastm32 = serial.Serial(serial_device, 115200, timeout=None, rtscts=True)
+            except serial.serialutil.SerialException:
+                print("TAStm32 was not ready. It might be booting up. " +
+                      "Wait a few seconds and try again")
+                sys.exit(-1)
 
         self.prev = ControllerState()
         self.current = ControllerState()
@@ -102,10 +109,8 @@ class Controller:
             self.pipe = open(self.pipe_path, "w")
             return True
         else:
-            # Read any extra garbage that might have accumulated in the buffer
-            self.tastm32.timeout = 1
-            self.tastm32.read(10000)
-            self.tastm32.timeout = None
+            # Remove any extra garbage that might have accumulated in the buffer
+            self.tastm32.reset_input_buffer()
 
             # Send reset command
             self.tastm32.write(b'R')
@@ -117,6 +122,7 @@ class Controller:
             # Set to gamecube mode
             self.tastm32.write(b'SAG\x80\x00')
             cmd = self.tastm32.read(2)
+            self.tastm32.reset_input_buffer()
             if cmd != b'\x01S':
                 # TODO Better error handling logic here
                 print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
@@ -300,7 +306,10 @@ class Controller:
         else:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
-            self.tastm32.write(b'A')
-            self.tastm32.write(self.current.toBytes())
-            cmd = self.tastm32.read(2)
-            print("Got data response: ", cmd)
+            self.tastm32.write(b'A' + self.current.toBytes())
+            start = time.time()
+            cmd = self.tastm32.read(1)
+
+            # print("Read took: ", (time.time() - start) * 1000, "ms")
+            if cmd != b'A':
+                print("Got error response: ", bytes(cmd))

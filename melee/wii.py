@@ -1,5 +1,6 @@
 from socket import *
 from struct import unpack
+import time
 import ubjson
 
 from melee import enums
@@ -14,6 +15,7 @@ class Wii:
         self.opponent_port = opponent_port
 
         self.processingtime = 0
+        self._frametimestamp = time.time()
         self.slippi_address = ""
         self.slippi_port = 51441
 
@@ -36,6 +38,7 @@ class Wii:
 
         # Keep looping until we get a REPLAY message
         # TODO: This might still not be all we need. Verify the frame ends here
+        self.processingtime = time.time() - self._frametimestamp
         gamestate = GameState(self.ai_port, self.opponent_port)
         while True:
             msg = self.slippstream.read_message()
@@ -44,6 +47,8 @@ class Wii:
                     events = msg['payload']['data']
                     self.__handle_slippstream_events(events, gamestate)
                     # TODO: Fix frame indexing and iasa
+                    # Start the processing timer now that we're done reading messages
+                    self._frametimestamp = time.time()
                     return gamestate
 
                 # We can basically just ignore keepalives
