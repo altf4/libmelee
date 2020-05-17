@@ -2,8 +2,7 @@
 Python3 only
 Currently only works on Linux/OSX
 """
-from melee.dolphin import Dolphin
-from melee.wii import Wii
+from melee.console import Console
 from melee.logger import Logger
 from melee.gamestate import GameState
 from melee.enums import Stage, Menu, Character, Button, Action, ProjectileSubtype

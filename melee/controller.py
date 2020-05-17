@@ -5,8 +5,7 @@ import time
 from struct import pack
 
 from melee import enums, logger
-from melee.dolphin import Dolphin
-from melee.wii import Wii
+from melee.console import Console
 
 class ControllerState:
     """A snapshot of the state of a virtual controller"""
@@ -69,7 +68,6 @@ class ControllerState:
         buffer += val
         val = pack(">B", int(max(min(self.r_shoulder, 1), 0) * 255))
         buffer += val
-        # print("sending: ", buffer)
         return buffer
 
     def __str__(self):
@@ -87,7 +85,7 @@ class Controller:
     """Utility class that manages virtual controller state and button presses"""
 
     def __init__(self, console, port, serial_device="/dev/ttyACM0"):
-        self._is_dolphin = isinstance(console, Dolphin)
+        self._is_dolphin = console.is_dolphin
         if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
@@ -180,7 +178,6 @@ class Controller:
 
         If already pressed, this has no effect
         """
-        print("press: ", button)
         self.current.button[button] = True
         if self._is_dolphin:
             if not self.pipe:
@@ -310,6 +307,5 @@ class Controller:
             start = time.time()
             cmd = self.tastm32.read(1)
 
-            # print("Read took: ", (time.time() - start) * 1000, "ms")
             if cmd != b'A':
                 print("Got error response: ", bytes(cmd))

@@ -2,6 +2,7 @@
 import melee
 import argparse
 import signal
+import os
 import sys
 
 # This example program demonstrates how to use the Melee API to run a console,
@@ -13,6 +14,14 @@ def check_port(value):
          raise argparse.ArgumentTypeError("%s is an invalid controller port. \
          Must be 1, 2, 3, or 4." % value)
     return ivalue
+
+def is_dir(dirname):
+    """Checks if a path is an actual directory"""
+    if not os.path.isdir(dirname):
+        msg = "{0} is not a directory".format(dirname)
+        raise argparse.ArgumentTypeError(msg)
+    else:
+        return dirname
 
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
 parser.add_argument('--port', '-p', type=check_port,
@@ -32,8 +41,12 @@ parser.add_argument('--framerecord', '-r', default=False, action='store_true',
 parser.add_argument('--console', '-c', default="dolphin",
                     help='Do you want to play on an Emulator (dolphin) or ' \
                     'hardware console (wii)')
-parser.add_argument('--address', '-a', default="127.0.0.1",
+parser.add_argument('--address', '-a', default="",
                     help='IP address of Slippi/Wii')
+parser.add_argument('--configdir', '-n', type=is_dir,
+                    help='Manually specify the Dolphin config directory to use')
+parser.add_argument('--homedir', '-m', type=is_dir,
+                    help='Manually specify the Dolphin home directory to use')
 
 args = parser.parse_args()
 
@@ -52,31 +65,33 @@ opponent_type = melee.enums.ControllerType.UNPLUGGED
 if args.live:
     opponent_type = melee.enums.ControllerType.GCN_ADAPTER
 
+is_dolphin = True
+if args.console == "wii":
+    is_dolphin = False
+elif args.console != "dolphin":
+    print("ERROR: Argument 'console' must be either 'wii' or 'dolphin'")
+    sys.exit(-1)
+
 # Create our Console object.
 #   This will be one of the primary objects that we will interface with.
 #   The Console represents the virtual or hardware system Melee is playing on.
 #   Through this object, we can get "GameState" objects per-frame so that your
 #       bot can actually "see" what's happening in the game
-console = None
-if args.console == "dolphin":
-    console = melee.dolphin.Dolphin(ai_port=args.port,
-                                    opponent_port=args.opponent,
-                                    opponent_type=opponent_type,
-                                    logger=log)
-    # Dolphin has an optional mode to not render the game's visuals
-    #   This is useful for BotvBot matches
-    console.render = True
-elif args.console == "wii":
-    console = melee.wii.Wii(ai_port=args.port,
-                            opponent_port=args.opponent,
-                            opponent_type=opponent_type,
-                            logger=log)
-    # If not set by the user, this will be an empty string, which will trigger
-    #   an autodiscover process
-    console.slippi_address = args.address
-else:
-    print("ERROR: Argument --console must be either 'dolphin' or 'wii'.")
-    sys.exit(-1)
+console = melee.console.Console(ai_port=args.port,
+                                is_dolphin=True,
+                                opponent_port=args.opponent,
+                                opponent_type=opponent_type,
+                                config_path=args.configdir,
+                                home_path=args.homedir,
+                                logger=log)
+
+# Dolphin has an optional mode to not render the game's visuals
+#   This is useful for BotvBot matches
+console.render = True
+
+# If not set by the user, this will be an empty string, which will trigger
+#   an autodiscover process
+console.slippi_address = args.address
 
 # Create our Controller object
 #   The controller is the second primary object your bot will interact with
@@ -97,10 +112,8 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# Run the console
-#   For Dolphin, this will start the Dolphin program
-#   For Wii, this will connect to the Slippi networking port
-if not console.run():
+# Connect to the console
+if not console.connect():
     print("ERROR: Failed to start / connect to the console.")
     sys.exit(-1)
 
@@ -112,71 +125,66 @@ if not controller.connect():
     print("ERROR: Failed to connect the controller.")
     sys.exit(-1)
 
-import time
-start = time.time()
 i = 0
 # Main loop
 while True:
     i += 1
     # "step" to the next frame
     gamestate = console.step()
-    print(gamestate.opponent_state.action)
+    melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
 
-    if i % 200 == 0:
-        end = time.time()
-        print("took:", ((end - start) * 1000) / 200, "ms per frame")
-        start = time.time()
-
-    # print("took: ", console.processingtime * 1000, "ms")
     if(console.processingtime * 1000 > 12):
         print("WARNING: Last frame took " +
             str(console.processingtime*1000) + "ms to process.")
 
-    # What menu are we in?
-    # If this is a Wii, just assume we're in game
-    if args.console == "wii":
-        # print("\n", gamestate.frame)
-        # print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
-        if (gamestate.frame % 20) >= 10:
-            # print("Go left")
-            controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
-        else:
-            # print("Go right")
-            controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 1)
-        # if (gamestate.frame % 8) > 3:
-        #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
-        # else:
-        #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
+    # TODO FOR LATER
+    #   We don't have menu information (yet) with slippi
 
-    elif gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
-        if args.framerecord:
-            framedata.recordframe(gamestate)
-        # XXX: This is where your AI does all of its stuff!
-        # This line will get hit once per frame, so here is where you read
-        #   in the gamestate and decide what buttons to push on the controller
-        if args.framerecord:
-            melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
-        else:
-            melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-    # If we're at the character select screen, choose our character
-    elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
-        melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-                                        gamestate=gamestate,
-                                        port=args.port,
-                                        opponent_port=args.opponent,
-                                        controller=controller,
-                                        swag=True,
-                                        start=True)
-    # If we're at the postgame scores screen, spam START
-    elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
-        melee.menuhelper.skippostgame(controller=controller)
-    # If we're at the stage select screen, choose a stage
-    elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
-        melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
-                                    gamestate=gamestate,
-                                    controller=controller)
+    # # What menu are we in?
+    # # If this is a Wii, just assume we're in game
+    # if args.console == "wii":
+    #     # print("\n", gamestate.frame)
+    #     # print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
+    #     if (gamestate.frame % 20) >= 10:
+    #         # print("Go left")
+    #         controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
+    #     else:
+    #         # print("Go right")
+    #         controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 1)
+    #     # if (gamestate.frame % 8) > 3:
+    #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
+    #     # else:
+    #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
+    #
+    # elif gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
+    #     if args.framerecord:
+    #         framedata.recordframe(gamestate)
+    #     # XXX: This is where your AI does all of its stuff!
+    #     # This line will get hit once per frame, so here is where you read
+    #     #   in the gamestate and decide what buttons to push on the controller
+    #     if args.framerecord:
+    #         melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
+    #     else:
+    #         melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
+    # # If we're at the character select screen, choose our character
+    # elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
+    #     melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
+    #                                     gamestate=gamestate,
+    #                                     port=args.port,
+    #                                     opponent_port=args.opponent,
+    #                                     controller=controller,
+    #                                     swag=True,
+    #                                     start=True)
+    # # If we're at the postgame scores screen, spam START
+    # elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
+    #     melee.menuhelper.skippostgame(controller=controller)
+    # # If we're at the stage select screen, choose a stage
+    # elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
+    #     melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
+    #                                 gamestate=gamestate,
+    #                                 controller=controller)
     # Flush any button presses queued up
-    # controller.flush()
+    controller.flush()
     if log:
         log.logframe(gamestate)
         log.writeframe()
