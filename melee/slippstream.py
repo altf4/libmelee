@@ -95,12 +95,13 @@ class SlippstreamClient(object):
                         # Clear out the old buffer
                         del self.buf
                         self.buf = bytearray()
-
                         return msg
+
                     except DecoderException as e:
                         print("ERROR: Decode failure in Slippstream")
                         print(e)
-                        print(hexdump(self.buf))
+                        print(hexdump(self.buf[4:]))
+                        self.buf.clear()
                         return None
 
                 except socket.error as e:

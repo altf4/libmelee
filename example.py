@@ -32,7 +32,7 @@ parser.add_argument('--framerecord', '-r', default=False, action='store_true',
 parser.add_argument('--console', '-c', default="dolphin",
                     help='Do you want to play on an Emulator (dolphin) or ' \
                     'hardware console (wii)')
-parser.add_argument('--address', '-a', default="",
+parser.add_argument('--address', '-a', default="127.0.0.1",
                     help='IP address of Slippi/Wii')
 
 args = parser.parse_args()
@@ -120,6 +120,7 @@ while True:
     i += 1
     # "step" to the next frame
     gamestate = console.step()
+    print(gamestate.opponent_state.action)
 
     if i % 200 == 0:
         end = time.time()
@@ -175,7 +176,7 @@ while True:
                                     gamestate=gamestate,
                                     controller=controller)
     # Flush any button presses queued up
-    controller.flush()
+    # controller.flush()
     if log:
         log.logframe(gamestate)
         log.writeframe()

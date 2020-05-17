@@ -40,16 +40,17 @@ class Wii:
         # TODO: This might still not be all we need. Verify the frame ends here
         self.processingtime = time.time() - self._frametimestamp
         gamestate = GameState(self.ai_port, self.opponent_port)
-        while True:
+        frame_ended = False
+        while not frame_ended:
             msg = self.slippstream.read_message()
             if msg:
                 if (CommType(msg['type']) == CommType.REPLAY):
                     events = msg['payload']['data']
-                    self.__handle_slippstream_events(events, gamestate)
+                    frame_ended = self.__handle_slippstream_events(events, gamestate)
                     # TODO: Fix frame indexing and iasa
                     # Start the processing timer now that we're done reading messages
                     self._frametimestamp = time.time()
-                    return gamestate
+                    continue
 
                 # We can basically just ignore keepalives
                 elif (CommType(msg['type']) == CommType.KEEPALIVE):
@@ -63,6 +64,7 @@ class Wii:
                         p['nintendontVersion'],
                     ))
                     continue
+        return gamestate
 
     def __handle_slippstream_events(self, event_bytes, gamestate):
         """ Handle a series of events, provided sequentially in a byte array """
@@ -71,8 +73,7 @@ class Wii:
             if len(event_bytes) < event_size:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
                 print("\tDidn't have enough data for event")
-                return
-
+                return False
             if (EventType(event_bytes[0]) == EventType.PAYLOADS):
                 cursor = 0x2
                 payload_size = event_bytes[1]
@@ -139,7 +140,7 @@ class Wii:
 
             elif (EventType(event_bytes[0]) == EventType.FRAME_BOOKEND):
                 event_bytes = event_bytes[event_size:]
-                continue
+                return True
 
             elif (EventType(event_bytes[0]) == EventType.ITEM_UPDATE):
                 # TODO projectiles
@@ -162,6 +163,6 @@ class Wii:
                 print("WARNING: Something went wrong unpacking events. " + \
                     "Data is probably missing")
                 print("\tGot invalid event type: ", event_bytes[0])
-                return
+                return False
 
-        return
+        return False
