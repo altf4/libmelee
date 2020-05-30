@@ -172,6 +172,8 @@ class Console:
         #Indexed at 0. "6" means standard controller, "12" means GCN Adapter
         # The enum is scoped to the proper value, here
         config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
+        # Enable networking
+        config.set("General", 'EnableSlippiNetworkingOutput', "True")
         #Enable Cheats
         config.set("Core", 'enablecheats', "True")
         #Turn on background input so we don't need to have window focus on dolphin
