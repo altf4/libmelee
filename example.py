@@ -47,6 +47,8 @@ parser.add_argument('--configdir', '-n', type=is_dir,
                     help='Manually specify the Dolphin config directory to use')
 parser.add_argument('--homedir', '-m', type=is_dir,
                     help='Manually specify the Dolphin home directory to use')
+parser.add_argument('--dolphin_executable_path', '-e',
+                    help='Manually specify the Dolphin home directory to use')
 
 args = parser.parse_args()
 
@@ -112,7 +114,12 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+# Run the console
+console.run(dolphin_executable_path=args.dolphin_executable_path,
+            dolphin_config_path=args.configdir)
+
 # Connect to the console
+print("Connecting to console...")
 if not console.connect():
     print("ERROR: Failed to start / connect to the console.")
     sys.exit(-1)
