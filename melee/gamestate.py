@@ -6,7 +6,7 @@ class GameState:
     def __init__(self, ai_port, opponent_port):
         self.frame = 0
         self.stage = enums.Stage.FINAL_DESTINATION
-        self.menu_state = enums.Menu.CHARACTER_SELECT
+        self.menu_state = enums.Menu.IN_GAME
         self.player = dict()
         self.projectiles = []
         self.stage_select_cursor_x = 0.0

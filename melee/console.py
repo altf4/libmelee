@@ -216,7 +216,6 @@ class Console:
 
                 # We can basically just ignore keepalives
                 elif (CommType(msg['type']) == CommType.KEEPALIVE):
-                    print("Keepalive")
                     continue
 
                 elif (CommType(msg['type']) == CommType.HANDSHAKE):
