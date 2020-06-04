@@ -4,12 +4,12 @@ from collections import defaultdict
 
 import time
 import ubjson
-import pwd
 import os
 import configparser
 import csv
 import subprocess
 import platform
+from pathlib import Path
 
 from melee import enums
 from melee.gamestate import GameState, Projectile, Action
@@ -334,7 +334,7 @@ class Console:
         if self.dolphin_executable_path:
             return self.dolphin_executable_path + "/User/"
 
-        home_path = pwd.getpwuid(os.getuid()).pw_dir
+        home_path = str(Path.home())
         legacy_config_path = home_path + "/.dolphin-emu/";
 
         #Are we using a legacy Linux home path directory?
@@ -362,7 +362,7 @@ class Console:
         if self.dolphin_executable_path:
             return self.dolphin_executable_path + "/User/Config/"
 
-        home_path = pwd.getpwuid(os.getuid()).pw_dir
+        home_path = str(Path.home())
 
         if platform.system() == "Windows":
             return home_path + "\\Dolphin Emulator\\Config\\"
