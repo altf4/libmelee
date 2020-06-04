@@ -95,7 +95,10 @@ class Console:
     def run(self, iso_path=None, movie_path=None, dolphin_config_path=None):
         """Run dolphin-emu"""
         if self.is_dolphin:
-            command = [self.dolphin_executable_path + "/dolphin-emu"]
+            exe_name = "/dolphin-emu"
+            if platform.system() == "Windows":
+                exe_name = "/Dolphin.exe"
+            command = [self.dolphin_executable_path + exe_name]
             if not self.render:
                 #Use the "Null" renderer
                 command.append("-v")

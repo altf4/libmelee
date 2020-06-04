@@ -115,7 +115,7 @@ class Controller:
                 # "Create File" in windows is what you use to open a file. Not
                 #   create one. Because the windows API is stupid.
                 self.pipe = handle = win32file.CreateFile(
-                    pipe_path,
+                    self.pipe_path,
                     win32file.GENERIC_WRITE,
                     0,
                     None,
@@ -312,7 +312,7 @@ class Controller:
         """ Platform independent button write function.
         """
         if platform.system() == "Windows":
-            win32file.WriteFile(self.pipe, command)
+            win32file.WriteFile(self.pipe, command.encode())
         else:
             self.pipe.write(command)
 
@@ -323,11 +323,12 @@ class Controller:
         It doesn't get sent to the console until you flush
         """
         if self._is_dolphin:
-            if not self.pipe:
-                return
-            self.pipe.flush()
-            # Move the current controller state into the previous one
-            self.prev = copy.copy(self.current)
+            if platform.system() != "Windows":
+                if not self.pipe:
+                    return
+                self.pipe.flush()
+                # Move the current controller state into the previous one
+                self.prev = copy.copy(self.current)
         else:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
