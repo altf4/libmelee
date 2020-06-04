@@ -2,7 +2,12 @@ import copy
 import serial
 import sys
 import time
+import platform
 from struct import pack
+try:
+    import win32pipe, win32file, pywintypes
+except ImportError:
+    pass
 
 from melee import enums, logger
 from melee.console import Console
@@ -102,9 +107,24 @@ class Controller:
         self.logger = console.logger
 
     def connect(self):
-        """Connect the controller to the console """
+        """Connect the controller to the console
+        NOTE: Blocks until the other side is ready
+        """
         if self._is_dolphin:
-            self.pipe = open(self.pipe_path, "w")
+            if platform.system() == "Windows":
+                # "Create File" in windows is what you use to open a file. Not
+                #   create one. Because the windows API is stupid.
+                self.pipe = handle = win32file.CreateFile(
+                    pipe_path,
+                    win32file.GENERIC_WRITE,
+                    0,
+                    None,
+                    win32file.OPEN_EXISTING,
+                    0,
+                    None
+                )
+            else:
+                self.pipe = open(self.pipe_path, "w")
             return True
         else:
             # Remove any extra garbage that might have accumulated in the buffer
@@ -185,7 +205,7 @@ class Controller:
             command = "PRESS " + str(button.value) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.pipe.write(command)
+            self._write(command)
 
     def release_button(self, button):
         """ Unpress a single button
@@ -199,7 +219,7 @@ class Controller:
             command = "RELEASE " + str(button.value) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.pipe.write(command)
+            self._write(command)
 
     def press_shoulder(self, button, amount):
         """ Press the analog shoulder buttons to a given amount
@@ -221,7 +241,7 @@ class Controller:
             command = "SET " + str(button.value) + " " + str(amount) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.pipe.write(command)
+            self._write(command)
 
     def tilt_analog(self, button, x, y):
         """ Tilt one of the analog sticks to a given (x,y) value
@@ -240,7 +260,7 @@ class Controller:
             command = "SET " + str(button.value) + " " + str(x) + " " + str(y) + "\n"
             if self.logger:
                 self.logger.log("Buttons Pressed", command, concat=True)
-            self.pipe.write(command)
+            self._write(command)
 
     def empty_input(self):
         """ Helper function to reset the controller to a resting state
@@ -284,9 +304,17 @@ class Controller:
             command += "SET L 0" + "\n"
             command += "SET R 0" + "\n"
             #Send the presses to dolphin
-            self.pipe.write(command)
+            self._write(command)
             if self.logger:
                 self.logger.log("Buttons Pressed", "Empty Input", concat=True)
+
+    def _write(self, command):
+        """ Platform independent button write function.
+        """
+        if platform.system() == "Windows":
+            win32file.WriteFile(self.pipe, command)
+        else:
+            self.pipe.write(command)
 
     def flush(self):
         """ Actually send the button presses to the console

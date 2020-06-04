@@ -22,10 +22,7 @@ https://www.amazon.com/UGREEN-Ethernet-Adapter-Nintendo-Chromebook/dp/B00MYT481C
 
 Linux / OSX only. (Windows coming soon)
 
-1. Install the Dolphin version here:
-https://github.com/altf4/dolphin/tree/memorywatcher-rebased
-This contains an important update to allow Dolphin to be able to read projectile information from Melee. Unfortunately, you'll have to build this from source until they accept my Pull Request:
-https://github.com/dolphin-emu/dolphin/pull/4407
+1. Install (or build locally) the Ishiiruka version here: https://github.com/altf4/Ishiiruka/tree/beta
 
 2. Make sure you're running Melee v1.02 NTSC. Other versions will not work.
 
@@ -34,7 +31,7 @@ https://github.com/dolphin-emu/dolphin/pull/4407
 4. Install via pip: (or by cloning this repo for the very latest)
 `pip3 install melee`
 
-5. Run `example.py`
+5. Run `example.py` (for an installed version of dolphin, use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
 
 ## NOTE:
 The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI

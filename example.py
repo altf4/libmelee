@@ -4,6 +4,7 @@ import argparse
 import signal
 import os
 import sys
+import time
 
 # This example program demonstrates how to use the Melee API to run a console,
 #   setup controllers, and send button presses over to a console (dolphin or Slippi/Wii)
@@ -43,12 +44,8 @@ parser.add_argument('--console', '-c', default="dolphin",
                     'hardware console (wii)')
 parser.add_argument('--address', '-a', default="",
                     help='IP address of Slippi/Wii')
-parser.add_argument('--configdir', '-n', type=is_dir,
-                    help='Manually specify the Dolphin config directory to use')
-parser.add_argument('--homedir', '-m', type=is_dir,
-                    help='Manually specify the Dolphin home directory to use')
-parser.add_argument('--dolphin_executable_path', '-e',
-                    help='Manually specify the Dolphin home directory to use')
+parser.add_argument('--dolphin_executable_path', '-e', default=None,
+                    help='Manually specify the non-installed directory where dolphin is')
 
 args = parser.parse_args()
 
@@ -83,8 +80,7 @@ console = melee.console.Console(ai_port=args.port,
                                 is_dolphin=True,
                                 opponent_port=args.opponent,
                                 opponent_type=opponent_type,
-                                config_path=args.configdir,
-                                home_path=args.homedir,
+                                dolphin_executable_path=args.dolphin_executable_path,
                                 logger=log)
 
 # Dolphin has an optional mode to not render the game's visuals
@@ -115,13 +111,17 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Run the console
-console.run(dolphin_executable_path=args.dolphin_executable_path,
-            dolphin_config_path=args.configdir)
+console.run()
+
+# Give the console a second to actually spin up
+time.sleep(1)
 
 # Connect to the console
 print("Connecting to console...")
 if not console.connect():
-    print("ERROR: Failed to start / connect to the console.")
+    print("ERROR: Failed to connect to the console.")
+    print("\tIf you're trying to autodiscover, local firewall settings can " +
+        "get in the way. Try specifying the address manually.")
     sys.exit(-1)
 
 # Plug our controller in
