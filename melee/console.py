@@ -37,7 +37,7 @@ class Console:
         self._prev_gamestate = GameState(ai_port, opponent_port)
         self.process = None
         if self.is_dolphin:
-            config_path = self.get_dolphin_home_path()
+            config_path = self._get_dolphin_home_path()
             pipes_path = config_path + "Pipes/"
             path = os.path.dirname(os.path.realpath(__file__))
 
@@ -122,7 +122,7 @@ class Console:
     controller port and type"""
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         #Read in dolphin's controller config file
-        controller_config_path = self.get_dolphin_config_path() + "GCPadNew.ini"
+        controller_config_path = self._get_dolphin_config_path() + "GCPadNew.ini"
         config = configparser.SafeConfigParser()
         config.read(controller_config_path)
 
@@ -168,7 +168,7 @@ class Console:
             config.write(configfile)
 
         #Change the bot's controller port to use "standard" input
-        dolphin_config_path = self.get_dolphin_config_path() + "Dolphin.ini"
+        dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
         config = configparser.SafeConfigParser()
         config.read(dolphin_config_path)
         #Indexed at 0. "6" means standard controller, "12" means GCN Adapter
@@ -184,7 +184,7 @@ class Console:
             config.write(dolphinfile)
 
         # #Enable the specific cheats we need (Netplay community settings)
-        # melee_config_path = self.get_dolphin_home_path() + "/GameSettings/GALE01.ini"
+        # melee_config_path = self._get_dolphin_home_path() + "/GameSettings/GALE01.ini"
         # config = configparser.SafeConfigParser(allow_no_value=True)
         # config.optionxform = str
         # config.read(melee_config_path)
@@ -329,7 +329,7 @@ class Console:
 
         return False
 
-    def get_dolphin_home_path(self):
+    def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
         if self.dolphin_executable_path:
             return self.dolphin_executable_path + "/User/"
@@ -356,13 +356,17 @@ class Console:
         sys.exit(1)
         return ""
 
-    def get_dolphin_config_path(self):
+    def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory
         (which is not necessarily the same as the home path)"""
         if self.dolphin_executable_path:
             return self.dolphin_executable_path + "/User/Config/"
 
         home_path = pwd.getpwuid(os.getuid()).pw_dir
+
+        if platform.system() == "Windows":
+            return home_path + "\\Dolphin Emulator\\Config\\"
+
         legacy_config_path = home_path + "/.dolphin-emu/";
 
         #Are we using a legacy Linux home path directory?
@@ -389,7 +393,7 @@ class Console:
         """
         if platform.system() == "Windows":
             return '\\\\.\\pipe\\slippibot' + str(port)
-        return self.get_dolphin_home_path() + "/Pipes/slippibot" + str(port)
+        return self._get_dolphin_home_path() + "/Pipes/slippibot" + str(port)
 
     # Melee's indexing of action frames is wildly inconsistent.
     #   Here we adjust all of the frames to be indexed at 1 (so math is easier)
