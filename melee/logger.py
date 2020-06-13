@@ -2,14 +2,15 @@ import csv
 import time
 import datetime
 import os
+from pathlib import Path
 
 class Logger:
     def __init__(self):
         timestamp = datetime.datetime.fromtimestamp(time.time())
         #Create the Pipes directory if it doesn't already exist
-        if not os.path.exists("Logs/"):
-            os.makedirs("Logs/")
-        self.csvfile = open('Logs/' + str(timestamp) + '.csv', 'w')
+        if not os.path.exists(Path("Logs/")):
+            os.makedirs(Path("Logs/"))
+        self.csvfile = open(Path('Logs/' + str(timestamp) + '.csv'), 'w')
         fieldnames = ['Frame', 'Opponent x',
             'Opponent y', 'AI x', 'AI y', 'Opponent Facing', 'AI Facing',
             'Opponent Action', 'AI Action', 'Opponent Action Frame', 'AI Action Frame',
