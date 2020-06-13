@@ -306,6 +306,15 @@ class Console:
                 if gamestate.player[controller_port].action == Action.EDGE_CATCHING and gamestate.player[controller_port].action_frame == 1:
                     gamestate.player[controller_port].invulnerability_left = 36
 
+                # The pre-warning occurs when we first start a dash dance.
+                if gamestate.player[controller_port].action == Action.DASHING and \
+                        self._prev_gamestate.player[controller_port].action not in [Action.DASHING, Action.TURNING]:
+                    gamestate.player[controller_port].moonwalkwarning = True
+
+                # Take off the warning if the player does an action other than dashing
+                if gamestate.player[controller_port].action != Action.DASHING:
+                    gamestate.player[controller_port].moonwalkwarning = False
+
                 event_bytes = event_bytes[event_size:]
                 continue
 
