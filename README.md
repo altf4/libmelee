@@ -33,7 +33,9 @@ Linux / OSX / Windows
 4. Install via pip: (or by cloning this repo for the very latest)
 `pip3 install melee`
 
-5. Run `example.py` (for an installed version of dolphin, use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
+5. Install the latest Slippi Gecko Codes. You can find them here: https://github.com/project-slippi/slippi-ssbm-asm/blob/master/Output/Netplay/GALE01r2.ini Simply replace your existing `GALE01r2.ini` file with this one.
+
+6. Run `example.py` (for an installed version of dolphin, use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
 
 ## NOTE:
 The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
