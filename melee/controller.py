@@ -322,13 +322,14 @@ class Controller:
         Up until this point, any buttons you 'press' are just queued in a pipe.
         It doesn't get sent to the console until you flush
         """
+        # Move the current controller state into the previous one
+        self.prev = copy.copy(self.current)
+
         if self._is_dolphin:
             if platform.system() != "Windows":
                 if not self.pipe:
                     return
                 self.pipe.flush()
-                # Move the current controller state into the previous one
-                self.prev = copy.copy(self.current)
         else:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
