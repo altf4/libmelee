@@ -6,7 +6,7 @@ from pathlib import Path
 
 class Logger:
     def __init__(self):
-        timestamp = Path(str(datetime.now().isoformat(timespec='minutes')) + ".csv")
+        timestamp = Path(str(datetime.now()).replace(" ", "-").replace(":", "-") + ".csv")
         #Create the Logs directory if it doesn't already exist
         if not os.path.exists(Path("Logs")):
             os.makedirs(Path("Logs"))
