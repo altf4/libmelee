@@ -18,9 +18,11 @@ https://www.amazon.com/UGREEN-Ethernet-Adapter-Nintendo-Chromebook/dp/B00MYT481C
 
 `sudo usermod -a -G dialout YOUR_USER_NAME`
 
+6. TODO: Full TAStm32 setup coming
+
 ## Dolphin Setup Instructions
 
-Linux / OSX only. (Windows coming soon)
+Linux / OSX / Windows
 
 1. Install (or build locally) the Ishiiruka version here: https://github.com/altf4/Ishiiruka/tree/beta
 
