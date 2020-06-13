@@ -30,11 +30,9 @@ class Console:
         self.slippi_address = ""
         self.slippi_port = 51441
         self.eventsize = [0] * 0x100
+        self.render = True
 
         # Keep a running copy of the last gamestate produced
-        #   game info is only produced as diffs, not whole snapshots
-        #   so if nothing changes, we need to know what the last value was
-        self.render = True
         self._prev_gamestate = GameState(ai_port, opponent_port)
         self.process = None
         if self.is_dolphin:
@@ -298,6 +296,16 @@ class Console:
                 gamestate.player[controller_port].jumps_left = unpack(">B", event_bytes[0x32:0x32+1])[0]
                 gamestate.player[controller_port].invulnerable = int(unpack(">B", event_bytes[0x34:0x34+1])[0]) != 0
 
+                # Keep track of a player's invulnerability due to respawn or ledge grab
+                gamestate.player[controller_port].invulnerability_left = max(0, self._prev_gamestate.player[controller_port].invulnerability_left - 1)
+                if gamestate.player[controller_port].action == Action.ON_HALO_WAIT:
+                    gamestate.player[controller_port].invulnerability_left = 120
+                # Don't give invulnerability to the first descent
+                if gamestate.player[controller_port].action == Action.ON_HALO_DESCENT and gamestate.frame > 150:
+                    gamestate.player[controller_port].invulnerability_left = 120
+                if gamestate.player[controller_port].action == Action.EDGE_CATCHING and gamestate.player[controller_port].action_frame == 1:
+                    gamestate.player[controller_port].invulnerability_left = 36
+
                 event_bytes = event_bytes[event_size:]
                 continue
 
@@ -306,6 +314,7 @@ class Console:
                 continue
 
             elif (EventType(event_bytes[0]) == EventType.FRAME_BOOKEND):
+                self._prev_gamestate = gamestate
                 event_bytes = event_bytes[event_size:]
                 return True
 
