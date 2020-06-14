@@ -16,6 +16,7 @@ from pathlib import Path
 from melee import enums
 from melee.gamestate import GameState, Projectile, Action
 from melee.slippstream import SlippstreamClient, CommType, EventType
+from melee import stages
 
 class Console:
     def __init__(self, is_dolphin, ai_port, opponent_port, opponent_type,
@@ -321,6 +322,13 @@ class Console:
                 # Take off the warning if the player does an action other than dashing
                 if gamestate.player[controller_port].action != Action.DASHING:
                     gamestate.player[controller_port].moonwalkwarning = False
+
+                # "off_stage" helper
+                if (abs(gamestate.player[controller_port].x) > stages.edgegroundposition(gamestate.stage) or \
+                        gamestate.player[controller_port].y < -6) and not gamestate.player[controller_port].on_ground:
+                    gamestate.player[controller_port].off_stage = True
+                else:
+                    gamestate.player[controller_port].off_stage = False
 
                 event_bytes = event_bytes[event_size:]
                 continue
