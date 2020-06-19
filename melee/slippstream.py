@@ -35,6 +35,7 @@ class CommType(Enum):
     HANDSHAKE       = 0x01
     REPLAY          = 0x02
     KEEPALIVE       = 0x03
+    MENU            = 0x04
 
 class SlippstreamClient(object):
     """ Container representing a client to some SlippiComm server """

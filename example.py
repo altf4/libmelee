@@ -141,18 +141,9 @@ while True:
     # "step" to the next frame
     gamestate = console.step()
 
-    # NOTE: Your per-frame logic here!
-    ###############################################################################
-    print(gamestate.opponent_state.action)
-    melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-    ###############################################################################
-
     if(console.processingtime * 1000 > 12):
         print("WARNING: Last frame took " +
             str(console.processingtime*1000) + "ms to process.")
-
-    # TODO FOR LATER
-    #   We don't have menu information (yet) with slippi
 
     # # What menu are we in?
     # # If this is a Wii, just assume we're in game
@@ -169,34 +160,34 @@ while True:
     #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
     #     # else:
     #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
-    #
-    # elif gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
-    #     if args.framerecord:
-    #         framedata.recordframe(gamestate)
-    #     # XXX: This is where your AI does all of its stuff!
-    #     # This line will get hit once per frame, so here is where you read
-    #     #   in the gamestate and decide what buttons to push on the controller
-    #     if args.framerecord:
-    #         melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
-    #     else:
-    #         melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-    # # If we're at the character select screen, choose our character
-    # elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
-    #     melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-    #                                     gamestate=gamestate,
-    #                                     port=args.port,
-    #                                     opponent_port=args.opponent,
-    #                                     controller=controller,
-    #                                     swag=True,
-    #                                     start=True)
-    # # If we're at the postgame scores screen, spam START
-    # elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
-    #     melee.menuhelper.skippostgame(controller=controller)
-    # # If we're at the stage select screen, choose a stage
-    # elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
-    #     melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
-    #                                 gamestate=gamestate,
-    #                                 controller=controller)
+
+    if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
+        if args.framerecord:
+            framedata.recordframe(gamestate)
+        # XXX: This is where your AI does all of its stuff!
+        # This line will get hit once per frame, so here is where you read
+        #   in the gamestate and decide what buttons to push on the controller
+        if args.framerecord:
+            melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
+        else:
+            melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
+    # If we're at the character select screen, choose our character
+    elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
+        melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
+                                        gamestate=gamestate,
+                                        port=args.port,
+                                        opponent_port=args.opponent,
+                                        controller=controller,
+                                        swag=True,
+                                        start=True)
+    # If we're at the postgame scores screen, spam START
+    elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
+        melee.menuhelper.skippostgame(controller=controller)
+    # If we're at the stage select screen, choose a stage
+    elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
+        melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
+                                    gamestate=gamestate,
+                                    controller=controller)
     # Flush any button presses queued up
     controller.flush()
     if log:

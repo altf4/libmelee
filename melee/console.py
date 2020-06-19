@@ -100,7 +100,6 @@ class Console:
                 exe_name = "Dolphin.exe"
 
             exe_path = ""
-            print(self.dolphin_executable_path)
             if self.dolphin_executable_path:
                 exe_path = self.dolphin_executable_path
             command = [exe_path + exe_name]
@@ -215,8 +214,6 @@ class Console:
                 if (CommType(msg['type']) == CommType.REPLAY):
                     events = msg['payload']['data']
                     frame_ended = self.__handle_slippstream_events(events, gamestate)
-                    # Start the processing timer now that we're done reading messages
-                    self._frametimestamp = time.time()
                     continue
 
                 # We can basically just ignore keepalives
@@ -230,14 +227,23 @@ class Console:
                         p['nintendontVersion'],
                     ))
                     continue
+                # Handle menu-state event
+                elif (CommType(msg['type']) == CommType.MENU):
+                    events = msg['payload']['data']
+                    self.__handle_slippstream_menu_event(events, gamestate)
+                    frame_ended = True
+                    continue
 
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
+        # Start the processing timer now that we're done reading messages
+        self._frametimestamp = time.time()
         return gamestate
 
     def __handle_slippstream_events(self, event_bytes, gamestate):
         """ Handle a series of events, provided sequentially in a byte array """
         lastmessage = EventType.GAME_START
+        gamestate.menu_state = enums.Menu.IN_GAME
         while len(event_bytes) > 0:
             lastmessage = EventType(event_bytes[0])
             event_size = self.eventsize[event_bytes[0]]
@@ -385,6 +391,98 @@ class Console:
                 return False
 
         return False
+
+    def __handle_slippstream_menu_event(self, event_bytes, gamestate):
+        scene = unpack(">H", event_bytes[0x1:0x1+2])[0]
+        if scene == 0x02:
+            gamestate.menu_state = enums.Menu.CHARACTER_SELECT
+        if scene == 0x0102:
+            gamestate.menu_state = enums.Menu.STAGE_SELECT
+
+        # CSS Cursors
+        gamestate.player[1].cursor_x = unpack(">f", event_bytes[0x3:0x3+4])[0]
+        gamestate.player[1].cursor_y = unpack(">f", event_bytes[0x7:0x7+4])[0]
+        gamestate.player[2].cursor_x = unpack(">f", event_bytes[0xB:0xB+4])[0]
+        gamestate.player[2].cursor_y = unpack(">f", event_bytes[0xF:0xF+4])[0]
+        gamestate.player[3].cursor_x = unpack(">f", event_bytes[0x13:0x13+4])[0]
+        gamestate.player[3].cursor_y = unpack(">f", event_bytes[0x17:0x17+4])[0]
+        gamestate.player[4].cursor_x = unpack(">f", event_bytes[0x1B:0x1B+4])[0]
+        gamestate.player[4].cursor_y = unpack(">f", event_bytes[0x1F:0x1F+4])[0]
+
+        # Ready to fight banner
+        gamestate.ready_to_start = unpack(">B", event_bytes[0x23:0x23+1])[0] == 0
+
+        # Stage
+        try:
+            gamestate.stage = enums.Stage(unpack(">B", event_bytes[0x24:0x24+1])[0])
+        except:
+            gamestate.stage = enums.Stage.NO_STAGE
+
+        # controller port statuses at CSS
+        try:
+            gamestate.player[1].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x25:0x25+1])[0])
+        except:
+            gamestate.player[1].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
+        try:
+            gamestate.player[2].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x26:0x26+1])[0])
+        except:
+            gamestate.player[2].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
+        try:
+            gamestate.player[3].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x27:0x27+1])[0])
+        except:
+            gamestate.player[3].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
+        try:
+            gamestate.player[4].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x28:0x28+1])[0])
+        except:
+            gamestate.player[4].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
+
+        # Character selected
+        try:
+            id = unpack(">B", event_bytes[0x29:0x29+1])[0]
+            gamestate.player[1].character_selected = enums.convertToInternalCharacterID(id)
+        except:
+            gamestate.player[1].character_selected = enums.Character.UNKNOWN_CHARACTER
+        try:
+            id = unpack(">B", event_bytes[0x2A:0x2A+1])[0]
+            gamestate.player[2].character_selected = enums.convertToInternalCharacterID(id)
+        except:
+            gamestate.player[2].character_selected = enums.Character.UNKNOWN_CHARACTER
+        try:
+            id = unpack(">B", event_bytes[0x2B:0x2B+1])[0]
+            gamestate.player[3].character_selected = enums.convertToInternalCharacterID(id)
+        except:
+            gamestate.player[3].character_selected = enums.Character.UNKNOWN_CHARACTER
+        try:
+            id = unpack(">B", event_bytes[0x2C:0x2C+1])[0]
+            gamestate.player[4].character_selected = enums.convertToInternalCharacterID(id)
+        except:
+            gamestate.player[4].character_selected = enums.Character.UNKNOWN_CHARACTER
+
+        # Coin down
+        try:
+            gamestate.player[1].coin_down = unpack(">B", event_bytes[0x2D:0x2D+1])[0] == 2
+        except:
+            gamestate.player[1].coin_down = False
+        try:
+            gamestate.player[2].coin_down = unpack(">B", event_bytes[0x2E:0x2E+1])[0] == 2
+        except:
+            gamestate.player[2].coin_down = False
+        try:
+            gamestate.player[3].coin_down = unpack(">B", event_bytes[0x2F:0x2F+1])[0] == 2
+        except:
+            gamestate.player[3].coin_down = False
+        try:
+            gamestate.player[4].coin_down = unpack(">B", event_bytes[0x30:0x30+1])[0] == 2
+        except:
+            gamestate.player[4].coin_down = False
+
+        # Stage Select Cursor X, Y
+        gamestate.stage_select_cursor_x = unpack(">f", event_bytes[0x31:0x31+4])[0]
+        gamestate.stage_select_cursor_y = unpack(">f", event_bytes[0x35:0x35+4])[0]
+
+        # Frame count
+        gamestate.frame = unpack(">i", event_bytes[0x39:0x39+4])[0]
+
 
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
