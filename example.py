@@ -179,7 +179,7 @@ while True:
                                         opponent_port=args.opponent,
                                         controller=controller,
                                         swag=True,
-                                        start=True)
+                                        start=False)
     # If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
         melee.menuhelper.skippostgame(controller=controller)
