@@ -8,7 +8,7 @@ class Stage(Enum):
     DREAMLAND = 0x1A
     FOUNTAIN_OF_DREAMS = 0x8
     YOSHIS_STORY = 0x6
-    RANDOM_STAGE = 0x1D #not technically a stage, but it's useful to call it one
+    RANDOM_STAGE = 0x1D # not technically a stage, but it's useful to call it one
 
 class Menu(Enum):
     CHARACTER_SELECT = 0
@@ -209,11 +209,11 @@ class Action(Enum):
     BAIR = 0x43
     UAIR = 0x44
     DAIR = 0x45
-    NAIR_LANDING  = 0x46
-    FAIR_LANDING  = 0x47
-    BAIR_LANDING  = 0x48
-    UAIR_LANDING  = 0x49
-    DAIR_LANDING  = 0x4a
+    NAIR_LANDING = 0x46
+    FAIR_LANDING = 0x47
+    BAIR_LANDING = 0x48
+    UAIR_LANDING = 0x49
+    DAIR_LANDING = 0x4a
     DAMAGE_HIGH_1 = 0x4b
     DAMAGE_HIGH_2 = 0x4c
     DAMAGE_HIGH_3 = 0x4d

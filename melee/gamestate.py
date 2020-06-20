@@ -1,8 +1,8 @@
 from melee import enums, stages
 from melee.enums import Action, Character
 
-"""Represents the state of a running game of Melee at a given moment in time"""
 class GameState:
+    """Represents the state of a running game of Melee at a given moment in time"""
     def __init__(self, ai_port, opponent_port):
         self.frame = 0
         self.stage = enums.Stage.FINAL_DESTINATION

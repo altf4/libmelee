@@ -1,21 +1,22 @@
+""" Helper functions to be able to query Melee frame data in a way useful to bots """
+
 import csv
 import os
 import math
+from collections import defaultdict
 from melee.enums import Action, Character, AttackState
 from melee import stages
-from itertools import filterfalse
-from collections import defaultdict
 
 class FrameData:
     def __init__(self, write=False):
         if write:
             self.csvfile = open('framedata.csv', 'a')
             fieldnames = ['character', 'action', 'frame',
-                'hitbox_1_status', 'hitbox_1_size', 'hitbox_1_x', 'hitbox_1_y',
-                'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
-                'hitbox_3_status', 'hitbox_3_size', 'hitbox_3_x', 'hitbox_3_y',
-                'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y',
-                'locomotion_x', 'locomotion_y', 'iasa', 'facing_changed', 'projectile']
+                          'hitbox_1_status', 'hitbox_1_size', 'hitbox_1_x', 'hitbox_1_y',
+                          'hitbox_2_status', 'hitbox_2_size', 'hitbox_2_x', 'hitbox_2_y',
+                          'hitbox_3_status', 'hitbox_3_size', 'hitbox_3_x', 'hitbox_3_y',
+                          'hitbox_4_status', 'hitbox_4_size', 'hitbox_4_x', 'hitbox_4_y',
+                          'locomotion_x', 'locomotion_y', 'iasa', 'facing_changed', 'projectile']
             self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames)
             self.writer.writeheader()
             self.rows = []

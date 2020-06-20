@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-import melee
 import argparse
 import signal
 import os
 import sys
 import time
+import melee
 
 # This example program demonstrates how to use the Melee API to run a console,
 #   setup controllers, and send button presses over to a console (dolphin or Slippi/Wii)
@@ -12,8 +12,8 @@ import time
 def check_port(value):
     ivalue = int(value)
     if ivalue < 1 or ivalue > 4:
-         raise argparse.ArgumentTypeError("%s is an invalid controller port. \
-         Must be 1, 2, 3, or 4." % value)
+        raise argparse.ArgumentTypeError("%s is an invalid controller port. \
+                                         Must be 1, 2, 3, or 4." % value)
     return ivalue
 
 def is_dir(dirname):
@@ -81,15 +81,12 @@ console = melee.console.Console(ai_port=args.port,
                                 opponent_port=args.opponent,
                                 opponent_type=opponent_type,
                                 dolphin_executable_path=args.dolphin_executable_path,
+                                slippi_address=args.address,
                                 logger=log)
 
 # Dolphin has an optional mode to not render the game's visuals
 #   This is useful for BotvBot matches
 console.render = True
-
-# If not set by the user, this will be an empty string, which will trigger
-#   an autodiscover process
-console.slippi_address = args.address
 
 # Create our Controller object
 #   The controller is the second primary object your bot will interact with
@@ -121,7 +118,7 @@ print("Connecting to console...")
 if not console.connect():
     print("ERROR: Failed to connect to the console.")
     print("\tIf you're trying to autodiscover, local firewall settings can " +
-        "get in the way. Try specifying the address manually.")
+          "get in the way. Try specifying the address manually.")
     sys.exit(-1)
 
 # Plug our controller in
@@ -141,9 +138,8 @@ while True:
     # "step" to the next frame
     gamestate = console.step()
 
-    if(console.processingtime * 1000 > 12):
-        print("WARNING: Last frame took " +
-            str(console.processingtime*1000) + "ms to process.")
+    if console.processingtime * 1000 > 12:
+        print("WARNING: Last frame took " + str(console.processingtime*1000) + "ms to process.")
 
     # # What menu are we in?
     # # If this is a Wii, just assume we're in game
@@ -164,7 +160,7 @@ while True:
     if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
         if args.framerecord:
             framedata.recordframe(gamestate)
-        # XXX: This is where your AI does all of its stuff!
+        # NOTE: This is where your AI does all of its stuff!
         # This line will get hit once per frame, so here is where you read
         #   in the gamestate and decide what buttons to push on the controller
         if args.framerecord:
@@ -174,20 +170,20 @@ while True:
     # If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
         melee.menuhelper.choosecharacter(character=melee.enums.Character.FOX,
-                                        gamestate=gamestate,
-                                        port=args.port,
-                                        opponent_port=args.opponent,
-                                        controller=controller,
-                                        swag=True,
-                                        start=False)
+                                         gamestate=gamestate,
+                                         port=args.port,
+                                         opponent_port=args.opponent,
+                                         controller=controller,
+                                         swag=True,
+                                         start=False)
     # If we're at the postgame scores screen, spam START
     elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
         melee.menuhelper.skippostgame(controller=controller)
     # If we're at the stage select screen, choose a stage
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
         melee.menuhelper.choosestage(stage=melee.enums.Stage.POKEMON_STADIUM,
-                                    gamestate=gamestate,
-                                    controller=controller)
+                                     gamestate=gamestate,
+                                     controller=controller)
     # Flush any button presses queued up
     controller.flush()
     if log:

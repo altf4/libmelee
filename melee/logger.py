@@ -1,10 +1,10 @@
 import csv
-import time
 import os
 from datetime import datetime
 from pathlib import Path
 
-class Logger:
+class Logger():
+    """   aaa   """
     def __init__(self):
         timestamp = Path(str(datetime.now()).replace(" ", "-").replace(":", "-") + ".csv")
         #Create the Logs directory if it doesn't already exist
@@ -12,10 +12,10 @@ class Logger:
             os.makedirs(Path("Logs"))
         self.csvfile = open("Logs" / timestamp, 'w')
         fieldnames = ['Frame', 'Opponent x',
-            'Opponent y', 'AI x', 'AI y', 'Opponent Facing', 'AI Facing',
-            'Opponent Action', 'AI Action', 'Opponent Action Frame', 'AI Action Frame',
-            'Opponent Jumps Left', 'AI Jumps Left', 'Opponent Stock', 'AI Stock',
-            'Opponent Percent', 'AI Percent', 'Buttons Pressed', 'Notes', 'Frame Process Time']
+                      'Opponent y', 'AI x', 'AI y', 'Opponent Facing', 'AI Facing',
+                      'Opponent Action', 'AI Action', 'Opponent Action Frame', 'AI Action Frame',
+                      'Opponent Jumps Left', 'AI Jumps Left', 'Opponent Stock', 'AI Stock',
+                      'Opponent Percent', 'AI Percent', 'Buttons Pressed', 'Notes', 'Frame Process Time']
         self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames, extrasaction='ignore')
         self.current_row = dict()
         self.rows = []

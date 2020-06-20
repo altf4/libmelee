@@ -1,15 +1,16 @@
-from socket import *
-from struct import unpack
+"""The Console represents the engine running the game.
+
+This can be Dolphin (IShiiruka), A Nintendont Wii, or an SLP file """
+
+from struct import unpack, error
 from collections import defaultdict
 
 import time
-import ubjson
 import os
 import configparser
 import csv
 import subprocess
 import platform
-import sys
 import math
 from pathlib import Path
 
@@ -18,28 +19,29 @@ from melee.gamestate import GameState, Projectile, Action
 from melee.slippstream import SlippstreamClient, CommType, EventType
 from melee import stages
 
+
+# pylint: disable=too-many-instance-attributes
 class Console:
+    """ The console object """
     def __init__(self, is_dolphin, ai_port, opponent_port, opponent_type,
-                 dolphin_executable_path=None, logger=None):
+                 dolphin_executable_path=None, slippi_address="", logger=None):
         self.logger = logger
         self.ai_port = ai_port
         self.opponent_port = opponent_port
         self.is_dolphin = is_dolphin
         self.dolphin_executable_path = dolphin_executable_path
-
         self.processingtime = 0
         self._frametimestamp = time.time()
-        self.slippi_address = ""
+        self.slippi_address = slippi_address
         self.slippi_port = 51441
         self.eventsize = [0] * 0x100
         self.render = True
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState(ai_port, opponent_port)
-        self.process = None
+        self._process = None
         if self.is_dolphin:
-            config_path = self._get_dolphin_home_path()
-            pipes_path = config_path + "Pipes/"
+            pipes_path = self._get_dolphin_home_path() + "Pipes/"
             path = os.path.dirname(os.path.realpath(__file__))
 
             if platform.system() != "Windows":
@@ -47,8 +49,8 @@ class Console:
                 if not os.path.exists(pipes_path):
                     os.makedirs(pipes_path)
                     print("WARNING: Had to create a Pipes directory in Dolphin just now. " \
-                        "You may need to restart Dolphin and this program in order for this to work. " \
-                        "(You should only see this warning once)")
+                          "You may need to restart Dolphin and this program in order for this to work. " \
+                          "(You should only see this warning once)")
 
                 pipes_path += "slippibot" + str(ai_port)
                 if not os.path.exists(pipes_path):
@@ -57,6 +59,7 @@ class Console:
             #setup the controllers specified
             self.setup_dolphin_controller(ai_port)
             self.setup_dolphin_controller(opponent_port, opponent_type)
+            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
 
         # Prepare some structures for fixing melee data
         path = os.path.dirname(os.path.realpath(__file__))
@@ -84,11 +87,10 @@ class Console:
         """ Connects to the Slippi server (dolphin or wii).
 
         Returns boolean of success """
-        self.slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
         # It can take a short amount of time after starting the emulator
         #   for the actual server to start. So try a few times before giving up.
-        for i in range(4):
-            if(self.slippstream.connect()):
+        for _ in range(4):
+            if self._slippstream.connect():
                 return True
         return False
 
@@ -116,20 +118,22 @@ class Console:
             if dolphin_config_path is not None:
                 command.append("-u")
                 command.append(dolphin_config_path)
-            self.process = subprocess.Popen(command)
-            # TODO proper error tracking here
-            return True
+            self._process = subprocess.Popen(command)
 
     def stop(self):
-        self.slippstream.shutdown();
-        # If dolphin, kill the process
-        if self.process != None:
-            self.process.terminate()
-        pass
+        """ Stop the console.
 
-    """Setup the necessary files for dolphin to recognize the player at the given
-    controller port and type"""
+        For Dolphin instances, this will kill the dolphin process.
+        For Wiis and SLP files, it just shuts down our connection
+         """
+        self._slippstream.shutdown()
+        # If dolphin, kill the process
+        if self._process is not None:
+            self._process.terminate()
+
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
+        """Setup the necessary files for dolphin to recognize the player at the given
+        controller port and type"""
         #Read in dolphin's controller config file
         controller_config_path = self._get_dolphin_config_path() + "GCPadNew.ini"
         config = configparser.SafeConfigParser()
@@ -204,35 +208,34 @@ class Console:
         #     config.write(dolphinfile)
 
     def step(self):
+        """ 'step' to the next state of the game
+        Returns a new gamestate object that represents current state of the game"""
         # Keep looping until we get a REPLAY message
         self.processingtime = time.time() - self._frametimestamp
         gamestate = GameState(self.ai_port, self.opponent_port)
         frame_ended = False
         while not frame_ended:
-            msg = self.slippstream.read_message()
+            msg = self._slippstream.read_message()
             if msg:
-                if (CommType(msg['type']) == CommType.REPLAY):
+                if CommType(msg['type']) == CommType.REPLAY:
                     events = msg['payload']['data']
                     frame_ended = self.__handle_slippstream_events(events, gamestate)
-                    continue
 
                 # We can basically just ignore keepalives
-                elif (CommType(msg['type']) == CommType.KEEPALIVE):
-                    continue
+                elif CommType(msg['type']) == CommType.KEEPALIVE:
+                    pass
 
-                elif (CommType(msg['type']) == CommType.HANDSHAKE):
-                    p = msg['payload']
+                elif CommType(msg['type']) == CommType.HANDSHAKE:
+                    handshake = msg['payload']
                     print("Connected to console '{}' (Slippi Nintendont {})".format(
-                        p['nick'],
-                        p['nintendontVersion'],
+                        handshake['nick'],
+                        handshake['nintendontVersion'],
                     ))
-                    continue
                 # Handle menu-state event
-                elif (CommType(msg['type']) == CommType.MENU):
+                elif CommType(msg['type']) == CommType.MENU:
                     events = msg['payload']['data']
                     self.__handle_slippstream_menu_event(events, gamestate)
                     frame_ended = True
-                    continue
 
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
@@ -242,16 +245,14 @@ class Console:
 
     def __handle_slippstream_events(self, event_bytes, gamestate):
         """ Handle a series of events, provided sequentially in a byte array """
-        lastmessage = EventType.GAME_START
         gamestate.menu_state = enums.Menu.IN_GAME
         while len(event_bytes) > 0:
-            lastmessage = EventType(event_bytes[0])
             event_size = self.eventsize[event_bytes[0]]
             if len(event_bytes) < event_size:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
                 print("\tDidn't have enough data for event")
                 return False
-            if (EventType(event_bytes[0]) == EventType.PAYLOADS):
+            if EventType(event_bytes[0]) == EventType.PAYLOADS:
                 cursor = 0x2
                 payload_size = event_bytes[1]
                 num_commands = (payload_size - 1) // 3
@@ -260,26 +261,21 @@ class Console:
                     self.eventsize[command] = command_len+1
                     cursor += 3
                 event_bytes = event_bytes[payload_size + 1:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.FRAME_START):
+            elif EventType(event_bytes[0]) == EventType.FRAME_START:
                 self.frame_num = unpack(">i", event_bytes[1:5])[0]
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.GAME_START):
+            elif EventType(event_bytes[0]) == EventType.GAME_START:
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.GAME_END):
+            elif EventType(event_bytes[0]) == EventType.GAME_END:
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.PRE_FRAME):
+            elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.POST_FRAME):
+            elif EventType(event_bytes[0]) == EventType.POST_FRAME:
                 gamestate.frame = unpack(">i", event_bytes[0x1:0x1+4])[0]
                 controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
 
@@ -335,26 +331,24 @@ class Console:
                     gamestate.player[controller_port].moonwalkwarning = False
 
                 # "off_stage" helper
-                if (abs(gamestate.player[controller_port].x) > stages.edgegroundposition(gamestate.stage) or \
+                if (abs(gamestate.player[controller_port].x) > stages.EDGE_GROUND_POSITION[gamestate.stage] or \
                         gamestate.player[controller_port].y < -6) and not gamestate.player[controller_port].on_ground:
                     gamestate.player[controller_port].off_stage = True
                 else:
                     gamestate.player[controller_port].off_stage = False
 
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.GECKO_CODES):
+            elif EventType(event_bytes[0]) == EventType.GECKO_CODES:
                 event_bytes = event_bytes[event_size:]
-                continue
 
-            elif (EventType(event_bytes[0]) == EventType.FRAME_BOOKEND):
+            elif EventType(event_bytes[0]) == EventType.FRAME_BOOKEND:
                 self._prev_gamestate = gamestate
 
                 # Calculate helper distance variable
                 #   This is a bit kludgey.... :/
                 i = 0
-                player_one_x, player_one_y, player_two_x, player_two_y = 0,0,0,0
+                player_one_x, player_one_y, player_two_x, player_two_y = 0, 0, 0, 0
                 for _, player_state in gamestate.player.items():
                     if i == 0:
                         player_one_x, player_one_y = player_state.x, player_state.y
@@ -363,12 +357,11 @@ class Console:
                     i += 1
                 xdist = player_one_x - player_two_x
                 ydist = player_one_y - player_two_y
-                gamestate.distance = math.sqrt( (xdist**2) + (ydist**2) )
+                gamestate.distance = math.sqrt((xdist**2) + (ydist**2))
                 event_bytes = event_bytes[event_size:]
                 return True
 
-            elif (EventType(event_bytes[0]) == EventType.ITEM_UPDATE):
-                # TODO projectiles
+            elif EventType(event_bytes[0]) == EventType.ITEM_UPDATE:
                 projectile = Projectile()
                 projectile.x = unpack(">f", event_bytes[0x14:0x14+4])[0]
                 projectile.y = unpack(">f", event_bytes[0x18:0x18+4])[0]
@@ -382,7 +375,6 @@ class Console:
                 gamestate.projectiles.append(projectile)
 
                 event_bytes = event_bytes[event_size:]
-                continue
 
             else:
                 print("WARNING: Something went wrong unpacking events. " + \
@@ -393,6 +385,10 @@ class Console:
         return False
 
     def __handle_slippstream_menu_event(self, event_bytes, gamestate):
+        """ Internal handler for slippstream menu events
+
+        Modifies specified gamestate based on the event bytes
+         """
         scene = unpack(">H", event_bytes[0x1:0x1+2])[0]
         if scene == 0x02:
             gamestate.menu_state = enums.Menu.CHARACTER_SELECT
@@ -415,65 +411,65 @@ class Console:
         # Stage
         try:
             gamestate.stage = enums.Stage(unpack(">B", event_bytes[0x24:0x24+1])[0])
-        except:
+        except ValueError:
             gamestate.stage = enums.Stage.NO_STAGE
 
         # controller port statuses at CSS
         try:
             gamestate.player[1].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x25:0x25+1])[0])
-        except:
+        except error:
             gamestate.player[1].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
         try:
             gamestate.player[2].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x26:0x26+1])[0])
-        except:
+        except error:
             gamestate.player[2].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
         try:
             gamestate.player[3].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x27:0x27+1])[0])
-        except:
+        except error:
             gamestate.player[3].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
         try:
             gamestate.player[4].controller_status = enums.ControllerStatus(unpack(">B", event_bytes[0x28:0x28+1])[0])
-        except:
+        except error:
             gamestate.player[4].controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
 
         # Character selected
         try:
             id = unpack(">B", event_bytes[0x29:0x29+1])[0]
             gamestate.player[1].character_selected = enums.convertToInternalCharacterID(id)
-        except:
+        except error:
             gamestate.player[1].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
             id = unpack(">B", event_bytes[0x2A:0x2A+1])[0]
             gamestate.player[2].character_selected = enums.convertToInternalCharacterID(id)
-        except:
+        except error:
             gamestate.player[2].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
             id = unpack(">B", event_bytes[0x2B:0x2B+1])[0]
             gamestate.player[3].character_selected = enums.convertToInternalCharacterID(id)
-        except:
+        except error:
             gamestate.player[3].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
             id = unpack(">B", event_bytes[0x2C:0x2C+1])[0]
             gamestate.player[4].character_selected = enums.convertToInternalCharacterID(id)
-        except:
+        except error:
             gamestate.player[4].character_selected = enums.Character.UNKNOWN_CHARACTER
 
         # Coin down
         try:
             gamestate.player[1].coin_down = unpack(">B", event_bytes[0x2D:0x2D+1])[0] == 2
-        except:
+        except error:
             gamestate.player[1].coin_down = False
         try:
             gamestate.player[2].coin_down = unpack(">B", event_bytes[0x2E:0x2E+1])[0] == 2
-        except:
+        except error:
             gamestate.player[2].coin_down = False
         try:
             gamestate.player[3].coin_down = unpack(">B", event_bytes[0x2F:0x2F+1])[0] == 2
-        except:
+        except error:
             gamestate.player[3].coin_down = False
         try:
             gamestate.player[4].coin_down = unpack(">B", event_bytes[0x30:0x30+1])[0] == 2
-        except:
+        except error:
             gamestate.player[4].coin_down = False
 
         # Stage Select Cursor X, Y
@@ -490,25 +486,23 @@ class Console:
             return self.dolphin_executable_path + "/User/"
 
         home_path = str(Path.home())
-        legacy_config_path = home_path + "/.dolphin-emu/";
+        legacy_config_path = home_path + "/.dolphin-emu/"
 
         #Are we using a legacy Linux home path directory?
         if os.path.isdir(legacy_config_path):
             return legacy_config_path
 
         #Are we on OSX?
-        osx_path = home_path + "/Library/Application Support/Dolphin/";
+        osx_path = home_path + "/Library/Application Support/Dolphin/"
         if os.path.isdir(osx_path):
             return osx_path
 
         #Are we on a new Linux distro?
-        linux_path = home_path + "/.local/share/dolphin-emu/";
+        linux_path = home_path + "/.local/share/dolphin-emu/"
         if os.path.isdir(linux_path):
             return linux_path
 
-        print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
-                and then run again.")
-        sys.exit(1)
+        print("ERROR: Are you sure Dolphin is installed? Make sure it is, and then run again.")
         return ""
 
     def _get_dolphin_config_path(self):
@@ -522,25 +516,23 @@ class Console:
         if platform.system() == "Windows":
             return home_path + "\\Dolphin Emulator\\Config\\"
 
-        legacy_config_path = home_path + "/.dolphin-emu/";
+        legacy_config_path = home_path + "/.dolphin-emu/"
 
         #Are we using a legacy Linux home path directory?
         if os.path.isdir(legacy_config_path):
             return legacy_config_path
 
         #Are we on a new Linux distro?
-        linux_path = home_path + "/.config/dolphin-emu/";
+        linux_path = home_path + "/.config/dolphin-emu/"
         if os.path.isdir(linux_path):
             return linux_path
 
         #Are we on OSX?
-        osx_path = home_path + "/Library/Application Support/Dolphin/Config/";
+        osx_path = home_path + "/Library/Application Support/Dolphin/Config/"
         if os.path.isdir(osx_path):
             return osx_path
 
-        print("ERROR: Are you sure Dolphin is installed? Make sure it is,\
-                and then run again.")
-        sys.exit(1)
+        print("ERROR: Are you sure Dolphin is installed? Make sure it is, and then run again.")
         return ""
 
     def get_dolphin_pipes_path(self, port):
@@ -550,17 +542,18 @@ class Console:
             return '\\\\.\\pipe\\slippibot' + str(port)
         return self._get_dolphin_home_path() + "/Pipes/slippibot" + str(port)
 
-    # Melee's indexing of action frames is wildly inconsistent.
-    #   Here we adjust all of the frames to be indexed at 1 (so math is easier)
     def __fixframeindexing(self, gamestate):
+        """ Melee's indexing of action frames is wildly inconsistent.
+            Here we adjust all of the frames to be indexed at 1 (so math is easier)"""
         for _, player in gamestate.player.items():
             if player.action.value in self.zero_indices[player.character.value]:
                 player.action_frame = player.action_frame + 1
 
-    # The IASA flag doesn't set or reset for special attacks.
-    #   So let's just set IASA to False for all non-A attacks.
     def __fixiasa(self, gamestate):
-        for index, player in gamestate.player.items():
+        """ The IASA flag doesn't set or reset for special attacks.
+            So let's just set IASA to False for all non-A attacks.
+        """
+        for _, player in gamestate.player.items():
             # Luckily for us, all the A-attacks are in a contiguous place in the enums!
             #   So we don't need to call them out one by one
             if player.action.value < Action.NEUTRAL_ATTACK_1.value or player.action.value > Action.DAIR.value:

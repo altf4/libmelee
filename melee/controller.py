@@ -1,16 +1,19 @@
-import copy
-import serial
-import sys
+""" Defines a Clontroller class that manages pressing buttons for your console"""
+
 import time
 import platform
+import sys
+import copy
 from struct import pack
+import serial
 try:
-    import win32pipe, win32file, pywintypes
+    import win32pipe
+    import win32file
+    import pywintypes
 except ImportError:
     pass
 
-from melee import enums, logger
-from melee.console import Console
+from melee import enums
 
 class ControllerState:
     """A snapshot of the state of a virtual controller"""
@@ -114,7 +117,7 @@ class Controller:
             if platform.system() == "Windows":
                 # "Create File" in windows is what you use to open a file. Not
                 #   create one. Because the windows API is stupid.
-                self.pipe = handle = win32file.CreateFile(
+                self.pipe = win32file.CreateFile(
                     self.pipe_path,
                     win32file.GENERIC_WRITE,
                     0,
@@ -334,7 +337,6 @@ class Controller:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
             self.tastm32.write(b'A' + self.current.toBytes())
-            start = time.time()
             cmd = self.tastm32.read(1)
 
             if cmd != b'A':
