@@ -300,7 +300,10 @@ class Console:
                 bitflags2 = unpack(">B", event_bytes[0x27:0x27+1])[0]
                 gamestate.player[controller_port].hitlag = bool(bitflags2 & 0x20)
 
-                gamestate.player[controller_port].hitstun_frames_left = int(unpack(">f", event_bytes[0x2b:0x2b+4])[0])
+                try:
+                    gamestate.player[controller_port].hitstun_frames_left = int(unpack(">f", event_bytes[0x2b:0x2b+4])[0])
+                except ValueError:
+                    gamestate.player[controller_port].hitstun_frames_left = 0
                 gamestate.player[controller_port].on_ground = not bool(unpack(">B", event_bytes[0x2f:0x2f+1])[0])
                 gamestate.player[controller_port].jumps_left = unpack(">B", event_bytes[0x32:0x32+1])[0]
                 gamestate.player[controller_port].invulnerable = int(unpack(">B", event_bytes[0x34:0x34+1])[0]) != 0
