@@ -1,4 +1,0 @@
-hexdump
-serial
-pywin32
-py-ubjson
