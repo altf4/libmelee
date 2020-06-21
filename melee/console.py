@@ -371,6 +371,12 @@ class Console:
                 projectile.x_speed = unpack(">f", event_bytes[0x0c:0x0c+4])[0]
                 projectile.y_speed = unpack(">f", event_bytes[0x10:0x10+4])[0]
                 try:
+                    projectile.owner = unpack(">B", event_bytes[0x2A:0x2A+1])[0] + 1
+                    if projectile.owner > 4:
+                        projectile.owner = -1
+                except error:
+                    projectile.owner = -1
+                try:
                     projectile.subtype = enums.ProjectileSubtype(unpack(">H", event_bytes[0x05:0x05+2])[0])
                 except ValueError:
                     projectile.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
@@ -395,8 +401,12 @@ class Console:
         scene = unpack(">H", event_bytes[0x1:0x1+2])[0]
         if scene == 0x02:
             gamestate.menu_state = enums.Menu.CHARACTER_SELECT
-        if scene == 0x0102:
+        elif scene == 0x0102:
             gamestate.menu_state = enums.Menu.STAGE_SELECT
+        elif scene == 0x0202:
+            gamestate.menu_state = enums.Menu.IN_GAME
+        else:
+            gamestate.menu_state = enums.Menu.UNKNOWN_MENU
 
         # CSS Cursors
         gamestate.player[1].cursor_x = unpack(">f", event_bytes[0x3:0x3+4])[0]
