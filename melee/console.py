@@ -263,7 +263,6 @@ class Console:
                 event_bytes = event_bytes[payload_size + 1:]
 
             elif EventType(event_bytes[0]) == EventType.FRAME_START:
-                self.frame_num = unpack(">i", event_bytes[1:5])[0]
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.GAME_START:
