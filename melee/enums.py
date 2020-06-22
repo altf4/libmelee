@@ -1,6 +1,9 @@
+""" Enum values for various Melee objects """
+
 from enum import Enum
 
 class Stage(Enum):
+    """ A VS-mode stage """
     NO_STAGE = 0
     FINAL_DESTINATION = 0x19
     BATTLEFIELD = 0x18
@@ -11,6 +14,7 @@ class Stage(Enum):
     RANDOM_STAGE = 0x1D # not technically a stage, but it's useful to call it one
 
 class Menu(Enum):
+    """ A scene the game can be in """
     CHARACTER_SELECT = 0
     STAGE_SELECT = 1
     IN_GAME = 2
@@ -19,22 +23,27 @@ class Menu(Enum):
     UNKNOWN_MENU = 0xff
 
 class ControllerStatus(Enum):
+    """ One of three states a controller can be in during character select """
     CONTROLLER_HUMAN = 0
     CONTROLLER_CPU = 1
     CONTROLLER_UNPLUGGED = 3
 
 class ControllerType(Enum):
+    """ Types a controller can be in the Dolphin config """
     STANDARD = "6"
     GCN_ADAPTER = "12"
     UNPLUGGED = "0"
 
 class AttackState(Enum):
+    """ The phases an attack can be in """
     WINDUP = 0
     ATTACKING = 1
     COOLDOWN = 2
     NOT_ATTACKING = 3
 
 class Character(Enum):
+    """ A Melee character ID.
+    NOTE: Numeric values are 'internal' IDs. """
     MARIO = 0x00
     FOX = 0x01
     CPTFALCON = 0x02
@@ -68,61 +77,63 @@ class Character(Enum):
     SANDBAG = 0x20
     UNKNOWN_CHARACTER = 0xff
 
-def convertToInternalCharacterID(id):
+def to_internal(char_id):
     """ Converts a character select-screen ID to an 'internal ID' enum """
-    if id == 0x00:
+    if char_id == 0x00:
         return Character.DOC
-    if id == 0x01:
+    if char_id == 0x01:
         return Character.MARIO
-    if id == 0x02:
+    if char_id == 0x02:
         return Character.LUIGI
-    if id == 0x03:
+    if char_id == 0x03:
         return Character.BOWSER
-    if id == 0x04:
+    if char_id == 0x04:
         return Character.PEACH
-    if id == 0x05:
+    if char_id == 0x05:
         return Character.YOSHI
-    if id == 0x06:
+    if char_id == 0x06:
         return Character.DK
-    if id == 0x07:
+    if char_id == 0x07:
         return Character.CPTFALCON
-    if id == 0x08:
+    if char_id == 0x08:
         return Character.GANONDORF
-    if id == 0x09:
+    if char_id == 0x09:
         return Character.FALCO
-    if id == 0x0a:
+    if char_id == 0x0a:
         return Character.FOX
-    if id == 0x0b:
+    if char_id == 0x0b:
         return Character.NESS
-    if id == 0x0c:
+    if char_id == 0x0c:
         return Character.POPO
-    if id == 0x0d:
+    if char_id == 0x0d:
         return Character.KIRBY
-    if id == 0x0e:
+    if char_id == 0x0e:
         return Character.SAMUS
-    if id == 0x0f:
+    if char_id == 0x0f:
         return Character.ZELDA
-    if id == 0x10:
+    if char_id == 0x10:
         return Character.LINK
-    if id == 0x11:
+    if char_id == 0x11:
         return Character.YLINK
-    if id == 0x12:
+    if char_id == 0x12:
         return Character.PICHU
-    if id == 0x13:
+    if char_id == 0x13:
         return Character.PIKACHU
-    if id == 0x14:
+    if char_id == 0x14:
         return Character.JIGGLYPUFF
-    if id == 0x15:
+    if char_id == 0x15:
         return Character.MEWTWO
-    if id == 0x16:
+    if char_id == 0x16:
         return Character.GAMEANDWATCH
-    if id == 0x17:
+    if char_id == 0x17:
         return Character.MARTH
-    if id == 0x18:
+    if char_id == 0x18:
         return Character.ROY
     return Character.UNKNOWN_CHARACTER
 
 class Button(Enum):
+    """ A single button on a GCN controller
+    NOTE: String values represent the Dolphin input string for that button"""
     BUTTON_A = "A"
     BUTTON_B = "B"
     BUTTON_X = "X"
@@ -140,6 +151,8 @@ class Button(Enum):
     BUTTON_C = "C"
 
 class Action(Enum):
+    """ The in-game action (or animation) a character can be in
+    NOTE: Numeric values represent their Slippi-defined in-game values"""
     DEAD_DOWN = 0x0
     DEAD_LEFT = 0x1
     DEAD_RIGHT = 0x2
@@ -540,6 +553,7 @@ class Action(Enum):
     UNKNOWN_ANIMATION = 0xffff
 
 class ProjectileSubtype(Enum):
+    """ Primary type of prejectile or item """
     BOB_OMB = 0x06 # Bob-omb (BombHei)
     MR_SATURN = 0x07 # Mr. Saturn (Dosei)
     BEAMSWORD = 0x0C # Beam Sword

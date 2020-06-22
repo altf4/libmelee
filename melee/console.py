@@ -446,23 +446,23 @@ class Console:
 
         # Character selected
         try:
-            id = unpack(">B", event_bytes[0x29:0x29+1])[0]
-            gamestate.player[1].character_selected = enums.convertToInternalCharacterID(id)
+            tmp = unpack(">B", event_bytes[0x29:0x29+1])[0]
+            gamestate.player[1].character_selected = enums.to_internal(tmp)
         except error:
             gamestate.player[1].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
-            id = unpack(">B", event_bytes[0x2A:0x2A+1])[0]
-            gamestate.player[2].character_selected = enums.convertToInternalCharacterID(id)
+            tmp = unpack(">B", event_bytes[0x2A:0x2A+1])[0]
+            gamestate.player[2].character_selected = enums.to_internal(tmp)
         except error:
             gamestate.player[2].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
-            id = unpack(">B", event_bytes[0x2B:0x2B+1])[0]
-            gamestate.player[3].character_selected = enums.convertToInternalCharacterID(id)
+            tmp = unpack(">B", event_bytes[0x2B:0x2B+1])[0]
+            gamestate.player[3].character_selected = enums.to_internal(tmp)
         except error:
             gamestate.player[3].character_selected = enums.Character.UNKNOWN_CHARACTER
         try:
-            id = unpack(">B", event_bytes[0x2C:0x2C+1])[0]
-            gamestate.player[4].character_selected = enums.convertToInternalCharacterID(id)
+            tmp = unpack(">B", event_bytes[0x2C:0x2C+1])[0]
+            gamestate.player[4].character_selected = enums.to_internal(tmp)
         except error:
             gamestate.player[4].character_selected = enums.Character.UNKNOWN_CHARACTER
 

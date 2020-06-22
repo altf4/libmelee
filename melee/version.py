@@ -1,1 +1,2 @@
-VERSION = '0.1.0'
+""" Version of libmelee """
+VERSION = '0.2.0'

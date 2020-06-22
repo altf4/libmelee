@@ -1,8 +1,8 @@
 """Helper functions for with some techskill examples"""
 from melee import enums
 
-"""Frame-perfect Multishines as Fox"""
 def multishine(ai_state, controller):
+    """ Frame-perfect Multishines as Fox """
     #If standing, shine
     if ai_state.action == enums.Action.STANDING:
         controller.press_button(enums.Button.BUTTON_B)
@@ -15,15 +15,14 @@ def multishine(ai_state, controller):
             controller.press_button(enums.Button.BUTTON_B)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
-        else:
-            controller.empty_input()
-            return
+        controller.empty_input()
+        return
 
-    isInShineStart = (ai_state.action == enums.Action.DOWN_B_STUN or
-            ai_state.action == enums.Action.DOWN_B_GROUND_START)
+    shine_start = (ai_state.action == enums.Action.DOWN_B_STUN or
+                   ai_state.action == enums.Action.DOWN_B_GROUND_START)
 
     #Jump out of shine
-    if isInShineStart and ai_state.action_frame >= 4 and ai_state.on_ground:
+    if shine_start and ai_state.action_frame >= 4 and ai_state.on_ground:
         controller.press_button(enums.Button.BUTTON_Y)
         return
 
@@ -33,8 +32,8 @@ def multishine(ai_state, controller):
 
     controller.empty_input()
 
-"""Spam upsmashes"""
 def upsmashes(ai_state, controller):
+    """ Spam upsmashes """
     if ai_state.action == enums.Action.STANDING:
         controller.tilt_analog(enums.Button.BUTTON_C, .5, 1)
         return
