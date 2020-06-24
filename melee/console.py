@@ -1,6 +1,6 @@
 """The Console represents the engine running the game.
 
-This can be Dolphin (Ishiiruka), A Nintendont Wii, or an SLP file """
+This can be Dolphin (Ishiiruka), A Nintendont Wii, or an SLP file (TODO) """
 
 from struct import unpack, error
 from collections import defaultdict
@@ -22,9 +22,27 @@ from melee import stages
 
 # pylint: disable=too-many-instance-attributes
 class Console:
-    """ The console object """
+    """The console object that represents your Dolphin / Wii / SLP file
+
+    Attributes:
+        slippi_address (str): IP address of the Dolphin / Wii to connect to.
+            Empty string will try to autodiscover a nearby SlippiComm server
+        slippi_port (int): TCP port of slippi server. Default 51441
+    """
     def __init__(self, is_dolphin, ai_port, opponent_port, opponent_type,
                  dolphin_executable_path=None, slippi_address="", logger=None):
+        """Create a Console object
+
+        Args:
+            is_dolphin (boolean): Is this console a dolphin? (Or a Wii)
+            ai_port (int): 1-4 for the controller port your bot will take
+            opponent_port (int): 1-4 for the controller port your opponent will take
+            opponent_type (:obj:`enums.ControllerType`): Enum of your opponent's controller type
+            dolphin_executable_path (str): Path to the directory where your dolphin executable is
+                located. (if applicable) None tells console to use the installed copy of the emulator
+            slippi_address (str): IP address of the Dolphin / Wii to connect to.
+                Empty string will try to autodiscover a nearby SlippiComm server
+        """
         self.logger = logger
         self.ai_port = ai_port
         self.opponent_port = opponent_port
@@ -86,7 +104,9 @@ class Console:
     def connect(self):
         """ Connects to the Slippi server (dolphin or wii).
 
-        Returns boolean of success """
+        Returns:
+            True is successful, False otherwise
+        """
         # It can take a short amount of time after starting the emulator
         #   for the actual server to start. So try a few times before giving up.
         for _ in range(4):
@@ -95,7 +115,13 @@ class Console:
         return False
 
     def run(self, iso_path=None, movie_path=None, dolphin_config_path=None):
-        """Run dolphin-emu"""
+        """Run dolphin-emu
+
+        Args:
+            iso_path (str, optional): Path to Melee ISO for dolphin to read
+            dolphin_config_path (str, optional): Alternative config path for dolphin
+                if not using the default
+        """
         if self.is_dolphin:
             exe_name = "dolphin-emu"
             if platform.system() == "Windows":
