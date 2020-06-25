@@ -333,11 +333,30 @@ class Console:
                 gamestate.player[controller_port].jumps_left = unpack(">B", event_bytes[0x32:0x32+1])[0]
                 gamestate.player[controller_port].invulnerable = int(unpack(">B", event_bytes[0x34:0x34+1])[0]) != 0
 
-                gamestate.player[controller_port].speed_air_x_self = unpack(">f", event_bytes[0x35:0x35+4])[0]
-                gamestate.player[controller_port].speed_y_self = unpack(">f", event_bytes[0x39:0x39+4])[0]
-                gamestate.player[controller_port].speed_x_attack = unpack(">f", event_bytes[0x3d:0x3d+4])[0]
-                gamestate.player[controller_port].speed_y_attack = unpack(">f", event_bytes[0x41:0x41+4])[0]
-                gamestate.player[controller_port].speed_ground_x_self = unpack(">f", event_bytes[0x45:0x45+4])[0]
+                try:
+                    gamestate.player[controller_port].speed_air_x_self = unpack(">f", event_bytes[0x35:0x35+4])[0]
+                except error:
+                    gamestate.player[controller_port].speed_air_x_self = 0
+
+                try:
+                    gamestate.player[controller_port].speed_y_self = unpack(">f", event_bytes[0x39:0x39+4])[0]
+                except error:
+                    gamestate.player[controller_port].speed_y_self = 0
+
+                try:
+                    gamestate.player[controller_port].speed_x_attack = unpack(">f", event_bytes[0x3d:0x3d+4])[0]
+                except error:
+                    gamestate.player[controller_port].speed_x_attack = 0
+
+                try:
+                    gamestate.player[controller_port].speed_y_attack = unpack(">f", event_bytes[0x41:0x41+4])[0]
+                except error:
+                    gamestate.player[controller_port].speed_y_attack = 0
+
+                try:
+                    gamestate.player[controller_port].speed_ground_x_self = unpack(">f", event_bytes[0x45:0x45+4])[0]
+                except error:
+                    gamestate.player[controller_port].speed_ground_x_self = 0
 
                 # Keep track of a player's invulnerability due to respawn or ledge grab
                 gamestate.player[controller_port].invulnerability_left = max(0, self._prev_gamestate.player[controller_port].invulnerability_left - 1)
