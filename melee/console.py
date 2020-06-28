@@ -241,27 +241,20 @@ class Console:
         gamestate = GameState(self.ai_port, self.opponent_port)
         frame_ended = False
         while not frame_ended:
-            msg = self._slippstream.read_message()
-            if msg:
-                if CommType(msg['type']) == CommType.REPLAY:
-                    events = msg['payload']['data']
-                    frame_ended = self.__handle_slippstream_events(events, gamestate)
+            message = self._slippstream.dispatch()
+            if message:
+                if message.WhichOneof("envelope") == "connect_reply":
+                    print("nick", message.connect_reply.nick)
+                    print("version", message.connect_reply.version)
+                    print("cursor", message.connect_reply.cursor)
 
-                # We can basically just ignore keepalives
-                elif CommType(msg['type']) == CommType.KEEPALIVE:
-                    pass
-
-                elif CommType(msg['type']) == CommType.HANDSHAKE:
-                    handshake = msg['payload']
-                    print("Connected to console '{}' (Slippi Nintendont {})".format(
-                        handshake['nick'],
-                        handshake['nintendontVersion'],
-                    ))
-                # Handle menu-state event
-                elif CommType(msg['type']) == CommType.MENU:
-                    events = msg['payload']['data']
-                    self.__handle_slippstream_menu_event(events, gamestate)
-                    frame_ended = True
+                elif message.WhichOneof("envelope") == "game_event":
+                    if len(message.game_event.payload) > 0:
+                        frame_ended = self.__handle_slippstream_events(message.game_event.payload, gamestate)
+                elif message.WhichOneof("envelope") == "menu_event":
+                    if len(message.menu_event.payload) > 0:
+                        self.__handle_slippstream_menu_event(message.menu_event.payload, gamestate)
+                        frame_ended = True
 
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)

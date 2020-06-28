@@ -11,7 +11,10 @@ from struct import pack, unpack
 from enum import Enum
 from hexdump import hexdump
 from ubjson.decoder import DecoderException
+import enet
 import ubjson
+
+import melee.slippicomm_pb2
 
 # pylint: disable=too-few-public-methods
 class EventType(Enum):
@@ -38,8 +41,9 @@ class SlippstreamClient():
 
     def __init__(self, address="", port=51441, realtime=True):
         """ Constructor for this object """
+        self._host = enet.Host(None, 1, 0, 0)
+        self._peer = None
         self.buf = bytearray()
-        self.server = None
         self.realtime = realtime
         self.address = address
         self.port = port
@@ -51,45 +55,16 @@ class SlippstreamClient():
             return True
         return False
 
-    def read_message(self):
-        """ Read an entire message from the registered socket.
-
-        Returns None on failure, Dict of data from ubjson on success.
-        """
-        while True:
-            try:
-                # The first 4 bytes are the message's length
-                #   read this first
-                while len(self.buf) < 4:
-                    self.buf += self.server.recv(4 - len(self.buf))
-                    if len(self.buf) == 0:
-                        return None
-                message_len = unpack(">L", self.buf[0:4])[0]
-
-                # Now read in message_len amount of data
-                while len(self.buf) < (message_len + 4):
-                    self.buf += self.server.recv((message_len + 4) - len(self.buf))
-
-                try:
-                    # Exclude the the message length in the header
-                    msg = ubjson.loadb(self.buf[4:])
-                    # Clear out the old buffer
-                    del self.buf
-                    self.buf = bytearray()
-                    return msg
-
-                except DecoderException as exception:
-                    print("ERROR: Decode failure in Slippstream")
-                    print(exception)
-                    print(hexdump(self.buf[4:]))
-                    self.buf.clear()
-                    return None
-
-            except socket.error as exception:
-                if exception.args[0] == errno.EWOULDBLOCK:
-                    continue
-                print("ERROR with socket:", exception)
-                return None
+    def dispatch(self):
+        """Dispatch messages with the peer (read and write packets)"""
+        event = self._host.service(1000)
+        if event.type == enet.EVENT_TYPE_RECEIVE:
+            message = melee.slippicomm_pb2.SlippiMessage()
+            message.ParseFromString(event.packet.data)
+            return message
+        elif event.type == enet.EVENT_TYPE_CONNECT:
+            self._peer.send(0, enet.Packet(self.__new_handshake()))
+        return None
 
     def connect(self):
         """ Connect to the server
@@ -109,37 +84,28 @@ class SlippstreamClient():
             except socket.timeout:
                 return False
 
-        if self.server is not None:
-            return True
 
         # Try to connect to the server and send a handshake
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self.server.connect((self.address, self.port))
-            self.server.send(self.__new_handshake())
-        except socket.error as exception:
-            if exception.args[0] == errno.ECONNREFUSED:
-                self.server = None
-                return False
-            self.server = None
-            return False
-
+        self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
         return True
 
     def __new_handshake(self, cursor=None, token=None):
         """ Returns a new binary handshake message """
-        cursor = cursor or [0, 0, 0, 0, 0, 0, 0, 0]
-        token = token or [0, 0, 0, 0, 0, 0, 0, 0]
-
-        handshake = bytearray()
-        handshake_contents = ubjson.dumpb({
-            'type': CommType.HANDSHAKE.value,
-            'payload': {
-                'cursor': cursor,
-                'clientToken': token,
-                'isRealtime': self.realtime,
-            }
-        })
-        handshake += pack(">L", len(handshake_contents))
-        handshake += handshake_contents
-        return handshake
+        message = melee.slippicomm_pb2.SlippiMessage()
+        message.connect_request.cursor = 0
+        return bytes(message.SerializeToString())
+        # cursor = cursor or [0, 0, 0, 0, 0, 0, 0, 0]
+        # token = token or [0, 0, 0, 0, 0, 0, 0, 0]
+        #
+        # handshake = bytearray()
+        # handshake_contents = ubjson.dumpb({
+        #     'type': CommType.HANDSHAKE.value,
+        #     'payload': {
+        #         'cursor': cursor,
+        #         'clientToken': token,
+        #         'isRealtime': self.realtime,
+        #     }
+        # })
+        # handshake += pack(">L", len(handshake_contents))
+        # handshake += handshake_contents
+        # return handshake

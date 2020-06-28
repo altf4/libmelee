@@ -111,7 +111,7 @@ signal.signal(signal.SIGINT, signal_handler)
 console.run()
 
 # Give the console a second to actually spin up
-time.sleep(1)
+time.sleep(2)
 
 # Connect to the console
 print("Connecting to console...")
