@@ -12,6 +12,7 @@ import csv
 import subprocess
 import platform
 import math
+import base64
 from pathlib import Path
 
 from melee import enums
@@ -243,17 +244,17 @@ class Console:
         while not frame_ended:
             message = self._slippstream.dispatch()
             if message:
-                if message.WhichOneof("envelope") == "connect_reply":
-                    print("nick", message.connect_reply.nick)
-                    print("version", message.connect_reply.version)
-                    print("cursor", message.connect_reply.cursor)
+                if message["type"] == "connect_reply":
+                    print("nick", message["nick"])
+                    print("version", message["version"])
+                    print("cursor", message["cursor"])
 
-                elif message.WhichOneof("envelope") == "game_event":
-                    if len(message.game_event.payload) > 0:
-                        frame_ended = self.__handle_slippstream_events(message.game_event.payload, gamestate)
-                elif message.WhichOneof("envelope") == "menu_event":
-                    if len(message.menu_event.payload) > 0:
-                        self.__handle_slippstream_menu_event(message.menu_event.payload, gamestate)
+                elif message["type"] == "game_event":
+                    if len(message["payload"]) > 0:
+                        frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), gamestate)
+                elif message["type"] == "menu_event":
+                    if len(message["payload"]) > 0:
+                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), gamestate)
                         frame_ended = True
 
         self.__fixframeindexing(gamestate)

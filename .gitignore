@@ -111,6 +111,3 @@ Session.vim
 tags
 # Persistent undo
 [._]*.un~
-
-# Protobuf
-melee/slippicomm_pb2.py

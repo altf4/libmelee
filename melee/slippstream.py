@@ -5,16 +5,10 @@ This can be used to talk to some server implementing the Slippstream protocol
 (i.e. the Project Slippi fork of Nintendont or Slippi Ishiiruka).
 """
 
-import errno
 import socket
-from struct import pack, unpack
 from enum import Enum
-from hexdump import hexdump
-from ubjson.decoder import DecoderException
 import enet
-import ubjson
-
-import melee.slippicomm_pb2
+import json
 
 # pylint: disable=too-few-public-methods
 class EventType(Enum):
@@ -59,11 +53,16 @@ class SlippstreamClient():
         """Dispatch messages with the peer (read and write packets)"""
         event = self._host.service(1000)
         if event.type == enet.EVENT_TYPE_RECEIVE:
-            message = melee.slippicomm_pb2.SlippiMessage()
-            message.ParseFromString(event.packet.data)
-            return message
+            try:
+                return json.loads(event.packet.data)
+            except json.JSONDecodeError:
+                return None
         elif event.type == enet.EVENT_TYPE_CONNECT:
-            self._peer.send(0, enet.Packet(self.__new_handshake()))
+            handshake = json.dumps({
+                "type" : "connect_request",
+                "cursor" : 0,
+            })
+            self._peer.send(0, enet.Packet(handshake.encode()))
         return None
 
     def connect(self):
@@ -80,6 +79,15 @@ class SlippstreamClient():
             sock.bind(('', 20582))
             try:
                 message = sock.recvfrom(1024)
+
+                # Deserialize advertisement message
+                slp_message = melee.slippicomm_pb2.SlippiMessage()
+                slp_message.ParseFromString(message[0])
+                if slp_message.WhichOneof("envelope") == "advertisement":
+                    print("Fuck yea", slp_message.advertisement.nick)
+                else:
+                    print("WHY", message[0])
+
                 self.address = message[1][0]
             except socket.timeout:
                 return False
@@ -88,24 +96,3 @@ class SlippstreamClient():
         # Try to connect to the server and send a handshake
         self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
         return True
-
-    def __new_handshake(self, cursor=None, token=None):
-        """ Returns a new binary handshake message """
-        message = melee.slippicomm_pb2.SlippiMessage()
-        message.connect_request.cursor = 0
-        return bytes(message.SerializeToString())
-        # cursor = cursor or [0, 0, 0, 0, 0, 0, 0, 0]
-        # token = token or [0, 0, 0, 0, 0, 0, 0, 0]
-        #
-        # handshake = bytearray()
-        # handshake_contents = ubjson.dumpb({
-        #     'type': CommType.HANDSHAKE.value,
-        #     'payload': {
-        #         'cursor': cursor,
-        #         'clientToken': token,
-        #         'isRealtime': self.realtime,
-        #     }
-        # })
-        # handshake += pack(">L", len(handshake_contents))
-        # handshake += handshake_contents
-        # return handshake
