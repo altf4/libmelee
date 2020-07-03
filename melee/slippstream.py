@@ -44,9 +44,14 @@ class SlippstreamClient():
 
     def shutdown(self):
         """ Close down the socket and connection to the console """
-        if self.server is not None:
-            self.server.close()
-            return True
+        if self._peer:
+            self._peer.send(0, enet.Packet())
+            self._host.service(100)
+            self._peer.disconnect()
+            self._peer = None
+
+        if self._host:
+            self._host = None
         return False
 
     def dispatch(self):
