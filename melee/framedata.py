@@ -251,10 +251,17 @@ class FrameData:
 
 
     def in_range(self, attacker, defender, stage):
-        """ Returns the frame that the specified attack will hit the defender
-                Returns 0 if it won't hit
-                NOTE: This considers the defending character to have a single hurtbox, centered
-                    at the x,y coordinates of the player (adjusted up a little to be centered)"""
+        """ Calculates if an attack is in range of a given defender
+
+            Returns:
+                integer with the frame that the specified attack will hit the defender
+                0 if it won't hit
+
+            Note:
+                This considers the defending character to have a single hurtbox, centered
+                at the x,y coordinates of the player (adjusted up a little to be centered)
+        """
+        
         lastframe = self.last_hitbox_frame(attacker.character, attacker.action)
 
         # Adjust the defender's hurtbox up a little, to be more centered.
@@ -500,9 +507,11 @@ class FrameData:
         return min(hitboxes)
 
     def hitbox_count(self, character, action):
-        """ Returns the number of hitboxes an attack has
-           By this we mean is it a multihit attack? (Peach's down B?)
-              or a single-hit attack? (Marth's fsmash?)"""
+        """Returns the number of hitboxes an attack has
+
+           Note:
+               By this we mean is it a multihit attack? (Peach's down B?)
+               or a single-hit attack? (Marth's fsmash?)"""
         # Grab only the subset that have a hitbox
 
         # This math doesn't work for Samus's UP_B

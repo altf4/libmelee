@@ -165,10 +165,12 @@ class Controller:
             can, but probably covers most scenarios.
             Notably, a difference here is that doing a button press releases all
             other buttons pressed previously.
-            Don't call this function twice in the same frame
-                x = 0 (left) to 1 (right) on the main stick
-                y = 0 (down) to 1 (up) on the main stick
-                button = the button to press. Enter None for no button"""
+
+            Note:
+                Don't call this function twice in the same frame
+                    x = 0 (left) to 1 (right) on the main stick
+                    y = 0 (down) to 1 (up) on the main stick
+                    button = the button to press. Enter None for no button"""
         if self._is_dolphin:
             if not self.pipe:
                 return

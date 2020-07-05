@@ -5,14 +5,20 @@ import math
 
 def choose_character(character, gamestate, port, opponent_port, controller, swag=False, start=False):
     """Choose a character from the character select menu
-    Intended to be called each frame while in the character select menu
-        character = The character you want to pick
-        gamestate = The current gamestate
-        controller = The controller object to press
-        swag = Pick random until you get the character
-        start = Automatically start the match when it's ready
-            NOTE: All controller cursors must be above the character level for this
-            to work. The match won't start otherwise."""
+        Args:
+            character: The character you want to pick
+            gamestate: The current gamestate
+            controller: The controller object to press
+            swag: Pick random until you get the character
+            start: Automatically start the match when it's ready
+
+        Note:
+            Intended to be called each frame while in the character select menu
+
+        Note:
+            All controller cursors must be above the character level for this
+            to work. The match won't start otherwise.
+    """
     #Figure out where the character is on the select screen
     #NOTE: This assumes you have all characters unlocked
     #Positions will be totally wrong if something is not unlocked
@@ -130,10 +136,14 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
 
 def choose_stage(stage, gamestate, controller):
     """Choose a stage from the stage select menu
-    Intended to be called each frame while in the stage select menu
-        stage = The stage you want to select
-        gamestate = The current gamestate
-        controller = The controller object to press"""
+
+        Intended to be called each frame while in the stage select menu
+
+        Args:
+            stage: The stage you want to select
+            gamestate: The current gamestate
+            controller: The controller object to press
+    """
     if gamestate.frame < 20:
         controller.empty_input()
         return
