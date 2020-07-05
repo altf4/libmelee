@@ -1,41 +1,23 @@
 # libmelee
 Open API written in Python for making your own Smash Bros: Melee AI
 
-## Console Setup Instructions
-
-1. Get yourself a hacked Wii Slippi setup. Doing so is outside the scope of this document.
-Checkout https://slippi.gg.
-
-2. Get yourself a USB Ethernet adapter for your Wii. The Wii has Wi-Fi, but it is not good. It drops out randomly and is super slow. Only ethernet will be fast and reliable enough. Buy this adapter, as not every adapter will work with a Wii:
-
-https://www.amazon.com/UGREEN-Ethernet-Adapter-Nintendo-Chromebook/dp/B00MYT481C/
-
-3. In the Slippi Melee settings, turn `Slippi Networking` to `Yes`.
-
-4. In the Slippi Melee settings, turn `Lag Reduction` to `PD` or `PD+VB`. (VB only works if you have a progressive-scan setup, FYI)
-
-5. (Linux) Add your user to the `dialout` group, so you can access the TAStm32 without root.
-
-`sudo usermod -a -G dialout YOUR_USER_NAME`
-
-6. TODO: Full TAStm32 setup coming
-
 ## Dolphin Setup Instructions
 
 Linux / OSX / Windows
 
-1. Install (or build locally) the Ishiiruka version here: https://github.com/altf4/Ishiiruka/tree/beta
+1. Install (or build locally) the Ishiiruka version here: https://github.com/altf4/Ishiiruka/tree/gamma
 
-2. Make sure you're running Melee v1.02 NTSC. Other versions will not work.
+2. Make sure there is an empty text file named `portable.txt` adjacent to your `Dolphin.exe`.
 
-3. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
+3. Make sure you're running Melee v1.02 NTSC. Other versions will not work.
 
-4. Install via pip: (or by cloning this repo for the very latest)
-`pip3 install melee`
+4. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
 
-5. Install the latest Slippi Gecko Codes. You can find them here: https://github.com/project-slippi/slippi-ssbm-asm/blob/master/Output/Netplay/GALE01r2.ini Simply replace your existing `GALE01r2.ini` file with this one.
+5. Install come custom Slippi Gecko Codes. You can find them here: https://github.com/altf4/slippi-ssbm-asm/blob/master/Output/Netplay/GALE01r2.ini Simply replace your existing `GALE01r2.ini` file with this one.
 
-6. Run `example.py` (for an installed version of dolphin, use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
+6. Make sure you have all the `Required` and `Recommended` Gecko Codes enabled.
+
+7. Run `example.py` (for an installed version of dolphin, use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
 
 ## NOTE:
 The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
