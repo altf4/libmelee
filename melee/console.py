@@ -130,7 +130,7 @@ class Console:
             exe_path = ""
             if self.dolphin_executable_path:
                 exe_path = self.dolphin_executable_path
-            command = [exe_path + exe_name]
+            command = [exe_path + "\\" + exe_name]
             if not self.render:
                 #Use the "Null" renderer
                 command.append("-v")
