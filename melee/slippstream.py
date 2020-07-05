@@ -84,19 +84,9 @@ class SlippstreamClient():
             sock.bind(('', 20582))
             try:
                 message = sock.recvfrom(1024)
-
-                # Deserialize advertisement message
-                slp_message = melee.slippicomm_pb2.SlippiMessage()
-                slp_message.ParseFromString(message[0])
-                if slp_message.WhichOneof("envelope") == "advertisement":
-                    print("Fuck yea", slp_message.advertisement.nick)
-                else:
-                    print("WHY", message[0])
-
                 self.address = message[1][0]
             except socket.timeout:
                 return False
-
 
         # Try to connect to the server and send a handshake
         self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
