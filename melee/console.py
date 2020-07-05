@@ -12,6 +12,7 @@ import csv
 import subprocess
 import platform
 import math
+import base64
 from pathlib import Path
 
 from melee import enums
@@ -241,27 +242,20 @@ class Console:
         gamestate = GameState(self.ai_port, self.opponent_port)
         frame_ended = False
         while not frame_ended:
-            msg = self._slippstream.read_message()
-            if msg:
-                if CommType(msg['type']) == CommType.REPLAY:
-                    events = msg['payload']['data']
-                    frame_ended = self.__handle_slippstream_events(events, gamestate)
+            message = self._slippstream.dispatch()
+            if message:
+                if message["type"] == "connect_reply":
+                    print("nick", message["nick"])
+                    print("version", message["version"])
+                    print("cursor", message["cursor"])
 
-                # We can basically just ignore keepalives
-                elif CommType(msg['type']) == CommType.KEEPALIVE:
-                    pass
-
-                elif CommType(msg['type']) == CommType.HANDSHAKE:
-                    handshake = msg['payload']
-                    print("Connected to console '{}' (Slippi Nintendont {})".format(
-                        handshake['nick'],
-                        handshake['nintendontVersion'],
-                    ))
-                # Handle menu-state event
-                elif CommType(msg['type']) == CommType.MENU:
-                    events = msg['payload']['data']
-                    self.__handle_slippstream_menu_event(events, gamestate)
-                    frame_ended = True
+                elif message["type"] == "game_event":
+                    if len(message["payload"]) > 0:
+                        frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), gamestate)
+                elif message["type"] == "menu_event":
+                    if len(message["payload"]) > 0:
+                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), gamestate)
+                        frame_ended = True
 
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
