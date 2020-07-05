@@ -22,4 +22,4 @@ python:
   version: 3
   install:
       - method: setuptools
-      path: .
+        path: .
