@@ -134,10 +134,11 @@ class MenuHelper():
 
         # Discover who is the opponent
         opponent_state = None
-        for _, player in gamestate.player.items():
+        for i, player in gamestate.player.items():
             # TODO For now, just assume they're the first controller port that isn't us
-            if (player is not ai_state):
+            if i != port:
                 opponent_state = player
+                break
 
         cursor_x, cursor_y = ai_state.cursor_x, ai_state.cursor_y
         coin_down = ai_state.coin_down
