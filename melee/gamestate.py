@@ -150,3 +150,26 @@ class Projectile:
         thelist.append(int(self.owner))
         thelist.append(self.subtype.value)
         return thelist
+
+def port_detector(gamestate, controller, character):
+    """Autodiscover what port the given controller is on
+
+    Slippi Online assigns us a random port when playing online. Find out which we are
+
+    Returns:
+        [1-4]: The given controller belongs to the returned port
+        0: We don't know yet, and we pressed a button to discover. Don't press
+            any other buttons this frame or it'll mess this up!!
+
+    Args:
+        gamestate: Current gamestate
+        controller: The controller we want to test
+        character: The character we know we picked
+    """
+    for i, player in gamestate.player.items():
+        if player.character == character:
+            return i
+
+    # TODO Do some movement
+
+    return 1

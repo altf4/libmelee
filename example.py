@@ -131,15 +131,22 @@ while True:
 
     # What menu are we in?
     if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
-        if args.framerecord:
-            framedata._record_frame(gamestate)
-        # NOTE: This is where your AI does all of its stuff!
-        # This line will get hit once per frame, so here is where you read
-        #   in the gamestate and decide what buttons to push on the controller
-        if args.framerecord:
-            melee.techskill.upsmashes(ai_state=gamestate.player[args.port], controller=controller)
-        else:
-            melee.techskill.multishine(ai_state=gamestate.player[args.port], controller=controller)
+
+        # Slippi Online matches assign you a random port once you're in game that's different
+        #   than the one you're physically plugged into. This helper will autodiscover what
+        #   port we actually are.
+        discovered_port = melee.gamestate.port_detector(gamestate, controller, melee.enums.Character.FOX)
+
+        if discovered_port > 0:
+            if args.framerecord:
+                framedata._record_frame(gamestate)
+            # NOTE: This is where your AI does all of its stuff!
+            # This line will get hit once per frame, so here is where you read
+            #   in the gamestate and decide what buttons to push on the controller
+            if args.framerecord:
+                melee.techskill.upsmashes(ai_state=gamestate.player[discovered_port], controller=controller)
+            else:
+                melee.techskill.multishine(ai_state=gamestate.player[discovered_port], controller=controller)
 
     else:
         melee.menuhelper.MenuHelper.menu_helper_simple(gamestate,
