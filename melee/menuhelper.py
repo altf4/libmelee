@@ -3,6 +3,59 @@
 from melee import enums
 import math
 
+def enter_direct_code(gamestate, controller, connect_code, index):
+    """At the nametag entry screen, enter the given direct connect code and exit
+
+    Returns:
+        new index (incremented if we entered a new character)
+    """
+    # Let the controller go every other frame. Makes the logic below easier
+    if gamestate.frame % 2 == 0:
+        controller.empty_input()
+        return index
+
+    if len(connect_code) == index:
+        controller.press_button(enums.Button.BUTTON_START)
+        return index
+
+    target_character = connect_code[index]
+    target_code = 45
+    column = "ABCDEFGHIJ".find(target_character)
+    if column != -1:
+        target_code = 45 - (column * 5)
+    column = "KLMNOPQRST".find(target_character)
+    if column != -1:
+        target_code = 46 - (column * 5)
+    column = "UVWXYZ   #".find(target_character)
+    if column != -1:
+        target_code = 47 - (column * 5)
+    column = "0123456789".find(target_character)
+    if column != -1:
+        target_code = 48 - (column * 5)
+
+    if gamestate.menu_selection == target_code:
+        controller.press_button(enums.Button.BUTTON_A)
+        return index + 1
+
+    if gamestate.menu_selection == 57:
+        controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        return index
+
+    if gamestate.menu_selection < target_code:
+        diff = target_code - gamestate.menu_selection
+        if diff < 5:
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        else:
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+    else:
+        diff = target_code - gamestate.menu_selection
+        if diff > 5:
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+        else:
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+
+    return index
+
 def choose_character(character, gamestate, port, opponent_port, controller, swag=False, start=False):
     """Choose a character from the character select menu
         Args:
@@ -295,6 +348,34 @@ def choose_versus_mode(gamestate, controller):
                 controller.press_button(enums.Button.BUTTON_A)
             else:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        else:
+            controller.press_button(enums.Button.BUTTON_B)
+    else:
+        controller.empty_input()
+
+def choose_direct_online(gamestate, controller):
+    """Helper function to bring us into the unranked online menu"""
+    # Let the controller go every other frame. Makes the logic below easier
+    if gamestate.frame % 2 == 0:
+        controller.empty_input()
+        return
+
+    if gamestate.menu_state == enums.Menu.MAIN_MENU:
+        if gamestate.submenu == enums.SubMenu.ONLINE_PLAY_SUBMENU:
+            if gamestate.menu_selection == 2:
+                controller.press_button(enums.Button.BUTTON_A)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        elif gamestate.submenu == enums.SubMenu.MAIN_MENU_SUBMENU:
+            controller.press_button(enums.Button.BUTTON_A)
+        elif gamestate.submenu == enums.SubMenu.ONEP_MODE_SUBMENU:
+            if gamestate.menu_selection == 2:
+                controller.press_button(enums.Button.BUTTON_A)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+
+        elif gamestate.submenu == enums.SubMenu.NAME_ENTRY_SUBMENU:
+            print("Got here")
         else:
             controller.press_button(enums.Button.BUTTON_B)
     else:
