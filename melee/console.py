@@ -55,6 +55,10 @@ class Console:
         self.slippi_port = 51441
         self.eventsize = [0] * 0x100
         self.render = True
+        self.connected = False
+        self.nick = ""
+        self.version = ""
+        self.cursor = 0
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState(ai_port, opponent_port)
@@ -153,6 +157,7 @@ class Console:
         For Dolphin instances, this will kill the dolphin process.
         For Wiis and SLP files, it just shuts down our connection
          """
+        self.connected = False
         self._slippstream.shutdown()
         # If dolphin, kill the process
         if self._process is not None:
@@ -245,9 +250,10 @@ class Console:
             message = self._slippstream.dispatch()
             if message:
                 if message["type"] == "connect_reply":
-                    print("nick", message["nick"])
-                    print("version", message["version"])
-                    print("cursor", message["cursor"])
+                    self.connected = True
+                    self.nick = message["nick"]
+                    self.version = message["version"]
+                    self.cursor = message["cursor"]
 
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
