@@ -20,7 +20,32 @@ class Menu(Enum):
     IN_GAME = 2
     SUDDEN_DEATH = 3
     POSTGAME_SCORES = 4
+    MAIN_MENU = 5
+    SLIPPI_ONLINE_CSS = 6
     UNKNOWN_MENU = 0xff
+
+class SubMenu(Enum):
+    """Sub-menu of a primary menu"""
+    MAIN_MENU_SUBMENU = 0
+    ONEP_MODE_SUBMENU = 1
+    VS_MODE_SUBMENU = 2
+    TROPHIES_SUBMENU = 3
+    OPTION_SUBMENU = 4
+    DATA_SUBMENU = 5
+    REGULAR_MATCH_SUBMENU = 6
+    EVENT_MATCH_SUBMENU = 7
+    ONLINE_PLAY_SUBMENU = 8
+    STADIUM_SUBMENU = 9
+    SPECIAL_MELEE_SUBMENU = 12
+    CUSTOM_RULES_SUBMENU = 13
+    NAME_ENTRY_SUBMENU = 18
+    RUMBLE_SUBMENU = 19
+    SOUND_SUBMENU = 20
+    SCREEN_DISPLAY_SUBMENU = 21
+    LANGUAGE_SELECT_SUBMENU = 23
+    ERASE_DATA_SUBMENU = 24
+    MULTIMAN_MELEE_SUBMENU = 33
+    UNKNOWN_SUBMENU = 0xff
 
 class ControllerStatus(Enum):
     """ One of three states a controller can be in during character select """

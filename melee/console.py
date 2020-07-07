@@ -443,6 +443,10 @@ class Console:
             gamestate.menu_state = enums.Menu.STAGE_SELECT
         elif scene == 0x0202:
             gamestate.menu_state = enums.Menu.IN_GAME
+        elif scene == 0x0001:
+            gamestate.menu_state = enums.Menu.MAIN_MENU
+        elif scene == 0x0008:
+            gamestate.menu_state = enums.Menu.SLIPPI_ONLINE_CSS
         else:
             gamestate.menu_state = enums.Menu.UNKNOWN_MENU
 
@@ -530,6 +534,19 @@ class Console:
         # Frame count
         gamestate.frame = unpack(">i", event_bytes[0x39:0x39+4])[0]
 
+        # Sub-menu
+        try:
+            gamestate.submenu = enums.SubMenu(unpack(">B", event_bytes[0x3D:0x3D+1])[0])
+        except error:
+            gamestate.submenu = enums.SubMenu.UNKNOWN_SUBMENU
+        except ValueError:
+            gamestate.submenu = enums.SubMenu.UNKNOWN_SUBMENU
+
+        # Selected menu
+        try:
+            gamestate.menu_selection = unpack(">B", event_bytes[0x3E:0x3E+1])[0]
+        except error:
+            gamestate.menu_selection = 0
 
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""

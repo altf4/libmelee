@@ -19,11 +19,21 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
             All controller cursors must be above the character level for this
             to work. The match won't start otherwise.
     """
-    #Figure out where the character is on the select screen
-    #NOTE: This assumes you have all characters unlocked
-    #Positions will be totally wrong if something is not unlocked
+    # Figure out where the character is on the select screen
+    # NOTE: This assumes you have all characters unlocked
+    # Positions will be totally wrong if something is not unlocked
     ai_state = gamestate.player[port]
     opponent_state = gamestate.player[opponent_port]
+
+    cursor_x, cursor_y = ai_state.cursor_x, ai_state.cursor_y
+    coin_down = ai_state.coin_down
+    character_selected = ai_state.character_selected
+    isSlippiCSS = False
+    if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
+        cursor_x, cursor_y = gamestate.player[1].cursor_x, gamestate.player[1].cursor_y
+        isSlippiCSS = True
+        character_selected = gamestate.player[1].character_selected
+
     row = character.value // 9
     column = character.value % 9
     #The random slot pushes the bottom row over a slot, so compensate for that
@@ -46,15 +56,15 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
     wiggleroom = 1.5
 
     # We are already set, so let's taunt our opponent
-    if ai_state.character_selected == character and swag and not start:
+    if character_selected == character and swag and not start:
         delta_x = 3 * math.cos(gamestate.frame / 1.5)
         delta_y = 3 * math.sin(gamestate.frame / 1.5)
 
         target_x = opponent_state.cursor_x + delta_x
         target_y = opponent_state.cursor_y + delta_y
 
-        diff_x = abs(target_x - ai_state.cursor_x)
-        diff_y = abs(target_y - ai_state.cursor_y)
+        diff_x = abs(target_x - cursor_x)
+        diff_y = abs(target_y - cursor_y)
         larger_magnitude = max(diff_x, diff_y)
 
         # Scale down values to between 0 and 1
@@ -62,21 +72,24 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
         y = diff_y / larger_magnitude
 
         # Now scale down to be between .5 and 1
-        if ai_state.cursor_x < target_x:
+        if cursor_x < target_x:
             x = (x/2) + 0.5
         else:
             x = 0.5 - (x/2)
-        if ai_state.cursor_y < target_y:
+        if cursor_y < target_y:
             y = (y/2) + 0.5
         else:
             y = 0.5 - (y/2)
         controller.tilt_analog(enums.Button.BUTTON_MAIN, x, y)
+
+        if isSlippiCSS:
+            controller.press_button(enums.Button.BUTTON_START)
         return
 
     #We want to get to a state where the cursor is NOT over the character,
     # but it's selected. Thus ensuring the token is on the character
-    isOverCharacter = abs(ai_state.cursor_x - target_x) < wiggleroom and \
-        abs(ai_state.cursor_y - target_y) < wiggleroom
+    isOverCharacter = abs(cursor_x - target_x) < wiggleroom and \
+        abs(cursor_y - target_y) < wiggleroom
 
     #Don't hold down on B, since we'll quit the menu if we do
     if controller.prev.button[enums.Button.BUTTON_B] == True:
@@ -84,7 +97,7 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
         return
 
     #If character is selected, and we're in of the area, and coin is down, then we're good
-    if (ai_state.character_selected == character) and ai_state.coin_down:
+    if (character_selected == character) and coin_down:
         if start and gamestate.ready_to_start and \
             controller.prev.button[enums.Button.BUTTON_START] == False:
             controller.press_button(enums.Button.BUTTON_START)
@@ -101,9 +114,23 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
         #If we're over the character, but it isn't selected,
         #   then the coin must be somewhere else.
         #   Press B to reclaim the coin
+
         controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, .5)
-        if (ai_state.character_selected != character) and (ai_state.coin_down):
+
+        # The slippi menu doesn't have a coin down. We can make-do
+        if isSlippiCSS and (character_selected != character):
+            if gamestate.frame % 5 == 0:
+                controller.press_button(enums.Button.BUTTON_B)
+                controller.release_button(enums.Button.BUTTON_A)
+                return
+            else:
+                controller.press_button(enums.Button.BUTTON_A)
+                controller.release_button(enums.Button.BUTTON_B)
+                return
+
+        if (character_selected != character) and coin_down:
             controller.press_button(enums.Button.BUTTON_B)
+            controller.release_button(enums.Button.BUTTON_A)
             return
         #Press A to select our character
         else:
@@ -117,19 +144,19 @@ def choose_character(character, gamestate, port, opponent_port, controller, swag
         #Move in
         controller.release_button(enums.Button.BUTTON_A)
         #Move up if we're too low
-        if ai_state.cursor_y < target_y - wiggleroom:
+        if cursor_y < target_y - wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
             return
         #Move down if we're too high
-        if ai_state.cursor_y > target_y + wiggleroom:
+        if cursor_y > target_y + wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
         #Move right if we're too left
-        if ai_state.cursor_x < target_x - wiggleroom:
+        if cursor_x < target_x - wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
             return
         #Move left if we're too right
-        if ai_state.cursor_x > target_x + wiggleroom:
+        if cursor_x > target_x + wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
             return
     controller.empty_input()
@@ -248,3 +275,27 @@ def change_controller_status(controller, gamestate, targetport, port, status, ch
         controller.press_button(enums.Button.BUTTON_A)
     else:
         controller.release_button(enums.Button.BUTTON_A)
+
+def choose_versus_mode(gamestate, controller):
+    """Helper function to bring us into the unranked online menu"""
+
+    # Let the controller go every other frame. Makes the logic below easier
+    if gamestate.frame % 2 == 0:
+        controller.empty_input()
+        return
+
+    if gamestate.menu_state == enums.Menu.MAIN_MENU:
+        if gamestate.submenu == enums.SubMenu.MAIN_MENU_SUBMENU:
+            if gamestate.menu_selection == 1:
+                controller.press_button(enums.Button.BUTTON_A)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        elif gamestate.submenu == enums.SubMenu.VS_MODE_SUBMENU:
+            if gamestate.menu_selection == 0:
+                controller.press_button(enums.Button.BUTTON_A)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+        else:
+            controller.press_button(enums.Button.BUTTON_B)
+    else:
+        controller.empty_input()

@@ -141,22 +141,7 @@ while True:
     if console.processingtime * 1000 > 12:
         print("WARNING: Last frame took " + str(console.processingtime*1000) + "ms to process.")
 
-    # # What menu are we in?
-    # # If this is a Wii, just assume we're in game
-    # if args.console == "wii":
-    #     # print("\n", gamestate.frame)
-    #     # print(gamestate.ai_state.action, gamestate.ai_state.action_frame)
-    #     if (gamestate.frame % 20) >= 10:
-    #         # print("Go left")
-    #         controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
-    #     else:
-    #         # print("Go right")
-    #         controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 1)
-    #     # if (gamestate.frame % 8) > 3:
-    #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
-    #     # else:
-    #     #     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
-
+    # What menu are we in?
     if gamestate.menu_state in [melee.enums.Menu.IN_GAME, melee.enums.Menu.SUDDEN_DEATH]:
         if args.framerecord:
             framedata._record_frame(gamestate)
@@ -168,7 +153,7 @@ while True:
         else:
             melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
     # If we're at the character select screen, choose our character
-    elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
+    elif gamestate.menu_state in [melee.enums.Menu.CHARACTER_SELECT, melee.Menu.SLIPPI_ONLINE_CSS]:
         melee.menuhelper.choose_character(character=melee.enums.Character.FOX,
                                           gamestate=gamestate,
                                           port=args.port,
@@ -184,6 +169,10 @@ while True:
         melee.menuhelper.choose_stage(stage=melee.enums.Stage.POKEMON_STADIUM,
                                       gamestate=gamestate,
                                       controller=controller)
+    elif gamestate.menu_state == melee.enums.Menu.MAIN_MENU:
+        melee.menuhelper.choose_versus_mode(gamestate=gamestate,
+                                            controller=controller)
+
     # Flush any button presses queued up
     controller.flush()
     if log:
