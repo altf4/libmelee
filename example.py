@@ -155,37 +155,16 @@ while True:
             melee.techskill.upsmashes(ai_state=gamestate.ai_state, controller=controller)
         else:
             melee.techskill.multishine(ai_state=gamestate.ai_state, controller=controller)
-    # If we're at the character select screen, choose our character
-    elif gamestate.menu_state in [melee.enums.Menu.CHARACTER_SELECT, melee.Menu.SLIPPI_ONLINE_CSS]:
-        if gamestate.submenu == melee.enums.SubMenu.NAME_ENTRY_SUBMENU:
-            name_tag_index = melee.menuhelper.enter_direct_code(gamestate=gamestate,
-                                                                controller=controller,
-                                                                connect_code=args.connect_code,
-                                                                index=name_tag_index)
-        else:
-            melee.menuhelper.choose_character(character=melee.enums.Character.FOX,
-                                              gamestate=gamestate,
-                                              port=args.port,
-                                              opponent_port=args.opponent,
-                                              controller=controller,
-                                              swag=True,
-                                              start=False)
-    # If we're at the postgame scores screen, spam START
-    elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
-        melee.menuhelper.skip_postgame(controller=controller)
-    # If we're at the stage select screen, choose a stage
-    elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
-        melee.menuhelper.choose_stage(stage=melee.enums.Stage.POKEMON_STADIUM,
-                                      gamestate=gamestate,
-                                      controller=controller)
-    elif gamestate.menu_state == melee.enums.Menu.MAIN_MENU:
-        if args.connect_code:
-            melee.menuhelper.choose_direct_online(gamestate=gamestate,
-                                                  controller=controller)
-        else:
-            melee.menuhelper.choose_versus_mode(gamestate=gamestate,
-                                                controller=controller)
 
+    else:
+        melee.menuhelper.MenuHelper.menu_helper_simple(gamestate,
+                                            controller,
+                                            args.port,
+                                            melee.enums.Character.FOX,
+                                            melee.enums.Stage.POKEMON_STADIUM,
+                                            args.connect_code,
+                                            autostart=True,
+                                            swag=True)
 
     # Flush any button presses queued up
     controller.flush()
