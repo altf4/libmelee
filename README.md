@@ -19,11 +19,6 @@ Linux / OSX / Windows
 
 7. Run `example.py` (use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
 
-## NOTE:
-The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
-
-libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.
-
 ## The API
 
 This readme will give you a very high level overview of the API. For a more detailed view into specific functions and their params, check out the ReadTheDocs page here: https://libmelee.readthedocs.io/
@@ -55,12 +50,15 @@ Other values in Melee are unintuitive, but are a core aspect of how the game wor
 Libmelee lets you programatically press buttons on a virtual controller via Dolphin's named pipes input mechanism. The interface for this is pretty simple, after setting up a controller and connecting it, you can:
 
 `controller.press_button(melee.enums.BUTTON_A)`
+
 or
+
 `controller.release_button(melee.enums.BUTTON_A)`
 
 Or tilt one of the analog sticks by:
 
 `controller.tilt_analog(melee.enums.BUTTON_MAIN, X, Y)`
+
 (X and Y are numbers between 0->1. Where 0 is left/down and 1 is right/up. 0.5 is neutral)
 
 ### Note on Controller Input
@@ -71,3 +69,8 @@ Also, if you don't press a button, Dolphin will just use whatever you pressed la
 `controller.empty_input()`
 
 which will unpress all buttons and set all sticks / shoulders to neutral.
+
+## NOTE
+The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
+
+libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.
