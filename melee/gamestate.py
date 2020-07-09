@@ -15,7 +15,7 @@ class GameState:
         self.menu_state = enums.Menu.IN_GAME
         """enums.MenuState: The current menu scene, such as IN_GAME, or STAGE_SELECT"""
         self.player = dict()
-        """(dict of int - enums.PlayerState): Dict of PlayerState objects. Key is controller port"""
+        """(dict of int - gamestate.PlayerState): Dict of PlayerState objects. Key is controller port"""
         self.projectiles = []
         """(list of Projectile): All projectiles (items) currently existing"""
         self.stage_select_cursor_x = 0.0

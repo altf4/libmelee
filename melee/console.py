@@ -1,6 +1,8 @@
 """The Console represents the engine running the game.
 
-This can be Dolphin (Ishiiruka), A Nintendont Wii, or an SLP file (TODO) """
+This can be Dolphin (Ishiiruka), A Nintendont Wii, or an SLP file (TODO). The Console object
+is your method to start and stop Dolphin, set configs, and get the latest GameState.
+"""
 
 from struct import unpack, error
 from collections import defaultdict
@@ -24,11 +26,6 @@ from melee import stages
 # pylint: disable=too-many-instance-attributes
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
-
-    Attributes:
-        slippi_address (str): IP address of the Dolphin / Wii to connect to.
-            Empty string will try to autodiscover a nearby SlippiComm server
-        slippi_port (int): TCP port of slippi server. Default 51441
     """
     def __init__(self, is_dolphin, ai_port, opponent_port, opponent_type,
                  dolphin_executable_path=None, slippi_address="", logger=None):
@@ -52,12 +49,16 @@ class Console:
         self.processingtime = 0
         self._frametimestamp = time.time()
         self.slippi_address = slippi_address
+        """(str): IP address of the Dolphin / Wii to connect to."""
         self.slippi_port = 51441
+        """(int): TCP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
         self.render = True
         self.connected = False
         self.nick = ""
+        """(str): The nickname the console has given itself."""
         self.version = ""
+        """(str): The Slippi version of the console"""
         self.cursor = 0
 
         # Keep a running copy of the last gamestate produced
@@ -119,8 +120,11 @@ class Console:
                 return True
         return False
 
-    def run(self, iso_path=None, movie_path=None, dolphin_config_path=None):
-        """Run dolphin-emu
+    def run(self, iso_path=None, dolphin_config_path=None):
+        """Run the Dolphin emulator.
+
+        This starts the Dolphin process, so don't run this if you're connecting to an
+        already running Dolphin instance.
 
         Args:
             iso_path (str, optional): Path to Melee ISO for dolphin to read
@@ -140,9 +144,6 @@ class Console:
                 #Use the "Null" renderer
                 command.append("-v")
                 command.append("Null")
-            if movie_path is not None:
-                command.append("-m")
-                command.append(movie_path)
             if iso_path is not None:
                 command.append("-e")
                 command.append(iso_path)
@@ -241,7 +242,9 @@ class Console:
 
     def step(self):
         """ 'step' to the next state of the game
-        Returns a new gamestate object that represents current state of the game"""
+
+        Returns:
+            GameState object that represents new current state of the game"""
         # Keep looping until we get a REPLAY message
         self.processingtime = time.time() - self._frametimestamp
         gamestate = GameState(self.ai_port, self.opponent_port)

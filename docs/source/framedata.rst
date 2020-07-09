@@ -1,6 +1,6 @@
-Enums
+Framedata
 ----------------------
 
-.. automodule:: melee.enums
+.. automodule:: melee.framedata
    :members:
    :undoc-members:

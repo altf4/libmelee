@@ -1,9 +1,9 @@
-""" Enum values for various Melee objects """
+"""Enum values for various Melee objects """
 
 from enum import Enum
 
 class Stage(Enum):
-    """ A VS-mode stage """
+    """A VS-mode stage """
     NO_STAGE = 0
     FINAL_DESTINATION = 0x19
     BATTLEFIELD = 0x18
@@ -14,7 +14,7 @@ class Stage(Enum):
     RANDOM_STAGE = 0x1D # not technically a stage, but it's useful to call it one
 
 class Menu(Enum):
-    """ A scene the game can be in """
+    """A primary menu scene the game can be in """
     CHARACTER_SELECT = 0
     STAGE_SELECT = 1
     IN_GAME = 2
@@ -48,27 +48,32 @@ class SubMenu(Enum):
     UNKNOWN_SUBMENU = 0xff
 
 class ControllerStatus(Enum):
-    """ One of three states a controller can be in during character select """
+    """One of three states a controller can be in during character select """
     CONTROLLER_HUMAN = 0
     CONTROLLER_CPU = 1
     CONTROLLER_UNPLUGGED = 3
 
 class ControllerType(Enum):
-    """ Types a controller can be in the Dolphin config """
+    """Types a controller can be in the Dolphin config
+
+    Named pipe input is considered 'standard' input by Dolphin.
+    """
     STANDARD = "6"
     GCN_ADAPTER = "12"
     UNPLUGGED = "0"
 
 class AttackState(Enum):
-    """ The phases an attack can be in """
+    """The phases an attack can be in """
     WINDUP = 0
     ATTACKING = 1
     COOLDOWN = 2
     NOT_ATTACKING = 3
 
 class Character(Enum):
-    """ A Melee character ID.
-    NOTE: Numeric values are 'internal' IDs. """
+    """A Melee character ID.
+
+    Note:
+        Numeric values are 'internal' IDs."""
     MARIO = 0x00
     FOX = 0x01
     CPTFALCON = 0x02
@@ -103,7 +108,10 @@ class Character(Enum):
     UNKNOWN_CHARACTER = 0xff
 
 def to_internal(char_id):
-    """ Converts a character select-screen ID to an 'internal ID' enum """
+    """Converts a character select-screen ID to an 'internal ID' enum
+
+    Mostly used at the Character Select Screen
+    """
     if char_id == 0x00:
         return Character.DOC
     if char_id == 0x01:
@@ -157,8 +165,10 @@ def to_internal(char_id):
     return Character.UNKNOWN_CHARACTER
 
 class Button(Enum):
-    """ A single button on a GCN controller
-    NOTE: String values represent the Dolphin input string for that button"""
+    """A single button on a GCN controller
+
+    Note:
+        String values represent the Dolphin input string for that button"""
     BUTTON_A = "A"
     BUTTON_B = "B"
     BUTTON_X = "X"
@@ -177,7 +187,9 @@ class Button(Enum):
 
 class Action(Enum):
     """ The in-game action (or animation) a character can be in
-    NOTE: Numeric values represent their Slippi-defined in-game values"""
+
+    Note:
+        Numeric values (mostly) represent their in-game values"""
     DEAD_DOWN = 0x0
     DEAD_LEFT = 0x1
     DEAD_RIGHT = 0x2
@@ -578,7 +590,7 @@ class Action(Enum):
     UNKNOWN_ANIMATION = 0xffff
 
 class ProjectileSubtype(Enum):
-    """ Primary type of prejectile or item """
+    """Primary type of prejectile or item """
     BOB_OMB = 0x06 # Bob-omb (BombHei)
     MR_SATURN = 0x07 # Mr. Saturn (Dosei)
     BEAMSWORD = 0x0C # Beam Sword

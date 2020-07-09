@@ -4,93 +4,40 @@ Libmelee
 Open API written in Python 3 for making your own Smash Bros: Melee AI that works with Slippi Online
 
 .. toctree::
-   :maxdepth: 3
+  :maxdepth: 8
 
-   gettingstarted
-   gamestate
-   enums
+  gettingstarted
+  console
+  controller
+  gamestate
+  menuhelper
+  framedata
+  logger
+  enums
 
-Primary Game Objects
+Quick Example
 --------------------
 
+.. code-block:: python
+  :linenos:
 
-Console
---------------------
+  import melee
 
-.. automodule:: melee.console
-   :members:
-   :undoc-members:
-   :show-inheritance:
+  console = melee.console.Console(ai_port=1,
+                                  is_dolphin=True,
+                                  opponent_port=2,
+                                  opponent_type=melee.enums.CONTROLLER_HUMAN,
+                                  dolphin_executable_path="~/SlippiOnline/"",
+                                  slippi_address="127.0.0.1",
+                                  logger=None)
 
-Controller
------------------------
+  controller = melee.controller.Controller(port=1, console=console)
 
-.. automodule:: melee.controller
-   :members:
-   :undoc-members:
-   :show-inheritance:
+  console.run()
+  console.connect()
 
-melee.framedata module
-----------------------
+  controller.connect()
 
-.. automodule:: melee.framedata
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.logger module
--------------------
-
-.. automodule:: melee.logger
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.menuhelper module
------------------------
-
-.. automodule:: melee.menuhelper
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.slippstream module
-------------------------
-
-.. automodule:: melee.slippstream
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.stages module
--------------------
-
-.. automodule:: melee.stages
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.techskill module
-----------------------
-
-.. automodule:: melee.techskill
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.version module
---------------------
-
-.. automodule:: melee.version
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: melee
-   :members:
-   :undoc-members:
-   :show-inheritance:
+  while True:
+      gamestate = console.step()
+      # Press buttons on your controller based on the GameState here!
