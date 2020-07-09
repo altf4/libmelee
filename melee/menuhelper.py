@@ -5,6 +5,7 @@ import math
 
 class MenuHelper():
     name_tag_index = 0
+    inputs_live = False
 
     def menu_helper_simple(gamestate,
                             controller,
@@ -64,6 +65,16 @@ class MenuHelper():
         Returns:
             new index (incremented if we entered a new character)
         """
+        # The name entry screen is dead for the first few frames
+        #   So if the first character is A, then the input can get eaten
+        #   Account for this by making sure we can move off the letter first
+        if gamestate.menu_selection != 45:
+            MenuHelper.inputs_live = True
+
+        if not MenuHelper.inputs_live:
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+            return index
+
         # Let the controller go every other frame. Makes the logic below easier
         if gamestate.frame % 2 == 0:
             controller.empty_input()
