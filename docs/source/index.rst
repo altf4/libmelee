@@ -1,10 +1,20 @@
-melee package
+Libmelee
 =============
 
-Submodules
-----------
+Open API written in Python 3 for making your own Smash Bros: Melee AI that works with Slippi Online
 
-melee.console module
+.. toctree::
+   :maxdepth: 3
+
+   gettingstarted
+   gamestate
+   enums
+
+Primary Game Objects
+--------------------
+
+
+Console
 --------------------
 
 .. automodule:: melee.console
@@ -12,18 +22,10 @@ melee.console module
    :undoc-members:
    :show-inheritance:
 
-melee.controller module
+Controller
 -----------------------
 
 .. automodule:: melee.controller
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.enums module
-------------------
-
-.. automodule:: melee.enums
    :members:
    :undoc-members:
    :show-inheritance:
@@ -32,14 +34,6 @@ melee.framedata module
 ----------------------
 
 .. automodule:: melee.framedata
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-melee.gamestate module
-----------------------
-
-.. automodule:: melee.gamestate
    :members:
    :undoc-members:
    :show-inheritance:
