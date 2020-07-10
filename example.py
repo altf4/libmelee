@@ -157,9 +157,6 @@ while True:
                                             args.connect_code,
                                             autostart=True,
                                             swag=True)
-
-    # Flush any button presses queued up
-    controller.flush()
     if log:
         log.logframe(gamestate)
         log.writeframe()

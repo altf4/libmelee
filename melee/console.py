@@ -60,6 +60,7 @@ class Console:
         self.version = ""
         """(str): The Slippi version of the console"""
         self.cursor = 0
+        self.controllers = []
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState(ai_port, opponent_port)
@@ -241,12 +242,17 @@ class Console:
         #     config.write(dolphinfile)
 
     def step(self):
-        """ 'step' to the next state of the game
+        """ 'step' to the next state of the game and flushes all controllers
 
         Returns:
             GameState object that represents new current state of the game"""
         # Keep looping until we get a REPLAY message
         self.processingtime = time.time() - self._frametimestamp
+
+        # Flush the controllers
+        for controler in self.controllers:
+            controler.flush()
+
         gamestate = GameState(self.ai_port, self.opponent_port)
         frame_ended = False
         while not frame_ended:

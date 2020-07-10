@@ -40,7 +40,6 @@ Quick Example
   while True:
       gamestate = console.step()
       # Press buttons on your controller based on the GameState here!
-      controller.flush()
 
 For a fully fleshed-out example program that you can run, check out ``example.py``.
 

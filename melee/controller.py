@@ -120,6 +120,7 @@ class Controller:
         self.prev = ControllerState()
         self.current = ControllerState()
         self.logger = console.logger
+        self._console = console
 
     def connect(self):
         """Connect the controller to the console
@@ -127,6 +128,9 @@ class Controller:
             Note:
                 Blocks until the other side is ready
         """
+        # Add ourselves to the console's controller list
+        self._console.controllers.append(self)
+
         if self._is_dolphin:
             if platform.system() == "Windows":
                 # "Create File" in windows is what you use to open a file. Not
