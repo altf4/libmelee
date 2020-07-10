@@ -1,6 +1,15 @@
 # libmelee
 Open API written in Python 3 for making your own Smash Bros: Melee AI that works with Slippi Online
 
+## Installing Libmelee
+Libmelee is on pip, this will be the easiest way to get the library and stay updated.
+
+`pip3 install melee`
+
+And definitely stay updated, as the library will be actively improved.
+
+`pip3 install --upgrade melee`
+
 ## Dolphin Setup Instructions
 
 Linux / OSX / Windows
