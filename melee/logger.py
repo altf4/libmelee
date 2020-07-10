@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 class Logger():
-    """ A custom logger for a console. Writes the gametstate out to a CSV file
+    """A custom logger for a console. Writes the gametstate out to a CSV file each frame
             so you can retroactively view the game frame-by-frame"""
     def __init__(self):
         timestamp = Path(str(datetime.now()).replace(" ", "-").replace(":", "-") + ".csv")
@@ -26,9 +26,13 @@ class Logger():
         self.filename = self.csvfile.name
 
     def log(self, column, contents, concat=False):
-        """ Write 'contents' to the log at given 'column'
+        """Write 'contents' to the log at given 'column'
 
-        Replaces the contents if concat=False
+        Args:
+            column (str): The column to write the log message at
+            contents (str): The thing to write to the log
+            concat (bool): Should we concatenate the contents to the existing log at that column
+                (or replace it)
         """
         #Should subsequent logs be cumulative?
         if concat:
@@ -40,7 +44,11 @@ class Logger():
             self.current_row[column] = contents
 
     def logframe(self, gamestate):
-        """ Log any common per-frame things """
+        """Log any common per-frame things
+
+        Args:
+            gamestate (gamestate.GameState): A gamestate object to log
+        """
         ai_state = gamestate.ai_state
         opponent_state = gamestate.opponent_state
 
@@ -63,11 +71,11 @@ class Logger():
         self.log('AI Percent', str(ai_state.percent))
 
     def writeframe(self):
-        """ Write the current frame to the log and move to a new frame"""
+        """Write the current frame to the log and move to a new frame"""
         self.rows.append(self.current_row)
         self.current_row = dict()
 
     def writelog(self):
-        """ Write the log to file """
+        """Write the log to file """
         self.writer.writeheader()
         self.writer.writerows(self.rows)

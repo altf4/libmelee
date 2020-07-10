@@ -25,8 +25,8 @@ Quick Example
   console = melee.console.Console(ai_port=1,
                                   is_dolphin=True,
                                   opponent_port=2,
-                                  opponent_type=melee.enums.CONTROLLER_HUMAN,
-                                  dolphin_executable_path="~/SlippiOnline/"",
+                                  opponent_type=melee.enums.ControllerType.GCN_ADAPTER,
+                                  dolphin_executable_path="/SlippiOnline/",
                                   slippi_address="127.0.0.1",
                                   logger=None)
 
@@ -40,7 +40,7 @@ Quick Example
   while True:
       gamestate = console.step()
       # Press buttons on your controller based on the GameState here!
-
+      controller.flush()
 
 For a fully fleshed-out example program that you can run, check out ``example.py``.
 

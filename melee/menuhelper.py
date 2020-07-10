@@ -1,5 +1,8 @@
 """Helper functions for navigating the Melee menus in ways that would be
-    cumbersome to do on your own."""
+cumbersome to do on your own. The goal here is to get you into the game
+as easily as possible so you don't have to worry about it. Your AI should
+concentrate on playing the game, not futzing with menus.
+"""
 from melee import enums
 import math
 
@@ -21,14 +24,14 @@ class MenuHelper():
         your character, chooses the stage, enters connect codes, etc...
 
         Args:
-            gamestate: The current GameState for this frame
-            controller: A Controller object that the bot will press buttons on
-            character_selected: The character your bot will play as
-            stage_selected: The stage your bot will choose to play on
-            connect_code: The connect code to direct match with. Leave blank for VS mode.
-            autostart: Automatically start the game when it's ready.
+            gamestate (gamestate.GameState): The current GameState for this frame
+            controller (controller.Controller): A Controller object that the bot will press buttons on
+            character_selected (enums.Character): The character your bot will play as
+            stage_selected (enums.Stage): The stage your bot will choose to play on
+            connect_code (str): The connect code to direct match with. Leave blank for VS mode.
+            autostart (bool): Automatically start the game when it's ready.
                 Useful for BotvBot matches where no human is there to start it.
-            swag: What it sounds like
+            swag (bool): What it sounds like
         """
 
         # If we're at the character select screen, choose our character
@@ -61,6 +64,12 @@ class MenuHelper():
 
     def enter_direct_code(gamestate, controller, connect_code, index):
         """At the nametag entry screen, enter the given direct connect code and exit
+
+        Args:
+            gamestate (gamestate.GameState): The current GameState for this frame
+            controller (controller.Controller): A Controller object to press buttons on
+            connect_code (str): The connect code to direct match with. Leave blank for VS mode.
+            index (int): Current name tag index
 
         Returns:
             new index (incremented if we entered a new character)
@@ -124,19 +133,20 @@ class MenuHelper():
 
     def choose_character(character, gamestate, port, controller, swag=False, start=False):
         """Choose a character from the character select menu
-            Args:
-                character: The character you want to pick
-                gamestate: The current gamestate
-                controller: The controller object to press
-                swag: Pick random until you get the character
-                start: Automatically start the match when it's ready
 
-            Note:
-                Intended to be called each frame while in the character select menu
+        Args:
+            character (enums.Character): The character you want to pick
+            gamestate (gamestate.GameState): The current gamestate
+            controller (controller.Controller): The controller object to press buttons on
+            swag (bool): Pick random until you get the character
+            start (bool): Automatically start the match when it's ready
 
-            Note:
-                All controller cursors must be above the character level for this
-                to work. The match won't start otherwise.
+        Note:
+            Intended to be called each frame while in the character select menu
+
+        Note:
+            All controller cursors must be above the character level for this
+            to work. The match won't start otherwise.
         """
         # Figure out where the character is on the select screen
         # NOTE: This assumes you have all characters unlocked
@@ -290,12 +300,12 @@ class MenuHelper():
     def choose_stage(stage, gamestate, controller):
         """Choose a stage from the stage select menu
 
-            Intended to be called each frame while in the stage select menu
+        Intended to be called each frame while in the stage select menu
 
-            Args:
-                stage: The stage you want to select
-                gamestate: The current gamestate
-                controller: The controller object to press
+        Args:
+            stage (enums.Stage): The stage you want to select
+            gamestate (gamestate.GameState): The current gamestate
+            controller (controller.Controller): The controller object to press
         """
         if gamestate.frame < 20:
             controller.empty_input()
@@ -353,11 +363,12 @@ class MenuHelper():
     def change_controller_status(controller, gamestate, targetport, port, status, character=None):
         """Switch a given player's controller to be of the given state
 
-        WARNING: There's a condition on this you need to know. The way controllers work
-        in Melee, if a controller is plugged in, only that player can make the status
-        go to uplugged. If you've ever played Melee, you probably know this. If your
-        friend walks away, you have to press the A button on THEIR controller. (or
-        else actually unplug the controller) No way around it."""
+        Note:
+            There's a condition on this you need to know. The way controllers work
+            in Melee, if a controller is plugged in, only that player can make the status
+            go to uplugged. If you've ever played Melee, you probably know this. If your
+            friend walks away, you have to press the A button on THEIR controller. (or
+            else actually unplug the controller) No way around it."""
         ai_state = gamestate.player[port]
         target_x, target_y = 0, -2.2
         if targetport == 1:
@@ -403,8 +414,12 @@ class MenuHelper():
             controller.release_button(enums.Button.BUTTON_A)
 
     def choose_versus_mode(gamestate, controller):
-        """Helper function to bring us into the unranked online menu"""
+        """Helper function to bring us into the versus mode menu
 
+        Args:
+            gamestate (gamestate.GameState): The current gamestate
+            controller (controller.Controller): The controller to press buttons on
+        """
         # Let the controller go every other frame. Makes the logic below easier
         if gamestate.frame % 2 == 0:
             controller.empty_input()
@@ -427,7 +442,12 @@ class MenuHelper():
             controller.empty_input()
 
     def choose_direct_online(gamestate, controller):
-        """Helper function to bring us into the unranked online menu"""
+        """Helper function to bring us into the direct connect online menu
+
+        Args:
+            gamestate (gamestate.GameState): The current gamestate
+            controller (controller.Controller): The controller to press buttons on
+        """
         # Let the controller go every other frame. Makes the logic below easier
         if gamestate.frame % 2 == 0:
             controller.empty_input()
@@ -448,7 +468,7 @@ class MenuHelper():
                     controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
 
             elif gamestate.submenu == enums.SubMenu.NAME_ENTRY_SUBMENU:
-                print("Got here")
+                pass
             else:
                 controller.press_button(enums.Button.BUTTON_B)
         else:
