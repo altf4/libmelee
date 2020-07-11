@@ -13,6 +13,21 @@ class Stage(Enum):
     YOSHIS_STORY = 0x6
     RANDOM_STAGE = 0x1D # not technically a stage, but it's useful to call it one
 
+def to_internal_stage(stage_id):
+    if stage_id == 0x03:
+        return Stage.POKEMON_STADIUM
+    if stage_id == 0x08:
+        return Stage.YOSHIS_STORY
+    if stage_id == 0x02:
+        return Stage.FOUNTAIN_OF_DREAMS
+    if stage_id == 0x1F:
+        return Stage.BATTLEFIELD
+    if stage_id == 0x20:
+        return Stage.FINAL_DESTINATION
+    if stage_id == 0x1C:
+        return Stage.DREAMLAND
+    return Stage.NO_STAGE
+
 class Menu(Enum):
     """A primary menu scene the game can be in """
     CHARACTER_SELECT = 0

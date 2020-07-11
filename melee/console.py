@@ -61,6 +61,7 @@ class Console:
         """(str): The Slippi version of the console"""
         self.cursor = 0
         self.controllers = []
+        self._current_stage = enums.Stage.NO_STAGE
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState(ai_port, opponent_port)
@@ -301,6 +302,12 @@ class Console:
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.GAME_START:
+                # event_bytes = event_bytes[event_size:]
+                # Need to properly record what stage this is
+                try:
+                    self._current_stage = enums.to_internal_stage(unpack(">H", event_bytes[0x13:0x13+2])[0])
+                except ValueError:
+                    self._current_stage = enums.Stage.NO_STAGE
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.GAME_END:
@@ -310,6 +317,7 @@ class Console:
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.POST_FRAME:
+                gamestate.stage = self._current_stage
                 gamestate.frame = unpack(">i", event_bytes[0x1:0x1+4])[0]
                 controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
 
