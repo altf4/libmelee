@@ -62,6 +62,7 @@ class Console:
         self.cursor = 0
         self.controllers = []
         self._current_stage = enums.Stage.NO_STAGE
+        self._frame = 0
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState(ai_port, opponent_port)
@@ -304,6 +305,7 @@ class Console:
             elif EventType(event_bytes[0]) == EventType.GAME_START:
                 # event_bytes = event_bytes[event_size:]
                 # Need to properly record what stage this is
+                self._frame = -10000
                 try:
                     self._current_stage = enums.to_internal_stage(unpack(">H", event_bytes[0x13:0x13+2])[0])
                 except ValueError:
@@ -423,6 +425,11 @@ class Console:
                 ydist = player_one_y - player_two_y
                 gamestate.distance = math.sqrt((xdist**2) + (ydist**2))
                 event_bytes = event_bytes[event_size:]
+
+                # If this is an old frame, then don't return it.
+                if gamestate.frame <= self._frame:
+                    return False
+                self._frame = gamestate.frame
                 return True
 
             elif EventType(event_bytes[0]) == EventType.ITEM_UPDATE:
