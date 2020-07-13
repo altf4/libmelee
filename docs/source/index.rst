@@ -22,9 +22,7 @@ Quick Example
 
   import melee
 
-  console = melee.console.Console(path="/SlippiOnline/",
-                                  slippi_address="127.0.0.1",
-                                  logger=None)
+  console = melee.console.Console(path="/SlippiOnline/")
 
   controller = melee.controller.Controller(console=console, port=1)
   controller_human = melee.controller.Controller(console=console,
