@@ -56,18 +56,25 @@ class SlippstreamClient():
 
     def dispatch(self):
         """Dispatch messages with the peer (read and write packets)"""
-        event = self._host.service(1000)
-        if event.type == enet.EVENT_TYPE_RECEIVE:
-            try:
-                return json.loads(event.packet.data)
-            except json.JSONDecodeError:
+        event = None
+        event_type = 0
+        while event_type not in [enet.EVENT_TYPE_RECEIVE]:
+            event = self._host.service(1000)
+            event_type = event.type
+
+            if event.type == enet.EVENT_TYPE_RECEIVE:
+                try:
+                    return json.loads(event.packet.data)
+                except json.JSONDecodeError:
+                    return None
+            elif event.type == enet.EVENT_TYPE_CONNECT:
+                handshake = json.dumps({
+                    "type" : "connect_request",
+                    "cursor" : 0,
+                })
+                self._peer.send(0, enet.Packet(handshake.encode()))
+            elif event.type == enet.EVENT_TYPE_DISCONNECT:
                 return None
-        elif event.type == enet.EVENT_TYPE_CONNECT:
-            handshake = json.dumps({
-                "type" : "connect_request",
-                "cursor" : 0,
-            })
-            self._peer.send(0, enet.Packet(handshake.encode()))
         return None
 
     def connect(self):

@@ -20,6 +20,7 @@ from pathlib import Path
 from melee import enums
 from melee.gamestate import GameState, Projectile, Action
 from melee.slippstream import SlippstreamClient, CommType, EventType
+from melee.slpfilestreamer import SLPFileStreamer
 from melee import stages
 
 
@@ -29,6 +30,7 @@ class Console:
     """
     def __init__(self,
                  path=None,
+                 is_dolphin=True,
                  slippi_address="127.0.0.1",
                  logger=None):
         """Create a Console object
@@ -41,7 +43,7 @@ class Console:
             logger (logger.Logger): Logger instance to use. None for no logger.
         """
         self.logger = logger
-        self.is_dolphin = path is not None
+        self.is_dolphin = is_dolphin
         self.path = path
         self.processingtime = 0
         self._frametimestamp = time.time()
@@ -66,6 +68,8 @@ class Console:
         self._process = None
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
+        else:
+            self._slippstream = SLPFileStreamer(self.path)
 
         # Prepare some structures for fixing melee data
         path = os.path.dirname(os.path.realpath(__file__))
@@ -257,11 +261,17 @@ class Console:
 
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
-                        frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), gamestate)
+                        if self.is_dolphin:
+                            frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), gamestate)
+                        else:
+                            frame_ended = self.__handle_slippstream_events(message["payload"], gamestate)
+
                 elif message["type"] == "menu_event":
                     if len(message["payload"]) > 0:
                         self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), gamestate)
                         frame_ended = True
+            else:
+                return None
 
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
