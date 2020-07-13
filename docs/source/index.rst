@@ -22,20 +22,20 @@ Quick Example
 
   import melee
 
-  console = melee.console.Console(ai_port=1,
-                                  is_dolphin=True,
-                                  opponent_port=2,
-                                  opponent_type=melee.enums.ControllerType.GCN_ADAPTER,
-                                  dolphin_executable_path="/SlippiOnline/",
+  console = melee.console.Console(path="/SlippiOnline/",
                                   slippi_address="127.0.0.1",
                                   logger=None)
 
-  controller = melee.controller.Controller(port=1, console=console)
+  controller = melee.controller.Controller(console=console, port=1)
+  controller_human = melee.controller.Controller(console=console,
+                                                 port=2,
+                                                 type=melee.enums.ControllerType.GCN_ADAPTER)
 
   console.run()
   console.connect()
 
   controller.connect()
+  controller_human.connect()
 
   while True:
       gamestate = console.step()

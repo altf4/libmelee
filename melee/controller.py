@@ -42,44 +42,6 @@ class ControllerState:
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
 
-    def _to_bytes(self):
-        """Serialize the controller state into an 8 byte sequence that the TAStm32 uses"""
-        buttons_total = 0x0080
-        if self.button[enums.Button.BUTTON_A]:
-            buttons_total += 0x0100
-        if self.button[enums.Button.BUTTON_B]:
-            buttons_total += 0x0200
-        if self.button[enums.Button.BUTTON_X]:
-            buttons_total += 0x0400
-        if self.button[enums.Button.BUTTON_Y]:
-            buttons_total += 0x0800
-        if self.button[enums.Button.BUTTON_Z]:
-            buttons_total += 0x1000
-        if self.button[enums.Button.BUTTON_L]:
-            buttons_total += 0x0002
-        if self.button[enums.Button.BUTTON_R]:
-            buttons_total += 0x0004
-
-        buffer = pack(">H", buttons_total)
-
-        # Convert from a float 0-1 to int 1-255
-        val = pack(">B", (int((max(min(self.main_stick[0], 1), 0) * 254)) + 1))
-        buffer += val
-        val = pack(">B", (int((max(min(self.main_stick[1], 1), 0) * 254)) + 1))
-        buffer += val
-        val = pack(">B", (int((max(min(self.c_stick[0], 1), 0) * 254)) + 1))
-        buffer += val
-        val = pack(">B", (int((max(min(self.c_stick[1], 1), 0) * 254)) + 1))
-        buffer += val
-
-        # Convert from a float 0-1 to int 0-255
-        #   The max/min thing just ensures the value is between 0 and 1
-        val = pack(">B", int(max(min(self.l_shoulder, 1), 0) * 255))
-        buffer += val
-        val = pack(">B", int(max(min(self.r_shoulder, 1), 0) * 255))
-        buffer += val
-        return buffer
-
     def __str__(self):
         string = ""
         for val in self.button:
@@ -98,29 +60,27 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, serial_device="/dev/ttyACM0"):
+    def __init__(self, console, port, type):
         """Create a new virtual controller
 
         Args:
-            console (melee.Console): A console object to attach the controller to
+            console (console.Console): A console object to attach the controller to
             port (int): Which controller port to plug into. Must be 1-4.
+            type (enums.ControllerType): The type of controller this is
         """
         self._is_dolphin = console.is_dolphin
         if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
-        else:
-            try:
-                self.tastm32 = serial.Serial(serial_device, 115200, timeout=None, rtscts=True)
-            except serial.serialutil.SerialException:
-                print("TAStm32 was not ready. It might be booting up. " +
-                      "Wait a few seconds and try again")
-                sys.exit(-1)
 
         self.prev = ControllerState()
         self.current = ControllerState()
         self.logger = console.logger
         self._console = console
+        self._type = type
+
+        # Configure our controller with the console
+        self._console.setup_dolphin_controller(port, type)
 
     def connect(self):
         """Connect the controller to the console
@@ -128,45 +88,28 @@ class Controller:
             Note:
                 Blocks until the other side is ready
         """
-        # Add ourselves to the console's controller list
-        self._console.controllers.append(self)
+        if self._type == enums.ControllerType.STANDARD:
+            # Add ourselves to the console's controller list
+            self._console.controllers.append(self)
 
-        if self._is_dolphin:
-            if platform.system() == "Windows":
-                # "Create File" in windows is what you use to open a file. Not
-                #   create one. Because the windows API is stupid.
-                self.pipe = win32file.CreateFile(
-                    self.pipe_path,
-                    win32file.GENERIC_WRITE,
-                    0,
-                    None,
-                    win32file.OPEN_EXISTING,
-                    0,
-                    None
-                )
+            if self._is_dolphin:
+                if platform.system() == "Windows":
+                    # "Create File" in windows is what you use to open a file. Not
+                    #   create one. Because the windows API is stupid.
+                    self.pipe = win32file.CreateFile(
+                        self.pipe_path,
+                        win32file.GENERIC_WRITE,
+                        0,
+                        None,
+                        win32file.OPEN_EXISTING,
+                        0,
+                        None
+                    )
+                else:
+                    self.pipe = open(self.pipe_path, "w")
+                return True
             else:
-                self.pipe = open(self.pipe_path, "w")
-            return True
-        else:
-            # Remove any extra garbage that might have accumulated in the buffer
-            self.tastm32.reset_input_buffer()
-
-            # Send reset command
-            self.tastm32.write(b'R')
-            cmd = self.tastm32.read(2)
-            if cmd != b'\x01R':
-                # TODO Better error handling logic here
-                print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
-                return False
-            # Set to gamecube mode
-            self.tastm32.write(b'SAG\x80\x00')
-            cmd = self.tastm32.read(2)
-            self.tastm32.reset_input_buffer()
-            if cmd != b'\x01S':
-                # TODO Better error handling logic here
-                print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
-                return False
-            return True
+                return True
 
     def disconnect(self):
         """Disconnects the controller from the console"""
@@ -174,10 +117,6 @@ class Controller:
             if self.pipe:
                 self.pipe.close()
                 self.pipe = None
-        else:
-            # TODO: Tear down connection to TAStm32
-            self.tastm32.close()
-            pass
 
     def simple_press(self, x, y, button):
         """Here is a simpler representation of a button press, in case
@@ -212,9 +151,6 @@ class Controller:
                     self.press_button(item)
                 else:
                     self.release_button(item)
-        else:
-            # TODO Tastm32 button presses
-            pass
 
     def press_button(self, button):
         """Press a single button
@@ -362,11 +298,3 @@ class Controller:
                 if not self.pipe:
                     return
                 self.pipe.flush()
-        else:
-            # Command for "send single controller poll" is 'A'
-            # Serialize controller state into bytes and send
-            self.tastm32.write(b'A' + self.current._to_bytes())
-            cmd = self.tastm32.read(1)
-
-            if cmd != b'A':
-                print("Got error response: ", bytes(cmd))

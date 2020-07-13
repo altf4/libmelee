@@ -63,11 +63,7 @@ if args.live:
 #   The Console represents the virtual or hardware system Melee is playing on.
 #   Through this object, we can get "GameState" objects per-frame so that your
 #       bot can actually "see" what's happening in the game
-console = melee.console.Console(ai_port=args.port,
-                                is_dolphin=True,
-                                opponent_port=args.opponent,
-                                opponent_type=opponent_type,
-                                dolphin_executable_path=args.dolphin_executable_path,
+console = melee.console.Console(path=args.dolphin_executable_path,
                                 slippi_address=args.address,
                                 logger=log)
 
@@ -79,7 +75,13 @@ console.render = True
 #   The controller is the second primary object your bot will interact with
 #   Your controller is your way of sending button presses to the game, whether
 #   virtual or physical.
-controller = melee.controller.Controller(port=args.port, console=console)
+controller = melee.controller.Controller(console=console,
+                                         port=args.port,
+                                         type=melee.enums.ControllerType.STANDARD)
+
+controller_opponent = melee.controller.Controller(console=console,
+                                         port=args.opponent,
+                                         type=opponent_type)
 
 # This isn't necessary, but makes it so that Dolphin will get killed when you ^C
 def signal_handler(sig, frame):

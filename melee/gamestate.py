@@ -7,7 +7,7 @@ from melee.enums import Action, Character
 
 class GameState:
     """Represents the state of a running game of Melee at a given moment in time"""
-    def __init__(self, ai_port, opponent_port):
+    def __init__(self):
         self.frame = 0
         """int: The current frame number. Monotonically increases. Can be negative."""
         self.stage = enums.Stage.FINAL_DESTINATION
@@ -35,9 +35,6 @@ class GameState:
         self.player[7] = PlayerState()
         self.player[8] = PlayerState()
         self._newframe = True
-        #Helper names to keep track of us and our opponent
-        self.ai_state = self.player[ai_port]
-        self.opponent_state = self.player[opponent_port]
 
 class PlayerState:
     """ Represents the state of a single player """

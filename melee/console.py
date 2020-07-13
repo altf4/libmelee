@@ -27,25 +27,22 @@ from melee import stages
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
     """
-    def __init__(self, is_dolphin, ai_port, opponent_port, opponent_type,
-                 dolphin_executable_path=None, slippi_address="", logger=None):
+    def __init__(self,
+                 path=None,
+                 slippi_address="",
+                 logger=None):
         """Create a Console object
 
         Args:
-            is_dolphin (boolean): Is this console a dolphin? (Or a Wii)
-            ai_port (int): 1-4 for the controller port your bot will take
-            opponent_port (int): 1-4 for the controller port your opponent will take
-            opponent_type (:obj:`enums.ControllerType`): Enum of your opponent's controller type
-            dolphin_executable_path (str): Path to the directory where your dolphin executable is
+            is_dolphin (boolean): Is this console a dolphin?
+            path (str): Path to the directory where your dolphin executable is
                 located. (if applicable) None tells console to use the installed copy of the emulator
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
                 Empty string will try to autodiscover a nearby SlippiComm server
         """
         self.logger = logger
-        self.ai_port = ai_port
-        self.opponent_port = opponent_port
-        self.is_dolphin = is_dolphin
-        self.dolphin_executable_path = dolphin_executable_path
+        self.is_dolphin = path is not None
+        self.path = path
         self.processingtime = 0
         self._frametimestamp = time.time()
         self.slippi_address = slippi_address
@@ -65,27 +62,9 @@ class Console:
         self._frame = 0
 
         # Keep a running copy of the last gamestate produced
-        self._prev_gamestate = GameState(ai_port, opponent_port)
+        self._prev_gamestate = GameState()
         self._process = None
         if self.is_dolphin:
-            pipes_path = self._get_dolphin_home_path() + "Pipes/"
-            path = os.path.dirname(os.path.realpath(__file__))
-
-            if platform.system() != "Windows":
-                #Create the Pipes directory if it doesn't already exist
-                if not os.path.exists(pipes_path):
-                    os.makedirs(pipes_path)
-                    print("WARNING: Had to create a Pipes directory in Dolphin just now. " \
-                          "You may need to restart Dolphin and this program in order for this to work. " \
-                          "(You should only see this warning once)")
-
-                pipes_path += "slippibot" + str(ai_port)
-                if not os.path.exists(pipes_path):
-                    os.mkfifo(pipes_path)
-
-            #setup the controllers specified
-            self.setup_dolphin_controller(ai_port)
-            self.setup_dolphin_controller(opponent_port, opponent_type)
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
 
         # Prepare some structures for fixing melee data
@@ -140,8 +119,8 @@ class Console:
                 exe_name = "Dolphin.exe"
 
             exe_path = ""
-            if self.dolphin_executable_path:
-                exe_path = self.dolphin_executable_path
+            if self.path:
+                exe_path = self.path
             command = [exe_path + "/" + exe_name]
             if not self.render:
                 #Use the "Null" renderer
@@ -170,6 +149,16 @@ class Console:
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
         controller port and type"""
+
+        pipes_path = self._get_dolphin_home_path() + "Pipes/"
+        if platform.system() != "Windows":
+            #Create the Pipes directory if it doesn't already exist
+            if not os.path.exists(pipes_path):
+                os.makedirs(pipes_path)
+            pipes_path += "slippibot" + str(port)
+            if not os.path.exists(pipes_path):
+                os.mkfifo(pipes_path)
+
         #Read in dolphin's controller config file
         controller_config_path = self._get_dolphin_config_path() + "GCPadNew.ini"
         config = configparser.SafeConfigParser()
@@ -255,7 +244,7 @@ class Console:
         for controler in self.controllers:
             controler.flush()
 
-        gamestate = GameState(self.ai_port, self.opponent_port)
+        gamestate = GameState()
         frame_ended = False
         while not frame_ended:
             message = self._slippstream.dispatch()
@@ -580,8 +569,8 @@ class Console:
 
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
-        if self.dolphin_executable_path:
-            return self.dolphin_executable_path + "/User/"
+        if self.path:
+            return self.path + "/User/"
 
         home_path = str(Path.home())
         legacy_config_path = home_path + "/.dolphin-emu/"
@@ -606,8 +595,8 @@ class Console:
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory
         (which is not necessarily the same as the home path)"""
-        if self.dolphin_executable_path:
-            return self.dolphin_executable_path + "/User/Config/"
+        if self.path:
+            return self.path + "/User/Config/"
 
         home_path = str(Path.home())
 
