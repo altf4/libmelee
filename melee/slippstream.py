@@ -66,6 +66,10 @@ class SlippstreamClient():
                 try:
                     return json.loads(event.packet.data)
                 except json.JSONDecodeError:
+                    # This happens at the end of a game for some reason?
+                    if len(event.packet.data) == 0:
+                        event_type = 0
+                        continue
                     return None
             elif event.type == enet.EVENT_TYPE_CONNECT:
                 handshake = json.dumps({
