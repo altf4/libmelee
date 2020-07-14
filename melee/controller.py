@@ -60,7 +60,7 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, type):
+    def __init__(self, console, port, type=enums.ControllerType.STANDARD):
         """Create a new virtual controller
 
         Args:
