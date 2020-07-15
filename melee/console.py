@@ -62,6 +62,8 @@ class Console:
         self.controllers = []
         self._current_stage = enums.Stage.NO_STAGE
         self._frame = 0
+        self.slp_version = "unknown"
+        """(str): The SLP version this stream/file currently is."""
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -225,17 +227,6 @@ class Console:
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
-        # #Enable the specific cheats we need (Netplay community settings)
-        # melee_config_path = self._get_dolphin_home_path() + "/GameSettings/GALE01.ini"
-        # config = configparser.SafeConfigParser(allow_no_value=True)
-        # config.optionxform = str
-        # config.read(melee_config_path)
-        # if not config.has_section("Gecko_Enabled"):
-        #     config.add_section("Gecko_Enabled")
-        # config.set("Gecko_Enabled", "$Netplay Community Settings")
-        # with open(melee_config_path, 'w') as dolphinfile:
-        #     config.write(dolphinfile)
-
     def step(self):
         """ 'step' to the next state of the game and flushes all controllers
 
@@ -305,6 +296,10 @@ class Console:
                 # event_bytes = event_bytes[event_size:]
                 # Need to properly record what stage this is
                 self._frame = -10000
+                major = unpack(">B", event_bytes[0x01:0x01+1])[0]
+                minor = unpack(">B", event_bytes[0x02:0x02+1])[0]
+                version = unpack(">B", event_bytes[0x03:0x03+1])[0]
+                self.slp_version = str(major) + "." + str(minor) + "." + str(version)
                 try:
                     self._current_stage = enums.to_internal_stage(unpack(">H", event_bytes[0x13:0x13+2])[0])
                 except ValueError:
@@ -315,6 +310,30 @@ class Console:
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
+                # Grab the physical controller state and put that into the controller state
+                controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
+                main_x = unpack(">f", event_bytes[0x19:0x19+4])[0]
+                main_y = unpack(">f", event_bytes[0x1D:0x1D+4])[0]
+                gamestate.player[controller_port].controller_state.main_stick = (main_x, main_y)
+
+                c_x = unpack(">f", event_bytes[0x21:0x21+4])[0]
+                c_y = unpack(">f", event_bytes[0x25:0x25+4])[0]
+                gamestate.player[controller_port].controller_state.c_stick = (c_x, c_y)
+
+                buttonbits = unpack(">H", event_bytes[0x31:0x31+2])[0]
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_A] = bool(buttonbits & 0x0100)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_B] = bool(buttonbits & 0x0200)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_X] = bool(buttonbits & 0x0400)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_Y] = bool(buttonbits & 0x0800)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_START] = bool(buttonbits & 0x1000)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_Z] = bool(buttonbits & 0x0010)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_R] = bool(buttonbits & 0x0020)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_L] = bool(buttonbits & 0x0040)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_D_LEFT] = bool(buttonbits & 0x0001)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_D_RIGHT] = bool(buttonbits & 0x0002)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_D_DOWN] = bool(buttonbits & 0x0004)
+                gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_D_UP] = bool(buttonbits & 0x0008)
+
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.POST_FRAME:
