@@ -47,7 +47,7 @@ class MenuHelper():
                                             port=port,
                                             controller=controller,
                                             swag=True,
-                                            start=False)
+                                            start=autostart)
         # If we're at the postgame scores screen, spam START
         elif gamestate.menu_state == enums.Menu.POSTGAME_SCORES:
             MenuHelper.skip_postgame(controller=controller)
