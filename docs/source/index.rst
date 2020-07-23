@@ -22,12 +22,12 @@ Quick Example
 
   import melee
 
-  console = melee.console.Console(path="/SlippiOnline/")
+  console = melee.Console(path="/SlippiOnline/")
 
-  controller = melee.controller.Controller(console=console, port=1)
-  controller_human = melee.controller.Controller(console=console,
-                                                 port=2,
-                                                 type=melee.enums.ControllerType.GCN_ADAPTER)
+  controller = melee.Controller(console=console, port=1)
+  controller_human = melee.Controller(console=console,
+                                      port=2,
+                                      type=melee.ControllerType.GCN_ADAPTER)
 
   console.run()
   console.connect()
@@ -40,6 +40,21 @@ Quick Example
       # Press buttons on your controller based on the GameState here!
 
 For a fully fleshed-out example program that you can run, check out ``example.py``.
+
+If you're looking to read SLP files and don't need to interface with Dolphin, then it's even easier:
+
+.. code-block:: python
+  :linenos:
+
+  console = melee.Console(is_dolphin=False, path="YOUR_FILE.slp")
+  console.connect()
+
+  while True:
+      gamestate = console.step()
+      # step() returns None when the file ends
+      if gamestate is None:
+          break
+      print(gamestate.player[1].x, gamestate.player[1].y)
 
 Getting Started
 --------------------

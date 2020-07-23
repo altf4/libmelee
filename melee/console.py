@@ -1,6 +1,6 @@
 """The Console represents the engine running the game.
 
-This can be Dolphin (Ishiiruka), A Nintendont Wii, or an SLP file (TODO). The Console object
+This can be Dolphin (Slippi's Ishiiruka) or an SLP file. The Console object
 is your method to start and stop Dolphin, set configs, and get the latest GameState.
 """
 
