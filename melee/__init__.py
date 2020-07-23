@@ -2,12 +2,12 @@
 Python3 only
 Works on Linux/OSX/Windows
 """
-from melee.console import Console
-from melee.logger import Logger
-from melee.gamestate import GameState
+from melee.console import *
+from melee.logger import *
+from melee.gamestate import *
 from melee.enums import *
-from melee.controller import Controller, ControllerState
-from melee.framedata import FrameData
-from melee.menuhelper import MenuHelper
+from melee.controller import *
+from melee.framedata import *
+from melee.menuhelper import *
 from melee import menuhelper, techskill, framedata, stages
 import melee.version
