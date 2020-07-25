@@ -117,16 +117,15 @@ class FrameData:
     def is_roll(self, character, action):
         """For a given character, is the supplied action a roll?
 
-        Libmelee has a liberal definition of 'roll'. A roll is essentially a move that:
-            1) Has no hitbox
-            2) Is inactionable
+        libmelee has a liberal definition of 'roll'. A roll is essentially a move that:
+         1) Has no hitbox
+         2) Is inactionable
+         
         Spot dodge and (most) taunts for example are considered 'rolls' to this function
 
         Args:
             character (enums.Character): The character we're interested in
             action (enums.Action): The action we're interested in
-
-        Some examples of this are SPOTDODGE (Which is basically just a 0-length roll) and taunts.
         """
         # Marth counter
         if character == Character.MARTH and action == Action.MARTH_COUNTER:
