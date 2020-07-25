@@ -55,8 +55,8 @@ class PlayerState:
         """(float): The character's Y position"""
         self.percent = 0
         """(int): The player's damage"""
-        self.shield = 60.
-        """(float): The player's shield size (max 60)"""
+        self.shield_strength = 60.
+        """(float): The player's shield strength (max 60). Shield breaks at 0"""
         self.stock = 0
         """(int): The player's remaining stock count"""
         self.facing = True

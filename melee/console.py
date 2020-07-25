@@ -355,7 +355,7 @@ class Console:
                 gamestate.player[controller_port].facing = facing_float > 0
 
                 gamestate.player[controller_port].percent = int(unpack(">f", event_bytes[0x16:0x16+4])[0])
-                gamestate.player[controller_port].shield = unpack(">f", event_bytes[0x1A:0x1A+4])[0]
+                gamestate.player[controller_port].shield_strength = unpack(">f", event_bytes[0x1A:0x1A+4])[0]
                 gamestate.player[controller_port].stock = unpack(">B", event_bytes[0x21:0x21+1])[0]
                 gamestate.player[controller_port].action_frame = int(unpack(">f", event_bytes[0x22:0x22+4])[0])
 
