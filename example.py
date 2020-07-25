@@ -2,7 +2,6 @@
 import argparse
 import signal
 import sys
-import time
 import melee
 
 # This example program demonstrates how to use the Melee API to run a console,
@@ -27,7 +26,7 @@ parser.add_argument('--debug', '-d', action='store_true',
 parser.add_argument('--framerecord', '-r', default=False, action='store_true',
                     help='(DEVELOPMENT ONLY) Records frame data from the match,' \
                     'stores into framedata.csv.')
-parser.add_argument('--address', '-a', default="",
+parser.add_argument('--address', '-a', default="127.0.0.1",
                     help='IP address of Slippi/Wii')
 parser.add_argument('--dolphin_executable_path', '-e', default=None,
                     help='Manually specify the non-installed directory where dolphin is')
@@ -87,9 +86,6 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Run the console
 console.run()
-
-# Give the console a second to actually spin up
-time.sleep(2)
 
 # Connect to the console
 print("Connecting to console...")
