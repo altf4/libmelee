@@ -32,6 +32,7 @@ class Console:
                  path=None,
                  is_dolphin=True,
                  slippi_address="127.0.0.1",
+                 online_delay=2,
                  logger=None):
         """Create a Console object
 
@@ -70,6 +71,18 @@ class Console:
         self._process = None
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
+
+            # Setup some dolphin config options
+            dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
+            config = configparser.SafeConfigParser()
+            config.read(dolphin_config_path)
+            config.set("Core", 'slippienablespectator', "True")
+            # Set online delay
+            config.set("Core", 'slippionlinedelay', str(online_delay))
+            # Turn on background input so we don't need to have window focus on dolphin
+            config.set("Input", 'backgroundinput', "True")
+            with open(dolphin_config_path, 'w') as dolphinfile:
+                config.write(dolphinfile)
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
@@ -211,19 +224,12 @@ class Console:
         with open(controller_config_path, 'w') as configfile:
             config.write(configfile)
 
-        #Change the bot's controller port to use "standard" input
         dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
         config = configparser.SafeConfigParser()
         config.read(dolphin_config_path)
-        #Indexed at 0. "6" means standard controller, "12" means GCN Adapter
-        # The enum is scoped to the proper value, here
+        # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
+        #  The enum is scoped to the proper value, here
         config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
-        # Enable networking
-        config.set("Core", 'slippienablespectator', "True")
-        #Enable Cheats
-        config.set("Core", 'enablecheats', "True")
-        #Turn on background input so we don't need to have window focus on dolphin
-        config.set("Input", 'backgroundinput', "True")
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
