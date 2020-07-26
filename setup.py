@@ -5,7 +5,7 @@ setup(
     install_requires=[
         'pyenet',
         'serial',
-        'py-ubjson'
+        'py-ubjson',
         'pywin32; platform_system=="Windows"'
     ],
     version = '0.8.0',
