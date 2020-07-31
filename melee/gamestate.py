@@ -102,6 +102,15 @@ class PlayerState:
         """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
         self.controller_state = melee.controller.ControllerState()
         """(controller.ControllerState): What buttons were pressed for this character"""
+        self.ecb_right = 0
+        """(float): Right edge of the ECB"""
+        self.ecb_left = 0
+        """(float): Left edge of the ECB"""
+        self.ecb_top = 0
+        """(float): Top edge of the ECB"""
+        self.ecb_bottom = 0
+        """(float): Bottom edge of the ECB"""
+
         self.hitbox_1_size = 0
         self.hitbox_2_size = 0
         self.hitbox_3_size = 0

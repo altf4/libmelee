@@ -428,6 +428,30 @@ class Console:
                 else:
                     gamestate.player[controller_port].off_stage = False
 
+                # ECB Right edge
+                try:
+                    gamestate.player[controller_port].ecb_right = unpack(">f", event_bytes[0x49:0x49+4])[0]
+                except error:
+                    gamestate.player[controller_port].ecb_right = 0
+
+                # ECB Top edge
+                try:
+                    gamestate.player[controller_port].ecb_top = unpack(">f", event_bytes[0x4D:0x4D+4])[0]
+                except error:
+                    gamestate.player[controller_port].ecb_top = 0
+
+                # ECB Left edge
+                try:
+                    gamestate.player[controller_port].ecb_left = unpack(">f", event_bytes[0x51:0x51+4])[0]
+                except error:
+                    gamestate.player[controller_port].ecb_left = 0
+
+                # ECB Bottom edge
+                try:
+                    gamestate.player[controller_port].ecb_bottom = unpack(">f", event_bytes[0x55:0x55+4])[0]
+                except error:
+                    gamestate.player[controller_port].ecb_bottom = 0
+
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.GECKO_CODES:
