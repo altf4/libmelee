@@ -42,6 +42,7 @@ class Console:
                 located. (if applicable) None tells console to use the installed copy of the emulator
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
                 Empty string will try to autodiscover a nearby SlippiComm server
+            slippi_port (int): UDP port that slippi will listen on
             logger (logger.Logger): Logger instance to use. None for no logger.
         """
         self.logger = logger
@@ -52,7 +53,7 @@ class Console:
         self.slippi_address = slippi_address
         """(str): IP address of the Dolphin / Wii to connect to."""
         self.slippi_port = slippi_port
-        """(int): TCP port of slippi server. Default 51441"""
+        """(int): UDP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
         self.render = True
         self.connected = False
