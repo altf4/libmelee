@@ -32,6 +32,7 @@ class Console:
                  path=None,
                  is_dolphin=True,
                  slippi_address="127.0.0.1",
+                 slippi_port=51441,
                  online_delay=2,
                  logger=None):
         """Create a Console object
@@ -50,7 +51,7 @@ class Console:
         self._frametimestamp = time.time()
         self.slippi_address = slippi_address
         """(str): IP address of the Dolphin / Wii to connect to."""
-        self.slippi_port = 51441
+        self.slippi_port = slippi_port
         """(int): TCP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
         self.render = True
@@ -77,6 +78,7 @@ class Console:
             config = configparser.SafeConfigParser()
             config.read(dolphin_config_path)
             config.set("Core", 'slippienablespectator', "True")
+            config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
             # Set online delay
             config.set("Core", 'slippionlinedelay', str(online_delay))
             # Turn on background input so we don't need to have window focus on dolphin
