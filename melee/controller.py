@@ -296,6 +296,7 @@ class Controller:
         self.prev = copy.copy(self.current)
 
         if self._is_dolphin:
+            self.pipe.write("FLUSH\n")
             if platform.system() != "Windows":
                 if not self.pipe:
                     return

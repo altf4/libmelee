@@ -53,6 +53,7 @@ framedata = melee.FrameData(args.framerecord)
 console = melee.Console(path=args.dolphin_executable_path,
                         slippi_address=args.address,
                         slippi_port=51441,
+                        blocking_input=False,
                         logger=log)
 
 # Dolphin has an optional mode to not render the game's visuals

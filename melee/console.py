@@ -34,6 +34,7 @@ class Console:
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
+                 blocking_input=False,
                  logger=None):
         """Create a Console object
 
@@ -43,6 +44,9 @@ class Console:
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
                 Empty string will try to autodiscover a nearby SlippiComm server
             slippi_port (int): UDP port that slippi will listen on
+            online_delay (int): How many frames of delay to apply in online matches
+            blocking_input (bool): Should dolphin block waiting for bot input
+                This is only really useful if you're doing ML training.
             logger (logger.Logger): Logger instance to use. None for no logger.
         """
         self.logger = logger
@@ -56,6 +60,7 @@ class Console:
         """(int): UDP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
         self.render = True
+        """(bool): Should dolphin render the game live?"""
         self.connected = False
         self.nick = ""
         """(str): The nickname the console has given itself."""
@@ -84,6 +89,7 @@ class Console:
             config.set("Core", 'slippionlinedelay', str(online_delay))
             # Turn on background input so we don't need to have window focus on dolphin
             config.set("Input", 'backgroundinput', "True")
+            config.set("Core", 'BlockingPipes', str(blocking_input))
             with open(dolphin_config_path, 'w') as dolphinfile:
                 config.write(dolphinfile)
         else:
@@ -173,7 +179,7 @@ class Console:
         controller port and type"""
 
         pipes_path = self._get_dolphin_home_path() + "Pipes/"
-        if platform.system() != "Windows":
+        if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
             #Create the Pipes directory if it doesn't already exist
             if not os.path.exists(pipes_path):
                 os.makedirs(pipes_path)
