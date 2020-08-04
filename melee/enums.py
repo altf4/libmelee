@@ -37,6 +37,7 @@ class Menu(Enum):
     POSTGAME_SCORES = 4
     MAIN_MENU = 5
     SLIPPI_ONLINE_CSS = 6
+    PRESS_START = 7
     UNKNOWN_MENU = 0xff
 
 class SubMenu(Enum):

@@ -511,6 +511,8 @@ class Console:
             gamestate.menu_state = enums.Menu.MAIN_MENU
         elif scene == 0x0008:
             gamestate.menu_state = enums.Menu.SLIPPI_ONLINE_CSS
+        elif scene == 0x0000:
+            gamestate.menu_state = enums.Menu.PRESS_START
         else:
             gamestate.menu_state = enums.Menu.UNKNOWN_MENU
 
