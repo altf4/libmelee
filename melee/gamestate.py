@@ -102,6 +102,8 @@ class PlayerState:
         """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
         self.controller_state = melee.controller.ControllerState()
         """(controller.ControllerState): What buttons were pressed for this character"""
+        self.submenu = enums.SubMenu.UNKNOWN_SUBMENU
+        """(enums.SubMenu): The current sub-menu"""
         self.hitbox_1_size = 0
         self.hitbox_2_size = 0
         self.hitbox_3_size = 0
