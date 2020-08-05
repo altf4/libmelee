@@ -71,13 +71,13 @@ Or tilt one of the analog sticks by:
 (X and Y are numbers between 0->1. Where 0 is left/down and 1 is right/up. 0.5 is neutral)
 
 ### Note on Controller Input
-Dolphin will accept whatever your last button input was each frame. So if you press A, and then release A on the same frame, only the last "press" will matter.
+Dolphin will accept whatever your last button input was each frame. So if you press A, and then release A on the same frame, only the last action will matter and A will never be seen as pressed to the game.
 
-Also, if you don't press a button, Dolphin will just use whatever you pressed last frame. So for example, if on frame 1 you press A, and on frame 2 you press Y, both A and Y will be pressed. The controller does not "unpress" buttons for you. Though there is a helper function:
+Also, if you don't press a button, Dolphin will just use whatever you pressed last frame. So for example, if on frame 1 you press A, and on frame 2 you press Y, both A and Y will be pressed. The controller does not release buttons for you between frames. Though there is a helper function:
 
-`controller.empty_input()`
+`controller.release_all()`
 
-which will unpress all buttons and set all sticks / shoulders to neutral.
+which will release all buttons and set all sticks / shoulders to neutral.
 
 ## NOTE
 The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI

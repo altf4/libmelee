@@ -15,7 +15,7 @@ def multishine(ai_state, controller):
             controller.press_button(enums.Button.BUTTON_B)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
-        controller.empty_input()
+        controller.release_all()
         return
 
     shine_start = (ai_state.action == enums.Action.DOWN_B_STUN or
@@ -30,7 +30,7 @@ def multishine(ai_state, controller):
         controller.press_button(enums.Button.BUTTON_Y)
         return
 
-    controller.empty_input()
+    controller.release_all()
 
 def upsmashes(ai_state, controller):
     """ Spam upsmashes """
@@ -38,4 +38,4 @@ def upsmashes(ai_state, controller):
         controller.tilt_analog(enums.Button.BUTTON_C, .5, 1)
         return
 
-    controller.empty_input()
+    controller.release_all()

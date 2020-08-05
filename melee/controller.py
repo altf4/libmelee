@@ -241,7 +241,35 @@ class Controller:
                 self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
 
+    def tilt_analog_unit(self, button, x, y):
+        """ Tilt one of the analog sticks to a given (x,y) value, normalized to a unit vector
+
+        This mean the values range from -1 -> 1 (with 0 center) rather than 0 -> 1 (with 0.5 center)
+        This doesn't press the stick any further than the tilt_analog(), it's just a compat helper
+
+        Args:
+            button (enums.Button): Must be main stick or C stick
+            x (float): Ranges between -1 (left) and 1 (right)
+            y (float): Ranges between -1 (down) and 1 (up)
+        """
+        if button == enums.Button.BUTTON_MAIN:
+            self.current.main_stick = (x, y)
+        else:
+            self.current.c_stick = (x, y)
+        if self._is_dolphin:
+            if not self.pipe:
+                return
+            command = "SET " + str(button.value) + " " + str((x/2) + 0.5) + " " + str((y/2) + 0.5) + "\n"
+            if self.logger:
+                self.logger.log("Buttons Pressed", command, concat=True)
+            self._write(command)
+
+    # Left around for compat reasons. Might disappear at any time
+    #   left undocumented. Just use release_all()
     def empty_input(self):
+        self.release_all()
+
+    def release_all(self):
         """Resets the controller to a resting state
 
         All buttons are released, all sticks set to 0.5, all shoulders set to 0
