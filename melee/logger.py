@@ -49,14 +49,19 @@ class Logger():
         Args:
             gamestate (gamestate.GameState): A gamestate object to log
         """
+        opponent_state = None
+        ai_state = None
         count = 0
-        for _, player in gamestate.player.items():
+        for i, player in gamestate.player.items():
             if count == 0:
                 ai_state = player
                 count += 1
-            else:
+            elif count == 1:
                 opponent_state = player
+                count += 1
 
+        if not opponent_state or not ai_state:
+            return
         self.log('Frame', gamestate.frame)
         self.log('Opponent x', str(opponent_state.x))
         self.log('Opponent y', str(opponent_state.y))
