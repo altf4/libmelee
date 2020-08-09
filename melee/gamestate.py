@@ -102,6 +102,14 @@ class PlayerState:
         """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
         self.controller_state = melee.controller.ControllerState()
         """(controller.ControllerState): What buttons were pressed for this character"""
+        self.ecb_right = (0, 0)
+        """(float, float): Right edge of the ECB. (x, y) offset from player's center."""
+        self.ecb_left = (0, 0)
+        """(float, float): Left edge of the ECB. (x, y) offset from player's center."""
+        self.ecb_top = (0, 0)
+        """(float, float): Top edge of the ECB. (x, y) offset from player's center."""
+        self.ecb_bottom = (0, 0)
+        """(float, float): Bottom edge of the ECB. (x, y) offset from player's center."""
         self.submenu = enums.SubMenu.UNKNOWN_SUBMENU
         """(enums.SubMenu): The current sub-menu"""
         self.hitbox_1_size = 0
