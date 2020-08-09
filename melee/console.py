@@ -428,29 +428,61 @@ class Console:
                 else:
                     gamestate.player[controller_port].off_stage = False
 
-                # ECB Right edge
+                # ECB top edge, x
+                ecb_top_x = 0
+                ecb_top_y = 0
                 try:
-                    gamestate.player[controller_port].ecb_right = unpack(">f", event_bytes[0x49:0x49+4])[0]
+                    ecb_top_x = unpack(">f", event_bytes[0x49:0x49+4])[0]
                 except error:
-                    gamestate.player[controller_port].ecb_right = 0
+                    ecb_top_x = 0
+                # ECB Top edge, y
+                try:
+                    ecb_top_y = unpack(">f", event_bytes[0x4D:0x4D+4])[0]
+                except error:
+                    ecb_top_y = 0
+                gamestate.player[controller_port].ecb_top = (ecb_top_x, ecb_top_y)
 
-                # ECB Top edge
+                # ECB bottom edge, x coord
+                ecb_bot_x = 0
+                ecb_bot_y = 0
                 try:
-                    gamestate.player[controller_port].ecb_top = unpack(">f", event_bytes[0x4D:0x4D+4])[0]
+                    ecb_bot_x = unpack(">f", event_bytes[0x51:0x51+4])[0]
                 except error:
-                    gamestate.player[controller_port].ecb_top = 0
+                    ecb_bot_x = 0
+                # ECB Bottom edge, y coord
+                try:
+                    ecb_bot_y = unpack(">f", event_bytes[0x55:0x55+4])[0]
+                except error:
+                    ecb_bot_y = 0
+                gamestate.player[controller_port].ecb_bottom = (ecb_bot_x, ecb_bot_y)
 
-                # ECB Left edge
+                # ECB left edge, x coord
+                ecb_left_x = 0
+                ecb_left_y = 0
                 try:
-                    gamestate.player[controller_port].ecb_left = unpack(">f", event_bytes[0x51:0x51+4])[0]
+                    ecb_left_x = unpack(">f", event_bytes[0x59:0x59+4])[0]
                 except error:
-                    gamestate.player[controller_port].ecb_left = 0
+                    ecb_left_x = 0
+                # ECB left edge, y coord
+                try:
+                    ecb_left_y = unpack(">f", event_bytes[0x5D:0x5D+4])[0]
+                except error:
+                    ecb_left_y = 0
+                gamestate.player[controller_port].ecb_left = (ecb_left_x, ecb_left_y)
 
-                # ECB Bottom edge
+                # ECB right edge, x coord
+                ecb_right_x = 0
+                ecb_right_y = 0
                 try:
-                    gamestate.player[controller_port].ecb_bottom = unpack(">f", event_bytes[0x55:0x55+4])[0]
+                    ecb_right_x = unpack(">f", event_bytes[0x61:0x61+4])[0]
                 except error:
-                    gamestate.player[controller_port].ecb_bottom = 0
+                    ecb_right_x = 0
+                # ECB right edge, y coord
+                try:
+                    ecb_right_y = unpack(">f", event_bytes[0x65:0x65+4])[0]
+                except error:
+                    ecb_right_y = 0
+                gamestate.player[controller_port].ecb_right = (ecb_right_x, ecb_right_y)
 
                 event_bytes = event_bytes[event_size:]
 
