@@ -14,6 +14,8 @@ class GameState:
         """enums.Stage: The current stage being played on"""
         self.menu_state = enums.Menu.IN_GAME
         """enums.MenuState: The current menu scene, such as IN_GAME, or STAGE_SELECT"""
+        self.submenu = enums.SubMenu.UNKNOWN_SUBMENU
+        """(enums.SubMenu): The current sub-menu"""
         self.player = dict()
         """(dict of int - gamestate.PlayerState): Dict of PlayerState objects. Key is controller port"""
         self.projectiles = []
@@ -110,8 +112,6 @@ class PlayerState:
         """(float, float): Top edge of the ECB. (x, y) offset from player's center."""
         self.ecb_bottom = (0, 0)
         """(float, float): Bottom edge of the ECB. (x, y) offset from player's center."""
-        self.submenu = enums.SubMenu.UNKNOWN_SUBMENU
-        """(enums.SubMenu): The current sub-menu"""
         self.hitbox_1_size = 0
         self.hitbox_2_size = 0
         self.hitbox_3_size = 0
