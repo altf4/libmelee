@@ -50,6 +50,21 @@ def top_platform_position(gamestate):
         return (42.000099182128906, -15.75, 15.75)
     return None
 
+def side_platform_position(right_platform, gamestate):
+    """Gets the position of the specified side platform
+
+    Args:
+        (bool): Is it the right platform?
+        (gamestate.GameState): The current GameState
+
+    Returns:
+        (float, float, float): Tuple of height, left edge, right edge
+    """
+    if right_platform:
+        return right_platform_position(gamestate)
+    else:
+        return left_platform_position(gamestate)
+
 def left_platform_position(gamestate):
     """Gets the position of the left platform
 
