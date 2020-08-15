@@ -50,7 +50,6 @@ def top_platform_position(gamestate):
         return (42.000099182128906, -15.75, 15.75)
     return None
 
-
 def left_platform_position(gamestate):
     """Gets the position of the left platform
 

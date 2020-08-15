@@ -24,6 +24,11 @@ from melee.slpfilestreamer import SLPFileStreamer
 from melee import stages
 
 
+class SlippiVersionTooLow(Exception):
+    """Raised when the Slippi version is not recent enough"""
+    def __init__(self, message):
+        self.message = message
+
 # pylint: disable=too-many-instance-attributes
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
@@ -315,6 +320,8 @@ class Console:
                 minor = unpack(">B", event_bytes[0x02:0x02+1])[0]
                 version = unpack(">B", event_bytes[0x03:0x03+1])[0]
                 self.slp_version = str(major) + "." + str(minor) + "." + str(version)
+                if major < 3:
+                    raise SlippiVersionTooLow(self.slp_version)
                 try:
                     self._current_stage = enums.to_internal_stage(unpack(">H", event_bytes[0x13:0x13+2])[0])
                 except ValueError:
