@@ -335,11 +335,16 @@ class Console:
                 # Grab the physical controller state and put that into the controller state
                 controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
                 main_x = unpack(">f", event_bytes[0x19:0x19+4])[0]
+                main_x = (main_x / 2) + 0.5
                 main_y = unpack(">f", event_bytes[0x1D:0x1D+4])[0]
+                main_y = (main_y / 2) + 0.5
                 gamestate.player[controller_port].controller_state.main_stick = (main_x, main_y)
 
                 c_x = unpack(">f", event_bytes[0x21:0x21+4])[0]
+                c_x = (c_x / 2) + 0.5
                 c_y = unpack(">f", event_bytes[0x25:0x25+4])[0]
+                c_y = (c_y / 2) + 0.5
+                print(c_x, c_y)
                 gamestate.player[controller_port].controller_state.c_stick = (c_x, c_y)
 
                 buttonbits = unpack(">H", event_bytes[0x31:0x31+2])[0]
