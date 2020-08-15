@@ -344,7 +344,6 @@ class Console:
                 c_x = (c_x / 2) + 0.5
                 c_y = unpack(">f", event_bytes[0x25:0x25+4])[0]
                 c_y = (c_y / 2) + 0.5
-                print(c_x, c_y)
                 gamestate.player[controller_port].controller_state.c_stick = (c_x, c_y)
 
                 buttonbits = unpack(">H", event_bytes[0x31:0x31+2])[0]
