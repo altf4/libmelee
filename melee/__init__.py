@@ -10,5 +10,5 @@ from melee.controller import *
 from melee.framedata import *
 from melee.menuhelper import *
 from melee.stages import *
+from melee.version import *
 from melee import menuhelper, techskill, framedata, stages
-import melee.version
