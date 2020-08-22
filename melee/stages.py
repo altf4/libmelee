@@ -110,3 +110,53 @@ def right_platform_position(gamestate):
     if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (23.450098037719727, 28.0, 59.5)
     return None
+
+def randall_position(gamestate):
+    """Gets the current position of Randall
+
+    Args:
+        (gamestate.GameState): The current gamestate
+
+    Returns:
+        (float, float, float): (height, x_left, x_right). None if not on Yoshi's Story
+    """
+    if gamestate.stage != enums.Stage.YOSHIS_STORY:
+        return None
+    else:
+        frame_count = gamestate.frame % 1200
+        randall_width = 11.9
+
+        # Top section
+        if 476 < frame_count < 1016:
+            start = 101.235443115234
+            speed = -0.35484
+            frames_in = frame_count - 477
+            return (-13.64989, start - randall_width + (speed*frames_in), start + (speed*frames_in))
+        # Left section
+        if 1022 < frame_count < 1069:
+            return (0, -103.6, -91.7) # TODO
+        # Bottom section
+        if (frame_count > 1075) or (frame_count < 416):
+            return (-33.2489, 0, 0) # TODO
+        # Right section
+        if 423 < frame_count < 469:
+            start = -31.160232543945312
+            speed = 0.354839325
+            frames_in = frame_count - 424
+            return (start + (speed*frames_in), 91.35, 103.25)
+
+        return None
+        # TODO Corners
+
+
+# bot right
+# (416 -> 423)
+
+# top right
+# 469 -> 476
+#
+# top left
+# 1016 -> 1022
+#
+# bot left
+# 1069 -> 1075

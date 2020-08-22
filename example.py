@@ -111,6 +111,9 @@ print("Controller connected")
 while True:
     # "step" to the next frame
     gamestate = console.step()
+    print(melee.randall_position(gamestate))
+    print(gamestate.player[1].x, gamestate.player[1].y, gamestate.frame)
+    print()
 
     # The console object keeps track of how long your bot is taking to process frames
     #   And can warn you if it's taking too long
