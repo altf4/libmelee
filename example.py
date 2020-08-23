@@ -141,7 +141,7 @@ while True:
                                             controller,
                                             args.port,
                                             melee.Character.FOX,
-                                            melee.Stage.POKEMON_STADIUM,
+                                            melee.Stage.YOSHIS_STORY,
                                             args.connect_code,
                                             autostart=True,
                                             swag=True)
