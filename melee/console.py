@@ -40,6 +40,7 @@ class Console:
                  slippi_port=51441,
                  online_delay=2,
                  blocking_input=False,
+                 polling_mode=False,
                  logger=None):
         """Create a Console object
 
@@ -52,6 +53,9 @@ class Console:
             online_delay (int): How many frames of delay to apply in online matches
             blocking_input (bool): Should dolphin block waiting for bot input
                 This is only really useful if you're doing ML training.
+            polling_mode (bool): Polls input to console rather than blocking for it
+                When set, step() will always return immediately, but may be None if no
+                gamestate is available yet.
             logger (logger.Logger): Logger instance to use. None for no logger.
         """
         self.logger = logger
@@ -75,11 +79,14 @@ class Console:
         self.controllers = []
         self._current_stage = enums.Stage.NO_STAGE
         self._frame = 0
+        self._polling_mode = polling_mode
         self.slp_version = "unknown"
         """(str): The SLP version this stream/file currently is."""
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
+        # Half-completed gamestate not yet ready to add to the list
+        self._temp_gamestate = None
         self._process = None
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
@@ -252,17 +259,18 @@ class Console:
 
         Returns:
             GameState object that represents new current state of the game"""
-        # Keep looping until we get a REPLAY message
         self.processingtime = time.time() - self._frametimestamp
 
         # Flush the controllers
         for controler in self.controllers:
             controler.flush()
 
-        gamestate = GameState()
+        if self._temp_gamestate is None:
+            self._temp_gamestate = GameState()
+
         frame_ended = False
         while not frame_ended:
-            message = self._slippstream.dispatch()
+            message = self._slippstream.dispatch(self._polling_mode)
             if message:
                 if message["type"] == "connect_reply":
                     self.connected = True
@@ -273,17 +281,19 @@ class Console:
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
                         if self.is_dolphin:
-                            frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), gamestate)
+                            frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), self._temp_gamestate)
                         else:
-                            frame_ended = self.__handle_slippstream_events(message["payload"], gamestate)
+                            frame_ended = self.__handle_slippstream_events(message["payload"], self._temp_gamestate)
 
                 elif message["type"] == "menu_event":
                     if len(message["payload"]) > 0:
-                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), gamestate)
+                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
                         frame_ended = True
             else:
                 return None
 
+        gamestate = self._temp_gamestate
+        self._temp_gamestate = None
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
         # Start the processing timer now that we're done reading messages

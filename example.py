@@ -54,6 +54,7 @@ console = melee.Console(path=args.dolphin_executable_path,
                         slippi_address=args.address,
                         slippi_port=51441,
                         blocking_input=False,
+                        polling_mode=False,
                         logger=log)
 
 # Dolphin has an optional mode to not render the game's visuals
@@ -111,6 +112,8 @@ print("Controller connected")
 while True:
     # "step" to the next frame
     gamestate = console.step()
+    if gamestate is None:
+        continue
 
     # The console object keeps track of how long your bot is taking to process frames
     #   And can warn you if it's taking too long

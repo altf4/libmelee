@@ -54,14 +54,20 @@ class SlippstreamClient():
             self._host = None
         return False
 
-    def dispatch(self):
+    def dispatch(self, polling_mode):
         """Dispatch messages with the peer (read and write packets)"""
         event = None
-        event_type = 0
+        event_type = 1000
         while event_type not in [enet.EVENT_TYPE_RECEIVE]:
-            event = self._host.service(1000)
+            wait_time = 1000
+            if polling_mode:
+                wait_time = 0
+            event = self._host.service(wait_time)
             event_type = event.type
 
+            if event.type == enet.EVENT_TYPE_NONE:
+                if polling_mode:
+                    return None
             if event.type == enet.EVENT_TYPE_RECEIVE:
                 try:
                     return json.loads(event.packet.data)
