@@ -30,7 +30,7 @@ class SLPFileStreamer:
     def shutdown(self):
         pass
 
-    def dispatch(self):
+    def dispatch(self, dummy):
         """Read a single game event off the buffer
         """
         if self._index >= len(self._contents):
