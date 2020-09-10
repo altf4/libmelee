@@ -26,9 +26,23 @@ class SLPFileStreamer:
         self._contents = None
         self.eventsize = [0] * 0x100
         self._index = 0
+        self._frame = -9999
 
     def shutdown(self):
         pass
+
+    def _is_new_frame(self, event_bytes):
+        """Introspect the bytes of the event to see if it represents a new frame
+
+        This is for supporting older SLP files that don't have frame bookends
+        """
+        if EventType(event_bytes[0]) in [EventType.POST_FRAME, EventType.PRE_FRAME]:
+            frame = unpack(">i", event_bytes[0x1:0x1+4])[0]
+            if frame > self._frame:
+                self._frame = frame
+                return True
+            self._frame = frame
+        return False
 
     def dispatch(self, dummy):
         """Read a single game event off the buffer
@@ -53,6 +67,13 @@ class SLPFileStreamer:
 
         event_size = self.eventsize[self._contents[self._index]]
 
+        # Check to see if a new frame has happened for an old file type
+        if self._is_new_frame(self._contents[self._index : self._index+event_size]):
+            wrapper = dict()
+            wrapper["type"] = "frame_end"
+            wrapper["payload"] = b""
+            return wrapper
+
         wrapper = dict()
         wrapper["type"] = "game_event"
         wrapper["payload"] = self._contents[self._index : self._index+event_size]
@@ -65,3 +86,4 @@ class SLPFileStreamer:
             full = ubjson.loadb(file.read())
             raw = full["raw"]
             self._contents = raw
+            return True
