@@ -3,6 +3,19 @@
 
 from melee import enums
 
+"""Get the 4 blast zone boundaries for a given stage.  Values are tuples in 
+order of (left x boundary, right x boundary, upper y boundary, lower y boundary).
+Source:  Magus420 -
+https://smashboards.com/threads/official-ask-anyone-frame-things-thread.313889/page-20#post-18643652"""
+BLASTZONES = {
+    enums.Stage.BATTLEFIELD : (-224, 224, 200, -108.8)
+    enums.Stage.FINAL_DESTINATION : (-246, 246, 188, -140)
+    enums.Stage.DREAMLAND : (-255, 255, 250, -123)
+    enums.Stage.FOUNTAIN_OF_DREAMS : (-198.75, 198.75, 202.5, -146.25)
+    enums.Stage.POKEMON_STADIUM : (-230, 230, 180, -111)
+    enums.Stage.YOSHIS_STORY : (-175.7, 173.6, 168, -91)
+}
+
 """Get the X coordinate of the edge of the stage, approaching from off_stage
 IE: This is your X coordinate when hanging on the edge
 NOTE: The left edge is always the same, but negative"""
