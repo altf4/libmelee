@@ -6,6 +6,7 @@ setup(
         'pyenet',
         'serial',
         'py-ubjson',
+        'numpy',
         'pywin32; platform_system=="Windows"'
     ],
     version = '0.15.0',
