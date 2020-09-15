@@ -15,6 +15,7 @@ import subprocess
 import platform
 import math
 import base64
+import numpy as np
 from pathlib import Path
 
 from melee import enums
@@ -333,9 +334,9 @@ class Console:
                 # event_bytes = event_bytes[event_size:]
                 # Need to properly record what stage this is
                 self._frame = -10000
-                major = unpack(">B", event_bytes[0x01:0x01+1])[0]
-                minor = unpack(">B", event_bytes[0x02:0x02+1])[0]
-                version = unpack(">B", event_bytes[0x03:0x03+1])[0]
+                major = np.ndarray((1,), ">B", event_bytes, 0x1)[0]
+                minor = np.ndarray((1,), ">B", event_bytes, 0x2)[0]
+                version = np.ndarray((1,), ">B", event_bytes, 0x3)[0]
                 self.slp_version = str(major) + "." + str(minor) + "." + str(version)
                 if major < 3 and not self._allow_old_version:
                     raise SlippiVersionTooLow(self.slp_version)
@@ -350,20 +351,25 @@ class Console:
 
             elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
                 # Grab the physical controller state and put that into the controller state
-                controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
-                main_x = unpack(">f", event_bytes[0x19:0x19+4])[0]
+                controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
+
+                if gamestate.player[controller_port] is None:
+                    gamestate.player[controller_port] = PlayerState()
+
+                main_x = np.ndarray((1,), ">f", event_bytes, 0x19)[0]
                 main_x = (main_x / 2) + 0.5
-                main_y = unpack(">f", event_bytes[0x1D:0x1D+4])[0]
+                main_y = np.ndarray((1,), ">f", event_bytes, 0x1D)[0]
                 main_y = (main_y / 2) + 0.5
                 gamestate.player[controller_port].controller_state.main_stick = (main_x, main_y)
 
-                c_x = unpack(">f", event_bytes[0x21:0x21+4])[0]
+
+                c_x = np.ndarray((1,), ">f", event_bytes, 0x21)[0]
                 c_x = (c_x / 2) + 0.5
-                c_y = unpack(">f", event_bytes[0x25:0x25+4])[0]
+                c_y = np.ndarray((1,), ">f", event_bytes, 0x25)[0]
                 c_y = (c_y / 2) + 0.5
                 gamestate.player[controller_port].controller_state.c_stick = (c_x, c_y)
 
-                buttonbits = unpack(">H", event_bytes[0x31:0x31+2])[0]
+                buttonbits = np.ndarray((1,), ">H", event_bytes, 0x31)[0]
                 gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_A] = bool(buttonbits & 0x0100)
                 gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_B] = bool(buttonbits & 0x0200)
                 gamestate.player[controller_port].controller_state.button[enums.Button.BUTTON_X] = bool(buttonbits & 0x0400)
@@ -381,77 +387,78 @@ class Console:
 
             elif EventType(event_bytes[0]) == EventType.POST_FRAME:
                 gamestate.stage = self._current_stage
-                gamestate.frame = unpack(">i", event_bytes[0x1:0x1+4])[0]
-                controller_port = unpack(">B", event_bytes[0x5:0x5+1])[0] + 1
+                gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
+                controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
 
-                gamestate.player[controller_port].x = unpack(">f", event_bytes[0xa:0xa+4])[0]
-                gamestate.player[controller_port].y = unpack(">f", event_bytes[0xe:0xe+4])[0]
+                if gamestate.player[controller_port] is None:
+                    gamestate.player[controller_port] = PlayerState()
 
-                gamestate.player[controller_port].character = enums.Character(unpack(">B", event_bytes[0x7:0x7+1])[0])
+                gamestate.player[controller_port].x = np.ndarray((1,), ">f", event_bytes, 0xa)[0]
+                gamestate.player[controller_port].y = np.ndarray((1,), ">f", event_bytes, 0xe)[0]
+
+                gamestate.player[controller_port].character = enums.Character(np.ndarray((1,), ">B", event_bytes, 0x7)[0])
                 try:
-                    gamestate.player[controller_port].action = enums.Action(unpack(">H", event_bytes[0x8:0x8+2])[0])
+                    gamestate.player[controller_port].action = enums.Action(np.ndarray((1,), ">H", event_bytes, 0x8)[0])
                 except ValueError:
                     gamestate.player[controller_port].action = enums.Action.UNKNOWN_ANIMATION
 
                 # Melee stores this in a float for no good reason. So we have to convert
-                facing_float = unpack(">f", event_bytes[0x12:0x12+4])[0]
+                facing_float = np.ndarray((1,), ">f", event_bytes, 0x12)[0]
                 gamestate.player[controller_port].facing = facing_float > 0
 
-                gamestate.player[controller_port].percent = int(unpack(">f", event_bytes[0x16:0x16+4])[0])
-                gamestate.player[controller_port].shield_strength = unpack(">f", event_bytes[0x1A:0x1A+4])[0]
-                gamestate.player[controller_port].stock = unpack(">B", event_bytes[0x21:0x21+1])[0]
-                gamestate.player[controller_port].action_frame = int(unpack(">f", event_bytes[0x22:0x22+4])[0])
+                gamestate.player[controller_port].percent = int(np.ndarray((1,), ">f", event_bytes, 0x16)[0])
+                gamestate.player[controller_port].shield_strength = np.ndarray((1,), ">f", event_bytes, 0x1A)[0]
+                gamestate.player[controller_port].stock = np.ndarray((1,), ">B", event_bytes, 0x21)[0]
+                gamestate.player[controller_port].action_frame = int(np.ndarray((1,), ">f", event_bytes, 0x22)[0])
 
                 # Extract the bit at mask 0x20
                 try:
-                    bitflags2 = unpack(">B", event_bytes[0x27:0x27+1])[0]
+                    bitflags2 = np.ndarray((1,), ">B", event_bytes, 0x27)[0]
                     gamestate.player[controller_port].hitlag = bool(bitflags2 & 0x20)
-                except error:
+                except TypeError:
                     gamestate.player[controller_port].hitlag = False
 
                 try:
-                    gamestate.player[controller_port].hitstun_frames_left = int(unpack(">f", event_bytes[0x2b:0x2b+4])[0])
-                except error:
-                    gamestate.player[controller_port].hitstun_frames_left = 0
-                except ValueError:
+                    gamestate.player[controller_port].hitstun_frames_left = int(np.ndarray((1,), ">f", event_bytes, 0x2B)[0])
+                except TypeError:
                     gamestate.player[controller_port].hitstun_frames_left = 0
                 try:
-                    gamestate.player[controller_port].on_ground = not bool(unpack(">B", event_bytes[0x2f:0x2f+1])[0])
-                except error:
+                    gamestate.player[controller_port].on_ground = not bool(np.ndarray((1,), ">B", event_bytes, 0x2F)[0])
+                except TypeError:
                     gamestate.player[controller_port].on_ground = True
                 try:
-                    gamestate.player[controller_port].jumps_left = unpack(">B", event_bytes[0x32:0x32+1])[0]
-                except error:
+                    gamestate.player[controller_port].jumps_left = np.ndarray((1,), ">B", event_bytes, 0x32)[0]
+                except TypeError:
                     gamestate.player[controller_port].jumps_left = 1
 
                 try:
-                    gamestate.player[controller_port].invulnerable = int(unpack(">B", event_bytes[0x34:0x34+1])[0]) != 0
-                except error:
+                    gamestate.player[controller_port].invulnerable = int(np.ndarray((1,), ">B", event_bytes, 0x34)[0]) != 0
+                except TypeError:
                     gamestate.player[controller_port].invulnerable = False
 
                 try:
-                    gamestate.player[controller_port].speed_air_x_self = unpack(">f", event_bytes[0x35:0x35+4])[0]
-                except error:
+                    gamestate.player[controller_port].speed_air_x_self = np.ndarray((1,), ">f", event_bytes, 0x35)[0]
+                except TypeError:
                     gamestate.player[controller_port].speed_air_x_self = 0
 
                 try:
-                    gamestate.player[controller_port].speed_y_self = unpack(">f", event_bytes[0x39:0x39+4])[0]
-                except error:
+                    gamestate.player[controller_port].speed_y_self = np.ndarray((1,), ">f", event_bytes, 0x39)[0]
+                except TypeError:
                     gamestate.player[controller_port].speed_y_self = 0
 
                 try:
-                    gamestate.player[controller_port].speed_x_attack = unpack(">f", event_bytes[0x3d:0x3d+4])[0]
-                except error:
+                    gamestate.player[controller_port].speed_x_attack = np.ndarray((1,), ">f", event_bytes, 0x2D)[0]
+                except TypeError:
                     gamestate.player[controller_port].speed_x_attack = 0
 
                 try:
-                    gamestate.player[controller_port].speed_y_attack = unpack(">f", event_bytes[0x41:0x41+4])[0]
-                except error:
+                    gamestate.player[controller_port].speed_y_attack = np.ndarray((1,), ">f", event_bytes, 0x41)[0]
+                except TypeError:
                     gamestate.player[controller_port].speed_y_attack = 0
 
                 try:
-                    gamestate.player[controller_port].speed_ground_x_self = unpack(">f", event_bytes[0x45:0x45+4])[0]
-                except error:
+                    gamestate.player[controller_port].speed_ground_x_self = np.ndarray((1,), ">f", event_bytes, 0x45)[0]
+                except TypeError:
                     gamestate.player[controller_port].speed_ground_x_self = 0
 
                 # Keep track of a player's invulnerability due to respawn or ledge grab
@@ -484,13 +491,13 @@ class Console:
                 ecb_top_x = 0
                 ecb_top_y = 0
                 try:
-                    ecb_top_x = unpack(">f", event_bytes[0x49:0x49+4])[0]
-                except error:
+                    ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x49)[0]
+                except TypeError:
                     ecb_top_x = 0
                 # ECB Top edge, y
                 try:
-                    ecb_top_y = unpack(">f", event_bytes[0x4D:0x4D+4])[0]
-                except error:
+                    ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
+                except TypeError:
                     ecb_top_y = 0
                 gamestate.player[controller_port].ecb_top = (ecb_top_x, ecb_top_y)
 
@@ -498,13 +505,13 @@ class Console:
                 ecb_bot_x = 0
                 ecb_bot_y = 0
                 try:
-                    ecb_bot_x = unpack(">f", event_bytes[0x51:0x51+4])[0]
-                except error:
+                    ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
+                except TypeError:
                     ecb_bot_x = 0
                 # ECB Bottom edge, y coord
                 try:
-                    ecb_bot_y = unpack(">f", event_bytes[0x55:0x55+4])[0]
-                except error:
+                    ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
+                except TypeError:
                     ecb_bot_y = 0
                 gamestate.player[controller_port].ecb_bottom = (ecb_bot_x, ecb_bot_y)
 
@@ -512,13 +519,13 @@ class Console:
                 ecb_left_x = 0
                 ecb_left_y = 0
                 try:
-                    ecb_left_x = unpack(">f", event_bytes[0x59:0x59+4])[0]
-                except error:
+                    ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
+                except TypeError:
                     ecb_left_x = 0
                 # ECB left edge, y coord
                 try:
-                    ecb_left_y = unpack(">f", event_bytes[0x5D:0x5D+4])[0]
-                except error:
+                    ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
+                except TypeError:
                     ecb_left_y = 0
                 gamestate.player[controller_port].ecb_left = (ecb_left_x, ecb_left_y)
 
@@ -526,13 +533,13 @@ class Console:
                 ecb_right_x = 0
                 ecb_right_y = 0
                 try:
-                    ecb_right_x = unpack(">f", event_bytes[0x61:0x61+4])[0]
-                except error:
+                    ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
+                except TypeError:
                     ecb_right_x = 0
                 # ECB right edge, y coord
                 try:
-                    ecb_right_y = unpack(">f", event_bytes[0x65:0x65+4])[0]
-                except error:
+                    ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
+                except TypeError:
                     ecb_right_y = 0
                 gamestate.player[controller_port].ecb_right = (ecb_right_x, ecb_right_y)
 
