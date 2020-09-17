@@ -294,8 +294,8 @@ class Console:
                     if len(message["payload"]) > 0:
                         self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
                         frame_ended = True
-                elif message["type"] == "frame_end":
-                        frame_ended = True
+                elif message["type"] == "frame_end" and self._frame != -10000:
+                    frame_ended = True
             else:
                 return None
 
