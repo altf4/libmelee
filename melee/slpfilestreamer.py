@@ -5,7 +5,7 @@ Reads Slippi game events from SLP file rather than over network
 
 import ubjson
 from enum import Enum
-from struct import unpack, error
+import numpy as np
 
 # pylint: disable=too-few-public-methods
 class EventType(Enum):
@@ -37,7 +37,7 @@ class SLPFileStreamer:
         This is for supporting older SLP files that don't have frame bookends
         """
         if EventType(event_bytes[0]) in [EventType.POST_FRAME, EventType.PRE_FRAME]:
-            frame = unpack(">i", event_bytes[0x1:0x1+4])[0]
+            frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
             if frame > self._frame:
                 self._frame = frame
                 return True
@@ -55,7 +55,8 @@ class SLPFileStreamer:
             payload_size = self._contents[self._index+1]
             num_commands = (payload_size - 1) // 3
             for i in range(0, num_commands):
-                command, command_len = unpack(">bH", self._contents[cursor:cursor+3])
+                command = np.ndarray((1,), ">B", self._contents, cursor)[0]
+                command_len = np.ndarray((1,), ">H", self._contents, cursor + 0x1)[0]
                 self.eventsize[command] = command_len+1
                 cursor += 3
 

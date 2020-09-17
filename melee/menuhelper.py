@@ -151,6 +151,10 @@ class MenuHelper():
         # Figure out where the character is on the select screen
         # NOTE: This assumes you have all characters unlocked
         # Positions will be totally wrong if something is not unlocked
+        if port not in gamestate.player:
+            controller.release_all()
+            return
+
         ai_state = gamestate.player[port]
 
         # Discover who is the opponent
