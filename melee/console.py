@@ -410,6 +410,7 @@ class Console:
         playerstate.controller_state.button[enums.Button.BUTTON_D_RIGHT] = bool(int(buttonbits) & 0x0002)
         playerstate.controller_state.button[enums.Button.BUTTON_D_DOWN] = bool(int(buttonbits) & 0x0004)
         playerstate.controller_state.button[enums.Button.BUTTON_D_UP] = bool(int(buttonbits) & 0x0008)
+        self._frame = gamestate.frame
 
     def __post_frame(self, gamestate, event_bytes):
         gamestate.stage = self._current_stage
@@ -570,6 +571,7 @@ class Console:
         except TypeError:
             ecb_right_y = 0
         playerstate.ecb_right = (ecb_right_x, ecb_right_y)
+        self._frame = gamestate.frame
 
     def __frame_bookend(self, gamestate, event_bytes):
         self._prev_gamestate = gamestate
