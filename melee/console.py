@@ -627,17 +627,21 @@ class Console:
             gamestate.menu_state = enums.Menu.MAIN_MENU
         elif scene == 0x0008:
             gamestate.menu_state = enums.Menu.SLIPPI_ONLINE_CSS
+            gamestate.player[1] = PlayerState()
+            gamestate.player[2] = PlayerState()
+            gamestate.player[3] = PlayerState()
+            gamestate.player[4] = PlayerState()
         elif scene == 0x0000:
             gamestate.menu_state = enums.Menu.PRESS_START
         else:
             gamestate.menu_state = enums.Menu.UNKNOWN_MENU
 
         # controller port statuses at CSS
-        if gamestate.menu_state == enums.Menu.CHARACTER_SELECT:
+        if gamestate.menu_state in [enums.Menu.CHARACTER_SELECT, enums.Menu.SLIPPI_ONLINE_CSS]:
             gamestate.player[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x25)[0])
-            gamestate.player[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x26)[0])
-            gamestate.player[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x27)[0])
-            gamestate.player[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x28)[0])
+            gamestate.player[2].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x26)[0])
+            gamestate.player[3].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x27)[0])
+            gamestate.player[4].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x28)[0])
 
             # CSS Cursors
             gamestate.player[1].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x3)[0]
