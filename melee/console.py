@@ -46,8 +46,8 @@ class Console:
         """Create a Console object
 
         Args:
-            path (str): Path to the directory where your dolphin executable is
-                located. (if applicable) None tells console to use the installed copy of the emulator
+            path (str): Path to the directory where your dolphin executable is located.
+                If None, will assume the dolphin is remote and won't try to configure it.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
                 Empty string will try to autodiscover a nearby SlippiComm server
             slippi_port (int): UDP port that slippi will listen on
@@ -95,20 +95,20 @@ class Console:
         self._process = None
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
-
-            # Setup some dolphin config options
-            dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
-            config = configparser.SafeConfigParser()
-            config.read(dolphin_config_path)
-            config.set("Core", 'slippienablespectator', "True")
-            config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
-            # Set online delay
-            config.set("Core", 'slippionlinedelay', str(online_delay))
-            # Turn on background input so we don't need to have window focus on dolphin
-            config.set("Input", 'backgroundinput', "True")
-            config.set("Core", 'BlockingPipes', str(blocking_input))
-            with open(dolphin_config_path, 'w') as dolphinfile:
-                config.write(dolphinfile)
+            if self.path:
+                # Setup some dolphin config options
+                dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
+                config = configparser.SafeConfigParser()
+                config.read(dolphin_config_path)
+                config.set("Core", 'slippienablespectator', "True")
+                config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
+                # Set online delay
+                config.set("Core", 'slippionlinedelay', str(online_delay))
+                # Turn on background input so we don't need to have window focus on dolphin
+                config.set("Input", 'backgroundinput', "True")
+                config.set("Core", 'BlockingPipes', str(blocking_input))
+                with open(dolphin_config_path, 'w') as dolphinfile:
+                    config.write(dolphinfile)
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
@@ -158,7 +158,7 @@ class Console:
             dolphin_config_path (str, optional): Alternative config path for dolphin
                 if not using the default
         """
-        if self.is_dolphin:
+        if self.is_dolphin and self.path:
             exe_name = "dolphin-emu"
             if platform.system() == "Windows":
                 exe_name = "Dolphin.exe"
@@ -185,11 +185,12 @@ class Console:
         For Dolphin instances, this will kill the dolphin process.
         For Wiis and SLP files, it just shuts down our connection
          """
-        self.connected = False
-        self._slippstream.shutdown()
-        # If dolphin, kill the process
-        if self._process is not None:
-            self._process.terminate()
+        if self.path:
+            self.connected = False
+            self._slippstream.shutdown()
+            # If dolphin, kill the process
+            if self._process is not None:
+                self._process.terminate()
 
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
@@ -752,29 +753,6 @@ class Console:
         (which is not necessarily the same as the home path)"""
         if self.path:
             return self.path + "/User/Config/"
-
-        home_path = str(Path.home())
-
-        if platform.system() == "Windows":
-            return home_path + "\\Dolphin Emulator\\Config\\"
-
-        legacy_config_path = home_path + "/.dolphin-emu/"
-
-        #Are we using a legacy Linux home path directory?
-        if os.path.isdir(legacy_config_path):
-            return legacy_config_path
-
-        #Are we on a new Linux distro?
-        linux_path = home_path + "/.config/dolphin-emu/"
-        if os.path.isdir(linux_path):
-            return linux_path
-
-        #Are we on OSX?
-        osx_path = home_path + "/Library/Application Support/Dolphin/Config/"
-        if os.path.isdir(osx_path):
-            return osx_path
-
-        print("ERROR: Are you sure Dolphin is installed? Make sure it is, and then run again.")
         return ""
 
     def get_dolphin_pipes_path(self, port):

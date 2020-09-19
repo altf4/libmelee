@@ -29,7 +29,7 @@ parser.add_argument('--framerecord', '-r', default=False, action='store_true',
 parser.add_argument('--address', '-a', default="127.0.0.1",
                     help='IP address of Slippi/Wii')
 parser.add_argument('--dolphin_executable_path', '-e', default=None,
-                    help='Manually specify the non-installed directory where dolphin is')
+                    help='The directory where dolphin is')
 parser.add_argument('--connect_code', '-t', default="",
                     help='Direct connect code to connect to in Slippi Online')
 
