@@ -476,7 +476,7 @@ class Console:
             playerstate.speed_y_self = 0
 
         try:
-            playerstate.speed_x_attack = np.ndarray((1,), ">f", event_bytes, 0x2D)[0]
+            playerstate.speed_x_attack = np.ndarray((1,), ">f", event_bytes, 0x3D)[0]
         except TypeError:
             playerstate.speed_x_attack = 0
 
