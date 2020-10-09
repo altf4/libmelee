@@ -449,6 +449,8 @@ class Console:
             playerstate.hitstun_frames_left = int(np.ndarray((1,), ">f", event_bytes, 0x2B)[0])
         except TypeError:
             playerstate.hitstun_frames_left = 0
+        except ValueError:
+            playerstate.hitstun_frames_left = 0
         try:
             playerstate.on_ground = not bool(np.ndarray((1,), ">B", event_bytes, 0x2F)[0])
         except TypeError:
