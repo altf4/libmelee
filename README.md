@@ -10,23 +10,19 @@ And definitely stay updated, as the library will be actively improved.
 
 `pip3 install --upgrade melee`
 
-## Dolphin Setup Instructions
+## Setup Instructions
 
 Linux / OSX / Windows
 
-1. Install (or build locally) the Ishiiruka version here: https://github.com/altf4/Ishiiruka/tree/gamma There is a PR out for this functionality, so hopefully soon you won't need to do this step.
+1. Install and configure Slippi, just like you would for rollback netplay. Full instructions here: https://slippi.gg
 
-2. Make sure there is an empty text file named `portable.txt` adjacent to your `Dolphin.exe` or `dolphin-emu` binary.
+2. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI. Or alternatively the HitBox adapter works well too: https://www.hitboxarcade.com/products/gamecube-controller-adapter
 
-3. Make sure you're running Melee v1.02 NTSC. Other versions will not work.
+3. Install some custom Slippi Gecko Codes. You can find them here: https://github.com/altf4/slippi-ssbm-asm/blob/libmelee/Output/Netplay/GALE01r2.ini Simply replace your existing `GALE01r2.ini` file with this one. There is also a PR out for this functionality, so hopefully you won't need to do this step soon either.
 
-4. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
+4. Make sure you have all the `Required` and `Recommended` Gecko Codes enabled.
 
-5. Install some custom Slippi Gecko Codes. You can find them here: https://github.com/altf4/slippi-ssbm-asm/blob/libmelee/Output/Netplay/GALE01r2.ini Simply replace your existing `GALE01r2.ini` file with this one. There is also a PR out for this functionality, so hopefully you won't need to do this step soon either.
-
-6. Make sure you have all the `Required` and `Recommended` Gecko Codes enabled.
-
-7. Run `example.py` (use the -e flag for a local version) `./example.py -e PATH_TO_DIR_HOLDING_DOLPHIN_EXE`
+5. Run `./example.py -e PATH_TO_SLIPPI_FOLDER` (Not the exe itself, the folder)
 
 ## The API
 
