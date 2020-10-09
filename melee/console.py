@@ -167,6 +167,8 @@ class Console:
             if self.path:
                 exe_path = self.path
             command = [exe_path + "/" + exe_name]
+            if platform.system() == "Linux" and os.path.isfile(self.path):
+                command = [self.path]
             if not self.render:
                 #Use the "Null" renderer
                 command.append("-v")
@@ -196,12 +198,8 @@ class Console:
         """Setup the necessary files for dolphin to recognize the player at the given
         controller port and type"""
 
-        pipes_path = self._get_dolphin_home_path() + "Pipes/"
+        pipes_path = self.get_dolphin_pipes_path(port)
         if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
-            #Create the Pipes directory if it doesn't already exist
-            if not os.path.exists(pipes_path):
-                os.makedirs(pipes_path)
-            pipes_path += "slippibot" + str(port)
             if not os.path.exists(pipes_path):
                 os.mkfifo(pipes_path)
 
@@ -754,6 +752,9 @@ class Console:
         """ Return the path to dolphin's config directory
         (which is not necessarily the same as the home path)"""
         if self.path:
+            # If this is an appimage install
+            if platform.system() == "Linux" and os.path.isfile(self.path):
+                return str(Path.home()) + "/.config/SlippiOnline/Config/"
             return self.path + "/User/Config/"
         return ""
 
@@ -762,6 +763,11 @@ class Console:
         """
         if platform.system() == "Windows":
             return '\\\\.\\pipe\\slippibot' + str(port)
+        # If this is an appimage install
+        if platform.system() == "Linux" and os.path.isfile(self.path):
+            if not os.path.isdir(str(Path.home()) + "/.config/SlippiOnline/Pipes/"):
+                os.mkdir(str(Path.home()) + "/.config/SlippiOnline/Pipes/")
+            return str(Path.home()) + "/.config/SlippiOnline/Pipes/slippibot" + str(port)
         return self._get_dolphin_home_path() + "/Pipes/slippibot" + str(port)
 
     def __fixframeindexing(self, gamestate):
