@@ -33,7 +33,7 @@ class CommType(Enum):
 class SlippstreamClient():
     """ Container representing a client to some SlippiComm server """
 
-    def __init__(self, address="", port=51441, realtime=True):
+    def __init__(self, address="127.0.0.1", port=51441, realtime=True):
         """ Constructor for this object """
         self._host = enet.Host(None, 1, 0, 0)
         self._peer = None
@@ -92,19 +92,6 @@ class SlippstreamClient():
 
         Returns True on success, False on failure
         """
-        # If we don't have a slippi address, let's autodiscover it
-        if not self.address:
-            # Slippi broadcasts a UDP message on port
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            # Slippi sends an advertisement every 10 seconds. So 20 should be enough
-            sock.settimeout(20)
-            sock.bind(('', 20582))
-            try:
-                message = sock.recvfrom(1024)
-                self.address = message[1][0]
-            except socket.timeout:
-                return False
-
         # Try to connect to the server and send a handshake
         self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
         return True

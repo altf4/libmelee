@@ -94,8 +94,6 @@ console.run()
 print("Connecting to console...")
 if not console.connect():
     print("ERROR: Failed to connect to the console.")
-    print("\tIf you're trying to autodiscover, local firewall settings can " +
-          "get in the way. Try specifying the address manually.")
     sys.exit(-1)
 
 # Plug our controller in

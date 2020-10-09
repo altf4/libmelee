@@ -49,7 +49,6 @@ class Console:
             path (str): Path to the directory where your dolphin executable is located.
                 If None, will assume the dolphin is remote and won't try to configure it.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
-                Empty string will try to autodiscover a nearby SlippiComm server
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
             blocking_input (bool): Should dolphin block waiting for bot input
