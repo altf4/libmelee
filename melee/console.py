@@ -623,7 +623,7 @@ class Console:
             gamestate.player[2] = PlayerState()
             gamestate.player[3] = PlayerState()
             gamestate.player[4] = PlayerState()
-        elif scene == 0x0102:
+        elif scene in [0x0102, 0x0108]:
             gamestate.menu_state = enums.Menu.STAGE_SELECT
         elif scene == 0x0202:
             gamestate.menu_state = enums.Menu.IN_GAME
