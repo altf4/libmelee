@@ -144,6 +144,7 @@ while True:
                                             melee.Character.FOX,
                                             melee.Stage.YOSHIS_STORY,
                                             args.connect_code,
+                                            costume=0,
                                             autostart=True,
                                             swag=True)
     if log:

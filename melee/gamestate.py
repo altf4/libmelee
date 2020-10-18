@@ -41,7 +41,7 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right', 'prev_action',
-                 '_next_x', '_next_y', '_prev_x', '_prev_y')
+                 'costume', '_next_x', '_next_y', '_prev_x', '_prev_y')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus'speed_y_self'
@@ -114,6 +114,8 @@ class PlayerState(object):
         """(float, float): Top edge of the ECB. (x, y) offset from player's center."""
         self.ecb_bottom = (0, 0)
         """(float, float): Bottom edge of the ECB. (x, y) offset from player's center."""
+        self.costume = 0
+        """(int): Index for which costume the player is wearing"""
         # self.hitbox_1_size = 0
         # self.hitbox_2_size = 0
         # self.hitbox_3_size = 0
@@ -154,25 +156,22 @@ class Projectile:
         self.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
         """(enums.ProjectileSubtype): Which actual projectile type this is"""
 
-def port_detector(gamestate, controller, character):
-    """Autodiscover what port the given controller is on
+def port_detector(gamestate, character, costume):
+    """Autodiscover what port the given character is on
 
     Slippi Online assigns us a random port when playing online. Find out which we are
 
     Returns:
-        [1-4]: The given controller belongs to the returned port
-        0: We don't know yet, and we pressed a button to discover. Don't press
-        any other buttons this frame or it'll mess this up!!
+        [1-4]: The given character belongs to the returned port
+        0: We don't know.
 
     Args:
         gamestate: Current gamestate
-        controller: The controller we want to test
         character: The character we know we picked
+        costume: Costume index we picked
     """
     for i, player in gamestate.player.items():
-        if player.character == character:
+        if player.character == character and player.costume == costume:
             return i
 
-    # TODO Do some movement
-
-    return 1
+    return 0

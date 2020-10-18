@@ -86,6 +86,7 @@ class Console:
         self.slp_version = "unknown"
         """(str): The SLP version this stream/file currently is."""
         self._allow_old_version = allow_old_version
+        self._costumes = {0:0, 1:0, 2:0, 3:0}
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -379,6 +380,9 @@ class Console:
         except ValueError:
             self._current_stage = enums.Stage.NO_STAGE
 
+        for i in range(4):
+            self._costumes[i] = np.ndarray((1,), ">B", event_bytes, 0x68 + (0x24 * i))[0]
+
     def __pre_frame(self, gamestate, event_bytes):
         # Grab the physical controller state and put that into the controller state
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
@@ -386,6 +390,8 @@ class Console:
         if controller_port not in gamestate.player:
             gamestate.player[controller_port] = PlayerState()
         playerstate = gamestate.player[controller_port]
+
+        playerstate.costume = self._costumes[controller_port-1]
 
         main_x = (np.ndarray((1,), ">f", event_bytes, 0x19)[0] / 2) + 0.5
         main_y = (np.ndarray((1,), ">f", event_bytes, 0x1D)[0] / 2) + 0.5
@@ -723,6 +729,14 @@ class Console:
             gamestate.menu_selection = np.ndarray((1,), ">B", event_bytes, 0x3E)[0]
         except TypeError:
             gamestate.menu_selection = 0
+
+        # Online costume chosen
+        try:
+            if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
+                for i in range(4):
+                    gamestate.player[i+1].costume = np.ndarray((1,), ">B", event_bytes, 0x3F)[0]
+        except TypeError:
+            pass
 
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
