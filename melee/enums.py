@@ -61,6 +61,7 @@ class SubMenu(Enum):
     LANGUAGE_SELECT_SUBMENU = 23
     ERASE_DATA_SUBMENU = 24
     MULTIMAN_MELEE_SUBMENU = 33
+    ONLINE_CSS = 0xfe
     UNKNOWN_SUBMENU = 0xff
 
 class ControllerStatus(Enum):

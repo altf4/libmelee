@@ -738,6 +738,18 @@ class Console:
         except TypeError:
             pass
 
+        # This value is 0x05 in the nametag entry
+        try:
+            if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
+                nametag = np.ndarray((1,), ">B", event_bytes, 0x40)[0]
+                if nametag == 0x05:
+                    gamestate.submenu = enums.SubMenu.NAME_ENTRY_SUBMENU
+                elif nametag == 0x00:
+                    gamestate.submenu = enums.SubMenu.ONLINE_CSS
+        except TypeError:
+            pass
+
+
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
         if self.path:
