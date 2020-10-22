@@ -517,10 +517,13 @@ class Console:
             playerstate.moonwalkwarning = False
 
         # "off_stage" helper
-        if (abs(playerstate.x) > stages.EDGE_GROUND_POSITION[gamestate.stage] or \
-                playerstate.y < -6) and not playerstate.on_ground:
-            playerstate.off_stage = True
-        else:
+        try:
+            if (abs(playerstate.x) > stages.EDGE_GROUND_POSITION[gamestate.stage] or \
+                    playerstate.y < -6) and not playerstate.on_ground:
+                playerstate.off_stage = True
+            else:
+                playerstate.off_stage = False
+        except KeyError:
             playerstate.off_stage = False
 
         # ECB top edge, x

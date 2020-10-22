@@ -170,8 +170,11 @@ def port_detector(gamestate, character, costume):
         character: The character we know we picked
         costume: Costume index we picked
     """
+    detected_port = 0
     for i, player in gamestate.player.items():
         if player.character == character and player.costume == costume:
-            return i
+            if detected_port > 0:
+                return 0
+            detected_port = i
 
-    return 0
+    return detected_port

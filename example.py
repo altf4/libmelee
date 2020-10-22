@@ -106,6 +106,8 @@ if not controller.connect():
     sys.exit(-1)
 print("Controller connected")
 
+costume = 0
+
 # Main loop
 while True:
     # "step" to the next frame
@@ -124,8 +126,10 @@ while True:
         # Slippi Online matches assign you a random port once you're in game that's different
         #   than the one you're physically plugged into. This helper will autodiscover what
         #   port we actually are.
-        discovered_port = melee.gamestate.port_detector(gamestate, controller, melee.Character.FOX)
-
+        discovered_port = args.port
+        if args.connect_code != "":
+            discovered_port = melee.gamestate.port_detector(gamestate, melee.Character.FOX, costume)
+            print(discovered_port)
         if discovered_port > 0:
             if args.framerecord:
                 framedata._record_frame(gamestate)
@@ -136,7 +140,9 @@ while True:
                 melee.techskill.upsmashes(ai_state=gamestate.player[discovered_port], controller=controller)
             else:
                 melee.techskill.multishine(ai_state=gamestate.player[discovered_port], controller=controller)
-
+        else:
+            # If the discovered port was unsure, reroll our costume for next time
+            costume = random.randint(0, 4)
     else:
         melee.MenuHelper.menu_helper_simple(gamestate,
                                             controller,
