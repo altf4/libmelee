@@ -10,7 +10,7 @@ class GameState(object):
     __slots__ = ('frame', 'stage', 'menu_state', 'submenu', 'player', 'projectiles', 'stage_select_cursor_x',
                  'stage_select_cursor_y', 'ready_to_start', 'distance', 'menu_selection', '_newframe')
     def __init__(self):
-        self.frame = -9999
+        self.frame = -10000
         """int: The current frame number. Monotonically increases. Can be negative."""
         self.stage = enums.Stage.FINAL_DESTINATION
         """enums.Stage: The current stage being played on"""
