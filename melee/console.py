@@ -338,6 +338,7 @@ class Console:
 
             elif EventType(event_bytes[0]) == EventType.GAME_END:
                 event_bytes = event_bytes[event_size:]
+                return True
 
             elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
                 self.__pre_frame(gamestate, event_bytes)
