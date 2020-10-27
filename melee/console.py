@@ -756,35 +756,18 @@ class Console:
         """Return the path to dolphin's home directory"""
         if self.path:
             return self.path + "/User/"
-
-        home_path = str(Path.home())
-        legacy_config_path = home_path + "/.dolphin-emu/"
-
-        #Are we using a legacy Linux home path directory?
-        if os.path.isdir(legacy_config_path):
-            return legacy_config_path
-
-        #Are we on OSX?
-        osx_path = home_path + "/Library/Application Support/Dolphin/"
-        if os.path.isdir(osx_path):
-            return osx_path
-
-        #Are we on a new Linux distro?
-        linux_path = home_path + "/.local/share/dolphin-emu/"
-        if os.path.isdir(linux_path):
-            return linux_path
-
-        print("ERROR: Are you sure Dolphin is installed? Make sure it is, and then run again.")
         return ""
 
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory
         (which is not necessarily the same as the home path)"""
         if self.path:
-            # If this is an appimage install
-            if platform.system() == "Linux" and os.path.isfile(self.path):
+            if platform.system() == "Linux":
+                # First check if the config path is here in the same directory
+                if os.path.isdir(self.path + "/User/Config/"):
+                    return self.path + "/User/Config/"
+                # Otherwise, this must be an appimage install. Use the .config
                 return str(Path.home()) + "/.config/SlippiOnline/Config/"
-            return self.path + "/User/Config/"
         return ""
 
     def get_dolphin_pipes_path(self, port):
@@ -792,8 +775,12 @@ class Console:
         """
         if platform.system() == "Windows":
             return '\\\\.\\pipe\\slippibot' + str(port)
-        # If this is an appimage install
-        if platform.system() == "Linux" and os.path.isfile(self.path):
+        if platform.system() == "Linux":
+            # First check if the config path is here in the same directory
+            if os.path.isdir(self.path + "/User/"):
+                if not os.path.isdir(self.path + "/User/Pipes/"):
+                    os.mkdir(self.path + "/User/Pipes/")
+                return self.path + "/User/Pipes/slippibot" + str(port)
             if not os.path.isdir(str(Path.home()) + "/.config/SlippiOnline/Pipes/"):
                 os.mkdir(str(Path.home()) + "/.config/SlippiOnline/Pipes/")
             return str(Path.home()) + "/.config/SlippiOnline/Pipes/slippibot" + str(port)
