@@ -72,8 +72,6 @@ class Console:
         self.slippi_port = slippi_port
         """(int): UDP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
-        self.render = True
-        """(bool): Should dolphin render the game live?"""
         self.connected = False
         self.nick = ""
         """(str): The nickname the console has given itself."""
@@ -171,10 +169,6 @@ class Console:
             command = [exe_path + "/" + exe_name]
             if platform.system() == "Linux" and os.path.isfile(self.path):
                 command = [self.path]
-            if not self.render:
-                #Use the "Null" renderer
-                command.append("-v")
-                command.append("Null")
             if iso_path is not None:
                 command.append("-e")
                 command.append(iso_path)

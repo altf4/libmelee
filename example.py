@@ -57,10 +57,6 @@ console = melee.Console(path=args.dolphin_executable_path,
                         polling_mode=False,
                         logger=log)
 
-# Dolphin has an optional mode to not render the game's visuals
-#   This is useful for BotvBot matches
-console.render = True
-
 # Create our Controller object
 #   The controller is the second primary object your bot will interact with
 #   Your controller is your way of sending button presses to the game, whether
