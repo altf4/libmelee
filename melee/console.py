@@ -87,6 +87,7 @@ class Console:
         self._allow_old_version = allow_old_version
         self._use_manual_bookends = False
         self._costumes = {0:0, 1:0, 2:0, 3:0}
+        self._is_cpu = {0:False, 1:False, 2:False, 3:False}
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -332,7 +333,7 @@ class Console:
 
             elif EventType(event_bytes[0]) == EventType.GAME_END:
                 event_bytes = event_bytes[event_size:]
-                return True
+                return self._use_manual_bookends
 
             elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
                 self.__pre_frame(gamestate, event_bytes)
@@ -382,6 +383,9 @@ class Console:
         for i in range(4):
             self._costumes[i] = np.ndarray((1,), ">B", event_bytes, 0x68 + (0x24 * i))[0]
 
+        for i in range(4):
+            self._is_cpu[i] = np.ndarray((1,), ">B", event_bytes, 0x66 + (0x24 * i))[0] == 1
+
     def __pre_frame(self, gamestate, event_bytes):
         # Grab the physical controller state and put that into the controller state
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
@@ -391,6 +395,7 @@ class Console:
         playerstate = gamestate.player[controller_port]
 
         playerstate.costume = self._costumes[controller_port-1]
+        playerstate.is_cpu = self._is_cpu[controller_port-1]
 
         main_x = (np.ndarray((1,), ">f", event_bytes, 0x19)[0] / 2) + 0.5
         main_y = (np.ndarray((1,), ">f", event_bytes, 0x1D)[0] / 2) + 0.5
