@@ -30,6 +30,7 @@ Linux / OSX / Windows
 
 Here's a ~10 minute video that will show you how easy it can be to write a Melee AI from scratch.
 [![Libmelee Quickstart Video](https://img.youtube.com/vi/1R723AS1P-0/hqdefault.jpg)](https://www.youtube.com/watch?v=1R723AS1P-0)
+
 Some of the minor aspects of the API have changed since this video was made, but it's still a good resource.
 
 ## The API
