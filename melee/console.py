@@ -768,6 +768,8 @@ class Console:
                     return self.path + "/User/Config/"
                 # Otherwise, this must be an appimage install. Use the .config
                 return str(Path.home()) + "/.config/SlippiOnline/Config/"
+            else:
+                return self.path + "/User/Config/"
         return ""
 
     def get_dolphin_pipes_path(self, port):
