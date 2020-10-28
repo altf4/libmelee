@@ -26,6 +26,12 @@ Linux / OSX / Windows
 
 6. Run `./example.py -e PATH_TO_SLIPPI_FOLDER` (Not the exe itself, the folder) If you're using the Linux appimage, set this to `squashfs-root/usr/bin/`.
 
+## Quickstart Video
+
+Here's a ~10 minute video that will show you how easy it can be to write a Melee AI from scratch.
+[![Libmelee Quickstart Video](https://img.youtube.com/vi/1R723AS1P-0/hqdefault.jpg)](https://www.youtube.com/watch?v=1R723AS1P-0)
+Some of the minor aspects of the API have changed since this video was made, but it's still a good resource.
+
 ## The API
 
 This readme will give you a very high level overview of the API. For a more detailed view into specific functions and their params, check out the ReadTheDocs page here: https://libmelee.readthedocs.io/
@@ -77,7 +83,5 @@ Also, if you don't press a button, Dolphin will just use whatever you pressed la
 
 which will release all buttons and set all sticks / shoulders to neutral.
 
-## NOTE
-The libmelee API should be considered to be in a state of high flux until you stop seeing this message. Expect many changes, including plenty that break compatibility. Just FYI
-
+## OpenAI Gym
 libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.
