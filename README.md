@@ -45,7 +45,7 @@ The GameState object should be treated as immutable. Changing it won't have any 
 ### Note About Consistency and Binary Compatibility
 Libmelee tries to create a sensible and intuitive API for Melee. So it may break with some low-level binary structures that the game creates. Some examples:
 - Melee is wildly inconsistent with whether animations start at 0 or 1. For some animations, the first frame is 0, for others the first frame is 1. This is very annoying when trying to program a bot. So libmelee re-indexes all animations to start at 1. This way the math is always simple and consistent. IE: If grab comes out on "frame 7", you can reliably check `character.animation_frame == 7`.
-- Libmelee treats Sheik and Zelda as one character that transforms back and forth. This is actually not how the game stores the characters internally, though. Internally to Melee, Sheik and Zelda are the same as Ice Clibmers: there's always two of them. One just happens to be invisible and intangible at a time. But dealing with that would be a pain.
+- Libmelee treats Sheik and Zelda as one character that transforms back and forth. This is actually not how the game stores the characters internally, though. Internally to Melee, Sheik and Zelda are the same as Ice Climbers: there's always two of them. One just happens to be invisible and intangible at a time. But dealing with that would be a pain.
 
 ### Some Values are Unintuitive but Unavoidable
 Other values in Melee are unintuitive, but are a core aspect of how the game works so we can't abstract it away.
