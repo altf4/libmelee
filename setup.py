@@ -7,7 +7,8 @@ setup(
         'serial',
         'py-ubjson',
         'numpy',
-        'pywin32; platform_system=="Windows"'
+        'pywin32; platform_system=="Windows"',
+        'packaging'
     ],
     version = '0.19.4',
     description = 'Open API written in Python 3 for making your own Smash Bros: Melee AI that works with Slippi Online',
