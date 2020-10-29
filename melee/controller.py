@@ -4,7 +4,6 @@ import platform
 import sys
 import copy
 import time
-import serial
 try:
     import win32file
     import pywintypes

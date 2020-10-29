@@ -4,7 +4,6 @@ setup(
     packages = ['melee'],
     install_requires=[
         'pyenet',
-        'serial',
         'py-ubjson',
         'numpy',
         'pywin32; platform_system=="Windows"',
