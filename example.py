@@ -128,9 +128,9 @@ while True:
                                             melee.Character.FOX,
                                             melee.Stage.YOSHIS_STORY,
                                             args.connect_code,
-                                            costume=0,
+                                            costume=costume,
                                             autostart=True,
-                                            swag=True)
+                                            swag=False)
     if log:
         log.logframe(gamestate)
         log.writeframe()

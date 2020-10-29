@@ -18,7 +18,7 @@ class MenuHelper():
                             connect_code,
                             costume=0,
                             autostart=False,
-                            swag=True):
+                            swag=False):
         """Siplified menu helper function to get you through the menus and into a game
 
         Does everything for you but play the game. Gets you to the right menu screen, picks
@@ -49,7 +49,7 @@ class MenuHelper():
                                             port=port,
                                             controller=controller,
                                             costume=costume,
-                                            swag=True,
+                                            swag=swag,
                                             start=autostart)
         # If we're at the postgame scores screen, spam START
         elif gamestate.menu_state == enums.Menu.POSTGAME_SCORES:
@@ -177,9 +177,11 @@ class MenuHelper():
             cursor_x, cursor_y = gamestate.player[1].cursor_x, gamestate.player[1].cursor_y
             isSlippiCSS = True
             character_selected = gamestate.player[1].character_selected
+        if isSlippiCSS:
+            swag = True
 
-        row = character.value // 9
-        column = character.value % 9
+        row = enums.from_internal(character) // 9
+        column = enums.from_internal(character) % 9
         #The random slot pushes the bottom row over a slot, so compensate for that
         if row == 2:
             column = column+1

@@ -181,6 +181,63 @@ def to_internal(char_id):
         return Character.ROY
     return Character.UNKNOWN_CHARACTER
 
+def from_internal(character):
+    """Converts a character enum to an "external" ID.
+
+    Mostly used at the Character Select Screen
+    """
+    if character == Character.DOC:
+        return 0x00
+    if character == Character.MARIO:
+        return 0x01
+    if character == Character.LUIGI:
+        return 0x02
+    if character == Character.BOWSER:
+        return 0x03
+    if character == Character.PEACH:
+        return 0x04
+    if character == Character.YOSHI:
+        return 0x05
+    if character == Character.DK:
+        return 0x06
+    if character == Character.CPTFALCON:
+        return 0x07
+    if character == Character.GANONDORF:
+        return 0x08
+    if character == Character.FALCO:
+        return 0x09
+    if character == Character.FOX:
+        return 0x0A
+    if character == Character.NESS:
+        return 0x0B
+    if character == Character.POPO:
+        return 0x0C
+    if character == Character.KIRBY:
+        return 0x0D
+    if character == Character.SAMUS:
+        return 0x0E
+    if character == Character.ZELDA:
+        return 0x0F
+    if character == Character.LINK:
+        return 0x10
+    if character == Character.YLINK:
+        return 0x11
+    if character == Character.PICHU:
+        return 0x12
+    if character == Character.PIKACHU:
+        return 0x13
+    if character == Character.JIGGLYPUFF:
+        return 0x14
+    if character == Character.MEWTWO:
+        return 0x15
+    if character == Character.GAMEANDWATCH:
+        return 0x16
+    if character == Character.MARTH:
+        return 0x17
+    if character == Character.ROY:
+        return 0x18
+    return 0xFF
+
 class Button(Enum):
     """A single button on a GCN controller
 
