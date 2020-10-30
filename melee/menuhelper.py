@@ -12,10 +12,10 @@ class MenuHelper():
 
     def menu_helper_simple(gamestate,
                             controller,
-                            port,
                             character_selected,
                             stage_selected,
                             connect_code,
+                            cpu_level=0,
                             costume=0,
                             autostart=False,
                             swag=False):
@@ -30,6 +30,7 @@ class MenuHelper():
             character_selected (enums.Character): The character your bot will play as
             stage_selected (enums.Stage): The stage your bot will choose to play on
             connect_code (str): The connect code to direct match with. Leave blank for VS mode.
+            cpu_level (int): What CPU level to set this to. 0 for human/bot controlled.
             costume (int): Costume index chosen
             autostart (bool): Automatically start the game when it's ready.
                 Useful for BotvBot matches where no human is there to start it.
@@ -46,8 +47,8 @@ class MenuHelper():
             else:
                 MenuHelper.choose_character(character=character_selected,
                                             gamestate=gamestate,
-                                            port=port,
                                             controller=controller,
+                                            cpu_level=cpu_level,
                                             costume=costume,
                                             swag=swag,
                                             start=autostart)
@@ -134,13 +135,14 @@ class MenuHelper():
 
         return index
 
-    def choose_character(character, gamestate, port, controller, costume=2, swag=False, start=False):
+    def choose_character(character, gamestate, controller, cpu_level=0, costume=2, swag=False, start=False):
         """Choose a character from the character select menu
 
         Args:
             character (enums.Character): The character you want to pick
             gamestate (gamestate.GameState): The current gamestate
             controller (controller.Controller): The controller object to press buttons on
+            cpu_level (int): What CPU level to set this to. 0 for human/bot controlled.
             costume (int): The costume index to choose
             swag (bool): Pick random until you get the character
             start (bool): Automatically start the match when it's ready
@@ -155,23 +157,25 @@ class MenuHelper():
         # Figure out where the character is on the select screen
         # NOTE: This assumes you have all characters unlocked
         # Positions will be totally wrong if something is not unlocked
-        if port not in gamestate.player:
+        controlling_port = controller.port
+        if controlling_port not in gamestate.player:
             controller.release_all()
             return
 
-        ai_state = gamestate.player[port]
+        ai_state = gamestate.player[controlling_port]
 
         # Discover who is the opponent
         opponent_state = None
         for i, player in gamestate.player.items():
             # TODO For now, just assume they're the first controller port that isn't us
-            if i != port:
+            if i != controlling_port:
                 opponent_state = player
                 break
 
         cursor_x, cursor_y = ai_state.cursor_x, ai_state.cursor_y
         coin_down = ai_state.coin_down
         character_selected = ai_state.character_selected
+
         isSlippiCSS = False
         if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
             cursor_x, cursor_y = gamestate.player[1].cursor_x, gamestate.player[1].cursor_y
@@ -200,6 +204,79 @@ class MenuHelper():
         target_x = -32.5 + 3.5 + (column * 7.0)
         #Wiggle room in positioning character
         wiggleroom = 1.5
+
+        # Set our CPU level correctly
+        if character_selected == character:
+            # Is our controller type correct?
+            cpu_selected = ai_state.controller_status == enums.ControllerStatus.CONTROLLER_CPU
+            if cpu_selected != (cpu_level > 0):
+                wiggleroom = 1
+                target_y = -2.2
+                target_x = -32.2 + (15.82 * (controlling_port-1))
+
+                controller.release_button(enums.Button.BUTTON_A)
+                #Move up if we're too low
+                if cursor_y < target_y - wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+                    return
+                #Move down if we're too high
+                if cursor_y > target_y + wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+                    return
+                #Move right if we're too left
+                if cursor_x < target_x - wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+                    return
+                #Move left if we're too right
+                if cursor_x > target_x + wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+                    return
+
+                if gamestate.frame % 2 == 0:
+                    controller.press_button(enums.Button.BUTTON_A)
+                else:
+                    controller.release_all()
+                return
+            # Select the right CPU level on the slider
+            if ai_state.is_holding_cpu_slider:
+                if ai_state.cpu_level > cpu_level:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+                    return
+                if ai_state.cpu_level < cpu_level:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+                    return
+                if ai_state.cpu_level == cpu_level:
+                    if gamestate.frame % 2 == 0:
+                        controller.press_button(enums.Button.BUTTON_A)
+                    else:
+                        controller.release_all()
+                return
+            # Move over to and pick up the CPU slider
+            if ai_state.cpu_level != cpu_level:
+                wiggleroom = 1
+                target_y = -15.12
+                target_x = -30.9 + (15.4 * (controlling_port-1))
+                #Move up if we're too low
+                if cursor_y < target_y - wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+                    return
+                #Move down if we're too high
+                if cursor_y > target_y + wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+                    return
+                #Move right if we're too left
+                if cursor_x < target_x - wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+                    return
+                #Move left if we're too right
+                if cursor_x > target_x + wiggleroom:
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+                    return
+                if gamestate.frame % 2 == 0:
+                    controller.press_button(enums.Button.BUTTON_A)
+                else:
+                    controller.release_all()
+                return
 
         # We are already set, so let's taunt our opponent
         if character_selected == character and swag and not start:
@@ -376,7 +453,7 @@ class MenuHelper():
         else:
             controller.release_button(enums.Button.BUTTON_START)
 
-    def change_controller_status(controller, gamestate, targetport, port, status, character=None):
+    def change_controller_status(controller, gamestate, targetport, status, character=None):
         """Switch a given player's controller to be of the given state
 
         Note:
@@ -385,7 +462,7 @@ class MenuHelper():
             go to uplugged. If you've ever played Melee, you probably know this. If your
             friend walks away, you have to press the A button on THEIR controller. (or
             else actually unplug the controller) No way around it."""
-        ai_state = gamestate.player[port]
+        ai_state = gamestate.player[controller.port]
         target_x, target_y = 0, -2.2
         if targetport == 1:
             target_x = -31.5

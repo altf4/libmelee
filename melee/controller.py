@@ -74,6 +74,7 @@ class Controller:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
 
+        self.port = port
         self.prev = ControllerState()
         self.current = ControllerState()
         self.logger = console.logger

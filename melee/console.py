@@ -87,7 +87,7 @@ class Console:
         self._allow_old_version = allow_old_version
         self._use_manual_bookends = False
         self._costumes = {0:0, 1:0, 2:0, 3:0}
-        self._is_cpu = {0:False, 1:False, 2:False, 3:False}
+        self._cpu_level = {0:0, 1:0, 2:0, 3:0}
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -384,7 +384,11 @@ class Console:
             self._costumes[i] = np.ndarray((1,), ">B", event_bytes, 0x68 + (0x24 * i))[0]
 
         for i in range(4):
-            self._is_cpu[i] = np.ndarray((1,), ">B", event_bytes, 0x66 + (0x24 * i))[0] == 1
+            self._cpu_level[i] = np.ndarray((1,), ">B", event_bytes, 0x74 + (0x24 * i))[0]
+
+        for i in range(4):
+            if np.ndarray((1,), ">B", event_bytes, 0x66 + (0x24 * i))[0] != 1:
+                self._cpu_level[i] = 0
 
     def __pre_frame(self, gamestate, event_bytes):
         # Grab the physical controller state and put that into the controller state
@@ -395,7 +399,7 @@ class Console:
         playerstate = gamestate.player[controller_port]
 
         playerstate.costume = self._costumes[controller_port-1]
-        playerstate.is_cpu = self._is_cpu[controller_port-1]
+        playerstate.cpu_level = self._cpu_level[controller_port-1]
 
         main_x = (np.ndarray((1,), ">f", event_bytes, 0x19)[0] / 2) + 0.5
         main_y = (np.ndarray((1,), ">f", event_bytes, 0x1D)[0] / 2) + 0.5
@@ -756,6 +760,28 @@ class Console:
         except TypeError:
             pass
 
+        # CPU Level
+        try:
+            for i in range(4):
+                gamestate.player[i+1].cpu_level = np.ndarray((1,), ">B", event_bytes, 0x41 + i)[0]
+        except TypeError:
+            pass
+        except KeyError:
+            pass
+
+        # Is Holding CPU Slider
+        try:
+            for i in range(4):
+                gamestate.player[i+1].is_holding_cpu_slider = np.ndarray((1,), ">B", event_bytes, 0x45 + i)[0]
+        except TypeError:
+            pass
+        except KeyError:
+            pass
+
+        # Set CPU level to 0 if we're not a CPU
+        for port in gamestate.player:
+            if gamestate.player[port].controller_status != enums.ControllerStatus.CONTROLLER_CPU:
+                gamestate.player[port].cpu_level = 0
 
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""

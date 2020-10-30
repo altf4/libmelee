@@ -41,7 +41,7 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right', 'prev_action',
-                 'costume', '_next_x', '_next_y', '_prev_x', '_prev_y', 'is_cpu')
+                 'costume', '_next_x', '_next_y', '_prev_x', '_prev_y', 'cpu_level', 'is_holding_cpu_slider')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus'speed_y_self'
@@ -116,8 +116,10 @@ class PlayerState(object):
         """(float, float): Bottom edge of the ECB. (x, y) offset from player's center."""
         self.costume = 0
         """(int): Index for which costume the player is wearing"""
-        self.is_cpu = False
-        """(bool): Is the player an in-game CPU? (As in, level 1-9 CPU. Not a libmelee-controller bot.)"""
+        self.cpu_level = False
+        """(bool): CPU level of player. 0 for a libmelee-controller bot or human player."""
+        self.is_holding_cpu_slider = False
+        """(bool): Is the player holding the CPU slider in the character select screen?"""
         # self.hitbox_1_size = 0
         # self.hitbox_2_size = 0
         # self.hitbox_3_size = 0
