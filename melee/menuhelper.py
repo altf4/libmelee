@@ -206,7 +206,8 @@ class MenuHelper():
         wiggleroom = 1.5
 
         # Set our CPU level correctly
-        if character_selected == character and (coin_down or cursor_y<0):
+        if character_selected == character and (coin_down or cursor_y<0) and cpu_level>0 \
+            and (cpu_level != ai_state.cpu_level) or ai_state.is_holding_cpu_slider:
             # Is our controller type correct?
             cpu_selected = ai_state.controller_status == enums.ControllerStatus.CONTROLLER_CPU
             if cpu_selected != (cpu_level > 0):
@@ -308,13 +309,13 @@ class MenuHelper():
             return
 
         if character_selected == character and swag and isSlippiCSS:
+            if gamestate.frame % 2 == 0:
+                controller.release_all()
+                return
             if costume == ai_state.costume:
                 controller.press_button(enums.Button.BUTTON_START)
             else:
-                if gamestate.frame % 2 == 0:
-                    controller.release_all()
-                else:
-                    controller.press_button(enums.Button.BUTTON_Y)
+                controller.press_button(enums.Button.BUTTON_Y)
             return
 
         #We want to get to a state where the cursor is NOT over the character,
@@ -329,7 +330,10 @@ class MenuHelper():
 
         #If character is selected, and we're in of the area, and coin is down, then we're good
         if (character_selected == character) and coin_down:
-            if start and gamestate.ready_to_start and controller.prev.button[enums.Button.BUTTON_START] == False:
+            if gamestate.frame % 2 == 0:
+                controller.release_all()
+                return
+            if start and (gamestate.ready_to_start == 0):
                 controller.press_button(enums.Button.BUTTON_START)
                 return
             else:
