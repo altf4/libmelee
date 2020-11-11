@@ -253,7 +253,10 @@ class Console:
         config.read(dolphin_config_path)
         # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
         #  The enum is scoped to the proper value, here
-        config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
+        try:
+            config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
+        except configparser.NoSectionError:
+            print("Unable to set up controller configs. Check the Dolphin path.")
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
