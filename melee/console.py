@@ -195,6 +195,8 @@ class Console:
         """Setup the necessary files for dolphin to recognize the player at the given
         controller port and type"""
            
+        pipes_path = self.get_dolphin_pipes_path(port)
+        
         if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
             if not os.path.exists(pipes_path):
                 os.mkfifo(pipes_path)
@@ -250,7 +252,6 @@ class Console:
         config.read(dolphin_config_path)
         # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
         #  The enum is scoped to the proper value, here
-        
         config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
