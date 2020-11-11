@@ -1,10 +1,9 @@
 """ Implementation of a SlippiComm client aka 'Slippstream'
                                                     (I'm calling it that)
-
+                                                    
 This can be used to talk to some server implementing the Slippstream protocol
 (i.e. the Project Slippi fork of Nintendont or Slippi Ishiiruka).
 """
-
 import socket
 from enum import Enum
 import enet
@@ -62,8 +61,13 @@ class SlippstreamClient():
             wait_time = 1000
             if polling_mode:
                 wait_time = 0
-            event = self._host.service(wait_time)
-            event_type = event.type
+            try:
+                event = self._host.service(wait_time)
+                event_type = event.type
+            except OSError: #could happen, maybe when closing/reopening Dolphin? means we never actually connected or got disconnected
+                print("Disconnected! Reconnecting...") #idk about printing in this file, but this shouldn't happen unless something is wrong
+                self.connect()
+                continue
 
             if event.type == enet.EVENT_TYPE_NONE:
                 if polling_mode:
@@ -78,6 +82,7 @@ class SlippstreamClient():
                         continue
                     return None
             elif event.type == enet.EVENT_TYPE_CONNECT:
+                #shouldn't happen anymore... but I guess its harmless to leave in since it doesn't matter what's here?
                 handshake = json.dumps({
                     "type" : "connect_request",
                     "cursor" : 0,
@@ -89,9 +94,29 @@ class SlippstreamClient():
 
     def connect(self):
         """ Connect to the server
-
         Returns True on success, False on failure
         """
         # Try to connect to the server and send a handshake
-        self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
-        return True
+        try:
+            self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
+        except OSError: #this should mean that we're already connected
+            return False #shouldn't happen unless something is wrong
+        try:
+            event = None
+            attempts = 0
+            maxAttempts = 4 #only attempt to connect 4 times
+            while True:
+                event = self._host.service(1000)
+                if event.type == enet.EVENT_TYPE_CONNECT: #this means we've connected
+                    break
+                attempts = attempts + 1
+                if attempts > maxAttempts:
+                    return False
+            handshake = json.dumps({
+                        "type" : "connect_request",
+                        "cursor" : 0,
+                    })
+            self._peer.send(0, enet.Packet(handshake.encode()))
+            return True
+        except OSError: #shouldn't happen unless something is wrong
+            return False

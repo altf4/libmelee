@@ -141,12 +141,7 @@ class Console:
         Returns:
             True is successful, False otherwise
         """
-        # It can take a short amount of time after starting the emulator
-        #   for the actual server to start. So try a few times before giving up.
-        for _ in range(4):
-            if self._slippstream.connect():
-                return True
-        return False
+        return self._slippstream.connect()
 
     def run(self, iso_path=None, dolphin_config_path=None, environment_vars=None):
         """Run the Dolphin emulator.
@@ -251,14 +246,15 @@ class Console:
         with open(controller_config_path, 'w') as configfile:
             config.write(configfile)
 
-        dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
-        config = configparser.SafeConfigParser()
-        config.read(dolphin_config_path)
-        # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
-        #  The enum is scoped to the proper value, here
-        config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
-        with open(dolphin_config_path, 'w') as dolphinfile:
-            config.write(dolphinfile)
+        if (self.path):
+            dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
+            config = configparser.SafeConfigParser()
+            config.read(dolphin_config_path)
+            # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
+            #  The enum is scoped to the proper value, here
+            config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
+            with open(dolphin_config_path, 'w') as dolphinfile:
+                config.write(dolphinfile)
 
     def step(self):
         """ 'step' to the next state of the game and flushes all controllers
