@@ -3,8 +3,7 @@ import melee
 
 console = melee.Console(is_dolphin=False,
                         allow_old_version=False,
-                        path="/home/altf4/Slippi/Game_20200707T155649.slp"
-                        # path="/home/altf4/Code/smashbot_analysis/training_data/18_46_54 Fox + [OASI] Captain Falcon (BF).slp"
+                        path="PATH_TO_SLP_FILE"
                         )
 console.connect()
 
