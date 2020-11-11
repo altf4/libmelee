@@ -65,10 +65,13 @@ class SlippstreamClient():
             try:
                 event = self._host.service(wait_time)
                 event_type = event.type
-            except OSError: #could happen, maybe when closing/reopening Dolphin? means we never actually connected or got disconnected
+            except OSError as e: #could happen, maybe when closing/reopening Dolphin? means we never actually connected or got disconnected
                 print("Disconnected! Reconnecting...") #idk about printing in this file, but this shouldn't happen unless something is wrong
-                self.connect()
-                continue
+                if self.connect():
+                    continue
+                else:
+                    raise e
+                
 
             if event.type == enet.EVENT_TYPE_NONE:
                 if polling_mode:
