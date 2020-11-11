@@ -30,6 +30,11 @@ class SlippiVersionTooLow(Exception):
     def __init__(self, message):
         self.message = message
 
+class InvalidDolphinPath(Exception):
+    """Raised when given path to Dolphin is invalid"""
+    def __init__(self, message):
+        self.message = message
+
 # pylint: disable=too-many-instance-attributes
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
@@ -96,9 +101,11 @@ class Console:
         self._process = None
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
-            if self.path:
+            if self.path is not None:
                 # Setup some dolphin config options
                 dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
+                if not os.path.isfile(dolphin_config_path):
+                    raise InvalidDolphinPath(self._get_dolphin_config_path())
                 config = configparser.SafeConfigParser()
                 config.read(dolphin_config_path)
                 config.set("Core", 'slippienablespectator', "True")
