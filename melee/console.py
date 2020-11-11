@@ -194,9 +194,6 @@ class Console:
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
         controller port and type"""
-        if not self.path:
-            print("No path provided, skipping controller setup... If this causes issues, pass in a path to the folder containing the Dolphin executable to the console constructor")
-            return
            
         if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
             if not os.path.exists(pipes_path):
@@ -253,10 +250,8 @@ class Console:
         config.read(dolphin_config_path)
         # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
         #  The enum is scoped to the proper value, here
-        try:
-            config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
-        except configparser.NoSectionError:
-            print("Unable to set up controller configs. Check the Dolphin path.")
+        
+        config.set("Core", 'SIDevice'+str(port-1), controllertype.value)
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
