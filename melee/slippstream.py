@@ -1,9 +1,10 @@
 """ Implementation of a SlippiComm client aka 'Slippstream'
                                                     (I'm calling it that)
-                                                    
+ 
 This can be used to talk to some server implementing the Slippstream protocol
 (i.e. the Project Slippi fork of Nintendont or Slippi Ishiiruka).
 """
+
 import socket
 from enum import Enum
 import enet

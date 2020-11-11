@@ -194,9 +194,8 @@ class Console:
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
         controller port and type"""
-           
+
         pipes_path = self.get_dolphin_pipes_path(port)
-        
         if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
             if not os.path.exists(pipes_path):
                 os.mkfifo(pipes_path)
