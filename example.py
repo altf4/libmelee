@@ -79,6 +79,7 @@ print("Connecting to console...")
 if not console.connect():
     print("ERROR: Failed to connect to the console.")
     sys.exit(-1)
+print("Console connected")
 
 # Plug our controller in
 #   Due to how named pipes work, this has to come AFTER running dolphin

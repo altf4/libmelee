@@ -148,12 +148,7 @@ class Console:
         Returns:
             True is successful, False otherwise
         """
-        # It can take a short amount of time after starting the emulator
-        #   for the actual server to start. So try a few times before giving up.
-        for _ in range(4):
-            if self._slippstream.connect():
-                return True
-        return False
+        return self._slippstream.connect()
 
     def run(self, iso_path=None, dolphin_config_path=None, environment_vars=None):
         """Run the Dolphin emulator.

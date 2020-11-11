@@ -93,5 +93,20 @@ class SlippstreamClient():
         Returns True on success, False on failure
         """
         # Try to connect to the server and send a handshake
-        self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
-        return True
+        try:
+            self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
+        except OSError:
+            return False
+        try:
+            for _ in range(4):
+                event = self._host.service(1000)
+                if event.type == enet.EVENT_TYPE_CONNECT:
+                    handshake = json.dumps({
+                                "type" : "connect_request",
+                                "cursor" : 0,
+                            })
+                    self._peer.send(0, enet.Packet(handshake.encode()))
+                    return True
+            return False
+        except OSError:
+            return False
