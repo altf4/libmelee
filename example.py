@@ -29,6 +29,8 @@ parser.add_argument('--dolphin_executable_path', '-e', default=None,
                     help='The directory where dolphin is')
 parser.add_argument('--connect_code', '-t', default="",
                     help='Direct connect code to connect to in Slippi Online')
+parser.add_argument('--iso', default=None, type=str,
+                    help='Path to melee iso.')
 
 args = parser.parse_args()
 
@@ -72,7 +74,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Run the console
-console.run()
+console.run(iso_path=args.iso)
 
 # Connect to the console
 print("Connecting to console...")
