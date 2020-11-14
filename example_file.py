@@ -12,5 +12,6 @@ while True:
     # step() returns None when the file ends
     if gamestate is None:
         break
-    # print(gamestate.player)
-    print(gamestate.frame, gamestate.player[1].stock, gamestate.player[2].stock)
+    print("Frame " + str(gamestate.frame))
+    for _, player in gamestate.player.items():
+        print("\t", player.stock, player.percent)
