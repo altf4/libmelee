@@ -44,7 +44,7 @@ class PlayerState(object):
                  'costume', '_next_x', '_next_y', '_prev_x', '_prev_y', 'cpu_level', 'is_holding_cpu_slider')
     def __init__(self):
         # This value is what the character currently is IN GAME
-        #   So this will have no meaning while in menus'speed_y_self'
+        #   So this will have no meaning while in menus
         #   Also, this will change dynamically if you change characters
         #       IE: Shiek/Zelda
         self.character = enums.Character.UNKNOWN_CHARACTER

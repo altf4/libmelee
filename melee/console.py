@@ -38,7 +38,7 @@ class InvalidDolphinPath(Exception):
     def __init__(self, message):
         self.message = message
 
-def ignore_fifos(src, names):
+def _ignore_fifos(src, names):
     fifos = []
     for name in names:
         path = os.path.join(src, name)
@@ -46,8 +46,8 @@ def ignore_fifos(src, names):
             fifos.append(name)
     return fifos
 
-def copytree_safe(src, dst):
-    shutil.copytree(src, dst, ignore=ignore_fifos)
+def _copytree_safe(src, dst):
+    shutil.copytree(src, dst, ignore=_ignore_fifos)
 
 # pylint: disable=too-many-instance-attributes
 class Console:
@@ -57,7 +57,7 @@ class Console:
                  path=None,
                  is_dolphin=True,
                  dolphin_home_path=None,
-                 copy_home_directory=False,
+                 tmp_home_directory=True,
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
@@ -71,8 +71,9 @@ class Console:
             path (str): Path to the directory where your dolphin executable is located.
                 If None, will assume the dolphin is remote and won't try to configure it.
             dolphin_home_path (str): Path to dolphin user directory. Optional.
-            copy_home_directory (bool): Use a copy of the usual home directory.
-            download_gecko_codes (bool): Download libmelee gecko codes.
+            is_dolphin (bool): Is this console a dophin instance, or SLP file?
+            tmp_home_directory (bool): Use a temporary directory for the dolphin User path
+                This is useful so instances don't interfere with each other.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
@@ -90,9 +91,10 @@ class Console:
         self.is_dolphin = is_dolphin
         self.path = path
         self.dolphin_home_path = dolphin_home_path
-        if copy_home_directory:
+        if tmp_home_directory:
             temp_dir = tempfile.mkdtemp(prefix='libmelee_')
-            copytree_safe(self._get_dolphin_home_path(), temp_dir + '/User')
+            temp_dir += "/User/"
+            _copytree_safe(self._get_dolphin_home_path(), temp_dir)
             self.dolphin_home_path = temp_dir
 
         self.processingtime = 0
@@ -178,7 +180,7 @@ class Console:
     def _get_dolphin_home_path(self):
         """Return the path to dolphin's home directory"""
         if self.dolphin_home_path:
-          return self.dolphin_home_path
+            return self.dolphin_home_path
 
         # Next check if the home path is in the same dir as the exe
         assert self.path, "Must specify a dolphin path."
@@ -214,7 +216,7 @@ class Console:
 
         Args:
             iso_path (str, optional): Path to Melee ISO for dolphin to read
-            dolphin_user_path (str, optional): Alternative config path for dolphin
+            dolphin_user_path (str, optional): Alternative user path for dolphin
                 if not using the default
             environment_vars (dict, optional): Dict (string->string) of environment variables to set
         """
