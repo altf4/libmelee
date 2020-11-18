@@ -29,7 +29,7 @@ class GameState(object):
         self.ready_to_start = False
         """(bool): Is the 'ready to start' banner showing at the character select screen?"""
         self.distance = 0.0
-        """(float): Euclidian distance between the two players. (or closest one for climbers)"""
+        """(float): Euclidian distance between the two players. (or just Popo for climbers)"""
         self.menu_selection = 0
         """(int): The index of the selected menu item for when in menus."""
         self._newframe = True
@@ -41,7 +41,7 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right', 'prev_action',
-                 'costume', '_next_x', '_next_y', '_prev_x', '_prev_y', 'cpu_level', 'is_holding_cpu_slider')
+                 'costume', '_next_x', '_next_y', '_prev_x', '_prev_y', 'cpu_level', 'is_holding_cpu_slider', 'nana')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus
@@ -91,6 +91,11 @@ class PlayerState(object):
         """(float): Attack-induced vertical speed"""
         self.speed_ground_x_self = 0
         """(float): Self-induced horizontal ground speed"""
+        self.nana = None
+        """(enums.PlayerState): Additional player state for Nana, if applicable.
+                If the character is not Ice Climbers, Nana will be None.
+                Will also be None if this player state is Nana itself.
+                Lastly, the secondary climber is called 'Nana' here, regardless of the costume used."""
         self.cursor_x = 0
         """(float): Cursor X value"""
         self.cursor_y = 0
