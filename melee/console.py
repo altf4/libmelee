@@ -483,6 +483,11 @@ class Console:
         c_y = (np.ndarray((1,), ">f", event_bytes, 0x25)[0] / 2) + 0.5
         playerstate.controller_state.c_stick = (c_x, c_y)
 
+        # The game interprets both shoulders together, so the processed value will always be the same
+        trigger = (np.ndarray((1,), ">f", event_bytes, 0x29)[0])
+        playerstate.controller_state.l_shoulder = trigger
+        playerstate.controller_state.r_shoulder = trigger
+
         buttonbits = np.ndarray((1,), ">H", event_bytes, 0x31)[0]
         playerstate.controller_state.button[enums.Button.BUTTON_A] = bool(int(buttonbits) & 0x0100)
         playerstate.controller_state.button[enums.Button.BUTTON_B] = bool(int(buttonbits) & 0x0200)
