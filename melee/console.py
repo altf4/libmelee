@@ -182,8 +182,12 @@ class Console:
         if self.dolphin_home_path:
             return self.dolphin_home_path
 
-        # Next check if the home path is in the same dir as the exe
         assert self.path, "Must specify a dolphin path."
+
+        if platform.system() == "Darwin":
+            return self.path + "/Contents/Resources/User/"
+
+        # Next check if the home path is in the same dir as the exe
         user_path = self.path + "/User/"
         if os.path.isdir(user_path):
             return user_path
@@ -196,6 +200,9 @@ class Console:
 
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory."""
+        if platform.system() == "Darwin":
+            return self.path + "/Contents/Resources/User/Config/"
+
         return self._get_dolphin_home_path() + "Config/"
 
     def get_dolphin_pipes_path(self, port):
