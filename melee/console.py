@@ -241,7 +241,7 @@ class Console:
         if self.path:
             exe_path = self.path
         if platform.system() == "Darwin":
-            exe_path += "/Contents/MacOS/Slippi"
+            exe_path += "/Contents/MacOS"
         command = [exe_path + "/" + exe_name]
 
         # AppImage
