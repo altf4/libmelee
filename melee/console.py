@@ -231,9 +231,14 @@ class Console:
 
         dolphin_user_path = dolphin_user_path or self._get_dolphin_home_path()
 
+        if platform.system() == "Darwin":
+            dolphin_user_path += "/Contents/MacOS/Slippi/"
+
         exe_name = "dolphin-emu"
         if platform.system() == "Windows":
             exe_name = "Dolphin.exe"
+        elif platform.system() == "Darwin":
+            exe_name = "Slippi Dolphin"
 
         exe_path = ""
         if self.path:
