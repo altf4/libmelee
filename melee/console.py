@@ -231,9 +231,6 @@ class Console:
 
         dolphin_user_path = dolphin_user_path or self._get_dolphin_home_path()
 
-        if platform.system() == "Darwin":
-            dolphin_user_path += "/Contents/MacOS/Slippi/"
-
         exe_name = "dolphin-emu"
         if platform.system() == "Windows":
             exe_name = "Dolphin.exe"
@@ -243,6 +240,8 @@ class Console:
         exe_path = ""
         if self.path:
             exe_path = self.path
+        if platform.system() == "Darwin":
+            exe_path += "/Contents/MacOS/Slippi"
         command = [exe_path + "/" + exe_name]
 
         # AppImage
