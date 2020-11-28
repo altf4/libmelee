@@ -410,6 +410,11 @@ class Console:
             elif EventType(event_bytes[0]) == EventType.GAME_START:
                 self.__game_start(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
+                # The game needs to know what to press on the first frame of the game
+                #   Just give it empty input. Characters are not actionable anyway.
+                for controller in self.controllers:
+                    controller.release_all()
+                    controller.flush()
 
             elif EventType(event_bytes[0]) == EventType.GAME_END:
                 event_bytes = event_bytes[event_size:]
