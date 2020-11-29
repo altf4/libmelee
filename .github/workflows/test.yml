@@ -1,0 +1,39 @@
+name: libmelee test cases
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install general dependencies (windows)
+      if: matrix.os == 'windows-latest'
+      run: python -m pip install --upgrade pip setuptools wheel
+
+    - name: Install general dependencies (linux/osx)
+      if: matrix.os != 'windows-latest'
+      run: python3 -m pip install --upgrade pip setuptools wheel
+
+    - name: Install libmelee dependencies (windows)
+      if: matrix.os == 'windows-latest'
+      run: python -m pip install -e .
+
+    - name: Install libmelee dependencies (linux/osx)
+      if: matrix.os != 'windows-latest'
+      run: python3 -m pip install -e .
+
+    - name: Test with unittest (windows)
+      if: matrix.os == 'windows-latest'
+      run: python test.py
+
+    - name: Test with unittest (linux/osx)
+      if: matrix.os != 'windows-latest'
+      run: python3 test.py
