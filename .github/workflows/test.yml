@@ -1,6 +1,6 @@
 name: libmelee test cases
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -11,11 +11,15 @@ jobs:
         python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
+    - uses: actions/checkout@v1
+
     - name: Install dependencies
       run: python3 -m pip install --upgrade pip setuptools wheel
+
     # - name: Test with pytest
     #   run: python3 test.py
     - name: Whats here
       run: ls -l
+
     - name: Where am i
       run: pwd
