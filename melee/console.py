@@ -91,7 +91,7 @@ class Console:
         self.is_dolphin = is_dolphin
         self.path = path
         self.dolphin_home_path = dolphin_home_path
-        if tmp_home_directory:
+        if tmp_home_directory and self.is_dolphin:
             temp_dir = tempfile.mkdtemp(prefix='libmelee_')
             temp_dir += "/User/"
             _copytree_safe(self._get_dolphin_home_path(), temp_dir)
