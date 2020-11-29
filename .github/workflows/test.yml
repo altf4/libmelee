@@ -15,10 +15,19 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install general dependencies
+      if: matrix.os == 'windows-latest'
       run: python -m pip install --upgrade pip setuptools wheel
+      else:
+      run: python3 -m pip install --upgrade pip setuptools wheel
 
     - name: Install libmelee dependencies
+      if: matrix.os == 'windows-latest'
       run: python -m pip install -e .
+      else:
+      run: python3 -m pip install -e .
 
     - name: Test with unittest
+      if: matrix.os == 'windows-latest'
       run: python test.py
+      else:
+      run: python3 test.py
