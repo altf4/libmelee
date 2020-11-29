@@ -13,7 +13,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Install dependencies
+    - name: Install general dependencies
+      run: python3 -m pip install --upgrade pip setuptools wheel
+
+    - name: Install libmelee dependencies
       run: python3 -m pip install -e .
 
     - name: Test with unittest
