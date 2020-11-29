@@ -14,4 +14,6 @@ jobs:
     - name: Install dependencies
       run: python3 -m pip install --upgrade pip setuptools wheel
     - name: Test with pytest
-      run: python3 -m unittest
+      run: python3 test.py
+    - name: Where am i
+      run: ls -l
