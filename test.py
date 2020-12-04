@@ -1,8 +1,13 @@
+#!/usr/bin/python3
 import unittest
 
 import melee
 
 class SLPFile(unittest.TestCase):
+    """
+    Test cases that can be run automatically in the Github cloud environment
+    In particular, there are no live dolphin tests here.
+    """
     def test_read_file(self):
         """
         Load and parse SLP file
