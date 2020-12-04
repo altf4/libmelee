@@ -133,7 +133,7 @@ class Console:
                 dolphin_ini_path = self._get_dolphin_config_path() + "Dolphin.ini"
                 if not os.path.isfile(dolphin_ini_path):
                     raise InvalidDolphinPath(self._get_dolphin_config_path())
-                config = configparser.SafeConfigParser()
+                config = configparser.ConfigParser()
                 config.read(dolphin_ini_path)
                 config.set("Core", 'slippienablespectator', "True")
                 config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
@@ -282,7 +282,7 @@ class Console:
 
         #Read in dolphin's controller config file
         controller_config_path = self._get_dolphin_config_path() + "GCPadNew.ini"
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config.read(controller_config_path)
 
         #Add a bot standard controller config to the given port
@@ -331,7 +331,7 @@ class Console:
             config.write(configfile)
 
         dolphin_config_path = self._get_dolphin_config_path() + "Dolphin.ini"
-        config = configparser.SafeConfigParser()
+        config = configparser.ConfigParser()
         config.read(dolphin_config_path)
         # Indexed at 0. "6" means standard controller, "12" means GCN Adapter
         #  The enum is scoped to the proper value, here
