@@ -117,21 +117,20 @@ class MenuHelper():
             return index + 1
 
         if gamestate.menu_selection == 57:
-            controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+            controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
             return index
 
+        diff = abs(target_code - gamestate.menu_selection)
         if gamestate.menu_selection < target_code:
-            diff = target_code - gamestate.menu_selection
             if diff < 5:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             else:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
         else:
-            diff = target_code - gamestate.menu_selection
             if diff > 5:
-                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
-            else:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
 
         return index
 
