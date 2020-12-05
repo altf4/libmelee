@@ -121,16 +121,20 @@ class MenuHelper():
             return index
 
         diff = abs(target_code - gamestate.menu_selection)
-        if gamestate.menu_selection < target_code:
+        # If the target is greater than our position, move down / left
+        if gamestate.menu_selection <= target_code - 5:
+            # If the diff is less than 5, then move vertically
             if diff < 5:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             else:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+        # If the target is less than our position, move up / right
         else:
-            if diff > 5:
-                controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
-            else:
+            # If the diff is less than 5, then move vertically
+            if diff < 5:
                 controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+            else:
+                controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
 
         return index
 
