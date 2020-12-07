@@ -555,13 +555,6 @@ class Console:
         playerstate.stock = np.ndarray((1,), ">B", event_bytes, 0x21)[0]
         playerstate.action_frame = int(np.ndarray((1,), ">f", event_bytes, 0x22)[0])
 
-        # Extract the bit at mask 0x20
-        try:
-            bitflags2 = np.ndarray((1,), ">B", event_bytes, 0x27)[0]
-            playerstate.hitlag = bool(bitflags2 & 0x20)
-        except TypeError:
-            playerstate.hitlag = False
-
         try:
             playerstate.hitstun_frames_left = int(np.ndarray((1,), ">f", event_bytes, 0x2B)[0])
         except TypeError:
@@ -607,6 +600,13 @@ class Console:
         except TypeError:
             playerstate.speed_ground_x_self = 0
 
+        try:
+            playerstate.hitlag_frames_left = int(np.ndarray((1,), ">f", event_bytes, 0x49)[0])
+        except TypeError:
+            playerstate.hitlag_frames_left = 0
+        except ValueError:
+            playerstate.hitlag_frames_left = 0
+
         # Keep track of a player's invulnerability due to respawn or ledge grab
         if controller_port in self._prev_gamestate.player:
             playerstate.invulnerability_left = max(0, self._prev_gamestate.player[controller_port].invulnerability_left - 1)
@@ -642,12 +642,12 @@ class Console:
         ecb_top_x = 0
         ecb_top_y = 0
         try:
-            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x49)[0]
+            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
         except TypeError:
             ecb_top_x = 0
         # ECB Top edge, y
         try:
-            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
+            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
         except TypeError:
             ecb_top_y = 0
         playerstate.ecb_top = (ecb_top_x, ecb_top_y)
@@ -656,12 +656,12 @@ class Console:
         ecb_bot_x = 0
         ecb_bot_y = 0
         try:
-            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
+            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
         except TypeError:
             ecb_bot_x = 0
         # ECB Bottom edge, y coord
         try:
-            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
+            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
         except TypeError:
             ecb_bot_y = 0
         playerstate.ecb_bottom = (ecb_bot_x, ecb_bot_y)
@@ -670,12 +670,12 @@ class Console:
         ecb_left_x = 0
         ecb_left_y = 0
         try:
-            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
+            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
         except TypeError:
             ecb_left_x = 0
         # ECB left edge, y coord
         try:
-            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
+            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
         except TypeError:
             ecb_left_y = 0
         playerstate.ecb_left = (ecb_left_x, ecb_left_y)
@@ -684,12 +684,12 @@ class Console:
         ecb_right_x = 0
         ecb_right_y = 0
         try:
-            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
+            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
         except TypeError:
             ecb_right_x = 0
         # ECB right edge, y coord
         try:
-            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
+            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x69)[0]
         except TypeError:
             ecb_right_y = 0
         playerstate.ecb_right = (ecb_right_x, ecb_right_y)
