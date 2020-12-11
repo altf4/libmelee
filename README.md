@@ -26,7 +26,7 @@ Linux / OSX / Windows
 
 6. Run `./example.py -e PATH_TO_SLIPPI_FOLDER` (Not the exe itself, the folder) If you're using the Linux appimage, set this to `squashfs-root/usr/bin/`.
 
-## PLaying Online
+## Playing Online
 
 *Do not play on Unranked* There is no libmelee option for it, but don't try. Eventually we'll have a way to register an account as a "bot account" that others will have the ability to opt in or out of playing against. But we don't have it yet. Until then, do not play any bots on Unranked. If you do, we'll know about it, ban your account, overcook all of your food, and seed you against a campy Luigi every tournament. Don't do it.
 
