@@ -25,13 +25,13 @@ class SLPFile(unittest.TestCase):
                 break
             if gamestate.frame == -123:
                 self.assertEqual(console.slp_version, "3.6.1")
-                self.assertEqual(gamestate.player[1].character.value, 1)
-                self.assertEqual(gamestate.player[2].character.value, 1)
+                self.assertEqual(gamestate.players[1].character.value, 1)
+                self.assertEqual(gamestate.players[2].character.value, 1)
             if gamestate.frame == 297:
-                self.assertEqual(gamestate.player[1].action.value, 0)
-                self.assertEqual(gamestate.player[2].action.value, 27)
-                self.assertEqual(gamestate.player[1].percent, 17)
-                self.assertEqual(gamestate.player[2].percent, 0)
+                self.assertEqual(gamestate.players[1].action.value, 0)
+                self.assertEqual(gamestate.players[2].action.value, 27)
+                self.assertEqual(gamestate.players[1].percent, 17)
+                self.assertEqual(gamestate.players[2].percent, 0)
 
 
     def test_read_old_file(self):
@@ -51,13 +51,13 @@ class SLPFile(unittest.TestCase):
                 break
             if gamestate.frame == -123:
                 self.assertEqual(console.slp_version, "2.0.1")
-                self.assertEqual(gamestate.player[2].character.value, 3)
-                self.assertEqual(gamestate.player[3].character.value, 18)
+                self.assertEqual(gamestate.players[2].character.value, 3)
+                self.assertEqual(gamestate.players[3].character.value, 18)
             if gamestate.frame == 301:
-                self.assertEqual(gamestate.player[2].action.value, 88)
-                self.assertEqual(gamestate.player[3].action.value, 56)
-                self.assertEqual(gamestate.player[2].percent, 25)
-                self.assertEqual(gamestate.player[3].percent, 0)
+                self.assertEqual(gamestate.players[2].action.value, 88)
+                self.assertEqual(gamestate.players[3].action.value, 56)
+                self.assertEqual(gamestate.players[2].percent, 25)
+                self.assertEqual(gamestate.players[3].percent, 0)
 
     def test_framedata(self):
         """

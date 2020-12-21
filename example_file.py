@@ -13,5 +13,5 @@ while True:
     if gamestate is None:
         break
     print("Frame " + str(gamestate.frame))
-    for _, player in gamestate.player.items():
+    for _, player in gamestate.players.items():
         print("\t", player.stock, player.percent)

@@ -88,5 +88,9 @@ Also, if you don't press a button, Dolphin will just use whatever you pressed la
 
 which will release all buttons and set all sticks / shoulders to neutral.
 
+### API Changes
+
+`gamestate.player` has been changed to `gamestate.players` (plural) to be more Pythonic. `gamestate.player` will be removed in version 1.0.0.
+
 ## OpenAI Gym
 libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.

@@ -120,7 +120,7 @@ while True:
             # NOTE: This is where your AI does all of its stuff!
             # This line will get hit once per frame, so here is where you read
             #   in the gamestate and decide what buttons to push on the controller
-            melee.techskill.multishine(ai_state=gamestate.player[discovered_port], controller=controller)
+            melee.techskill.multishine(ai_state=gamestate.players[discovered_port], controller=controller)
         else:
             # If the discovered port was unsure, reroll our costume for next time
             costume = random.randint(0, 4)

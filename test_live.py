@@ -43,7 +43,7 @@ class DolphinTest(unittest.TestCase):
                                                     autostart=False,
                                                     swag=False)
                 if gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT and (gamestate.frame > 30):
-                    self.assertEqual(gamestate.player[1].character_selected, melee.Character.FOX)
+                    self.assertEqual(gamestate.players[1].character_selected, melee.Character.FOX)
                     break
         console.stop()
 
@@ -73,8 +73,8 @@ class DolphinTest(unittest.TestCase):
 
             if gamestate.menu_state == melee.enums.Menu.IN_GAME:
                 if gamestate.frame == -123:
-                    self.assertEqual(gamestate.player[1].character, melee.Character.FOX)
-                    self.assertEqual(gamestate.player[2].character, melee.Character.MARTH)
+                    self.assertEqual(gamestate.players[1].character, melee.Character.FOX)
+                    self.assertEqual(gamestate.players[2].character, melee.Character.MARTH)
                     self.assertEqual(gamestate.stage, melee.Stage.FINAL_DESTINATION)
 
                 elif gamestate.frame == 20:
@@ -84,15 +84,15 @@ class DolphinTest(unittest.TestCase):
                     # Dash forward (left)
                     controller_two.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
                 elif gamestate.frame == 21:
-                    self.assertEqual(gamestate.player[1].action, melee.Action.DOWN_B_GROUND_START)
-                    self.assertEqual(gamestate.player[1].action_frame, 1)
-                    self.assertEqual(gamestate.player[2].action, melee.Action.DASHING)
-                    self.assertEqual(gamestate.player[2].action_frame, 1)
-                    self.assertTrue(gamestate.player[2].moonwalkwarning)
+                    self.assertEqual(gamestate.players[1].action, melee.Action.DOWN_B_GROUND_START)
+                    self.assertEqual(gamestate.players[1].action_frame, 1)
+                    self.assertEqual(gamestate.players[2].action, melee.Action.DASHING)
+                    self.assertEqual(gamestate.players[2].action_frame, 1)
+                    self.assertTrue(gamestate.players[2].moonwalkwarning)
                     controller_one.release_all()
                     controller_two.tilt_analog(melee.Button.BUTTON_MAIN, 0.2, 0.5)
                 elif gamestate.frame == 22:
-                    # self.assertAlmostEqual(gamestate.player[2].controller_state.main_stick[0], 0.018750011920928955)
+                    # self.assertAlmostEqual(gamestate.players[2].controller_state.main_stick[0], 0.018750011920928955)
                     controller_one.release_all()
                     controller_two.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0.5)
                 elif gamestate.frame == 23:
@@ -106,12 +106,12 @@ class DolphinTest(unittest.TestCase):
                     controller_two.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
                 elif gamestate.frame == 35:
                     # Last frame of pivot turn
-                    self.assertEqual(gamestate.player[2].action, melee.Action.TURNING)
+                    self.assertEqual(gamestate.players[2].action, melee.Action.TURNING)
                     controller_one.release_all()
                     controller_two.release_all()
                 elif gamestate.frame == 36:
                     # This is the first frame of standing after the pivot turn
-                    self.assertEqual(gamestate.player[2].action, melee.Action.STANDING)
+                    self.assertEqual(gamestate.players[2].action, melee.Action.STANDING)
                     controller_one.release_all()
                     controller_two.press_shoulder(melee.Button.BUTTON_L, 1)
                 elif gamestate.frame == 37:

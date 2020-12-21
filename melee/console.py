@@ -483,9 +483,9 @@ class Console:
         # Grab the physical controller state and put that into the controller state
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
 
-        if controller_port not in gamestate.player:
-            gamestate.player[controller_port] = PlayerState()
-        playerstate = gamestate.player[controller_port]
+        if controller_port not in gamestate.players:
+            gamestate.players[controller_port] = PlayerState()
+        playerstate = gamestate.players[controller_port]
 
         # Is this Nana?
         if np.ndarray((1,), ">B", event_bytes, 0x6)[0] == 1:
@@ -529,9 +529,9 @@ class Console:
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
 
-        if controller_port not in gamestate.player:
-            gamestate.player[controller_port] = PlayerState()
-        playerstate = gamestate.player[controller_port]
+        if controller_port not in gamestate.players:
+            gamestate.players[controller_port] = PlayerState()
+        playerstate = gamestate.players[controller_port]
 
         # Is this Nana?
         if np.ndarray((1,), ">B", event_bytes, 0x6)[0] == 1:
@@ -608,8 +608,8 @@ class Console:
             playerstate.speed_ground_x_self = 0
 
         # Keep track of a player's invulnerability due to respawn or ledge grab
-        if controller_port in self._prev_gamestate.player:
-            playerstate.invulnerability_left = max(0, self._prev_gamestate.player[controller_port].invulnerability_left - 1)
+        if controller_port in self._prev_gamestate.players:
+            playerstate.invulnerability_left = max(0, self._prev_gamestate.players[controller_port].invulnerability_left - 1)
         if playerstate.action == Action.ON_HALO_WAIT:
             playerstate.invulnerability_left = 120
         # Don't give invulnerability to the first descent
@@ -619,9 +619,9 @@ class Console:
             playerstate.invulnerability_left = 36
 
         # The pre-warning occurs when we first start a dash dance.
-        if controller_port in self._prev_gamestate.player:
+        if controller_port in self._prev_gamestate.players:
             if playerstate.action == Action.DASHING and \
-                    self._prev_gamestate.player[controller_port].action not in [Action.DASHING, Action.TURNING]:
+                    self._prev_gamestate.players[controller_port].action not in [Action.DASHING, Action.TURNING]:
                 playerstate.moonwalkwarning = True
 
         # Take off the warning if the player does an action other than dashing
@@ -702,7 +702,7 @@ class Console:
         #   This is a bit kludgey.... :/
         i = 0
         player_one_x, player_one_y, player_two_x, player_two_y = 0, 0, 0, 0
-        for _, player_state in gamestate.player.items():
+        for _, player_state in gamestate.players.items():
             if i == 0:
                 player_one_x, player_one_y = player_state.x, player_state.y
             if i == 1:
@@ -740,10 +740,10 @@ class Console:
         if scene == 0x02:
             gamestate.menu_state = enums.Menu.CHARACTER_SELECT
             # All the controller ports are active on this screen
-            gamestate.player[1] = PlayerState()
-            gamestate.player[2] = PlayerState()
-            gamestate.player[3] = PlayerState()
-            gamestate.player[4] = PlayerState()
+            gamestate.players[1] = PlayerState()
+            gamestate.players[2] = PlayerState()
+            gamestate.players[3] = PlayerState()
+            gamestate.players[4] = PlayerState()
         elif scene in [0x0102, 0x0108]:
             gamestate.menu_state = enums.Menu.STAGE_SELECT
         elif scene == 0x0202:
@@ -752,10 +752,10 @@ class Console:
             gamestate.menu_state = enums.Menu.MAIN_MENU
         elif scene == 0x0008:
             gamestate.menu_state = enums.Menu.SLIPPI_ONLINE_CSS
-            gamestate.player[1] = PlayerState()
-            gamestate.player[2] = PlayerState()
-            gamestate.player[3] = PlayerState()
-            gamestate.player[4] = PlayerState()
+            gamestate.players[1] = PlayerState()
+            gamestate.players[2] = PlayerState()
+            gamestate.players[3] = PlayerState()
+            gamestate.players[4] = PlayerState()
         elif scene == 0x0000:
             gamestate.menu_state = enums.Menu.PRESS_START
         else:
@@ -763,59 +763,59 @@ class Console:
 
         # controller port statuses at CSS
         if gamestate.menu_state in [enums.Menu.CHARACTER_SELECT, enums.Menu.SLIPPI_ONLINE_CSS]:
-            gamestate.player[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x25)[0])
-            gamestate.player[2].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x26)[0])
-            gamestate.player[3].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x27)[0])
-            gamestate.player[4].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x28)[0])
+            gamestate.players[1].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x25)[0])
+            gamestate.players[2].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x26)[0])
+            gamestate.players[3].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x27)[0])
+            gamestate.players[4].controller_status = enums.ControllerStatus(np.ndarray((1,), ">B", event_bytes, 0x28)[0])
 
             # CSS Cursors
-            gamestate.player[1].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x3)[0]
-            gamestate.player[1].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x7)[0]
-            gamestate.player[2].cursor_x = np.ndarray((1,), ">f", event_bytes, 0xB)[0]
-            gamestate.player[2].cursor_y = np.ndarray((1,), ">f", event_bytes, 0xF)[0]
-            gamestate.player[3].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x13)[0]
-            gamestate.player[3].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x17)[0]
-            gamestate.player[4].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x1B)[0]
-            gamestate.player[4].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x1F)[0]
+            gamestate.players[1].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x3)[0]
+            gamestate.players[1].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x7)[0]
+            gamestate.players[2].cursor_x = np.ndarray((1,), ">f", event_bytes, 0xB)[0]
+            gamestate.players[2].cursor_y = np.ndarray((1,), ">f", event_bytes, 0xF)[0]
+            gamestate.players[3].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x13)[0]
+            gamestate.players[3].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x17)[0]
+            gamestate.players[4].cursor_x = np.ndarray((1,), ">f", event_bytes, 0x1B)[0]
+            gamestate.players[4].cursor_y = np.ndarray((1,), ">f", event_bytes, 0x1F)[0]
 
             # Ready to fight banner
             gamestate.ready_to_start = np.ndarray((1,), ">B", event_bytes, 0x23)[0]
 
             # Character selected
             try:
-                gamestate.player[1].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x29)[0])
+                gamestate.players[1].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x29)[0])
             except TypeError:
-                gamestate.player[1].character_selected = enums.Character.UNKNOWN_CHARACTER
+                gamestate.players[1].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.player[2].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2A)[0])
+                gamestate.players[2].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2A)[0])
             except TypeError:
-                gamestate.player[2].character_selected = enums.Character.UNKNOWN_CHARACTER
+                gamestate.players[2].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.player[3].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2B)[0])
+                gamestate.players[3].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2B)[0])
             except TypeError:
-                gamestate.player[3].character_selected = enums.Character.UNKNOWN_CHARACTER
+                gamestate.players[3].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.player[4].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2C)[0])
+                gamestate.players[4].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2C)[0])
             except TypeError:
-                gamestate.player[4].character_selected = enums.Character.UNKNOWN_CHARACTER
+                gamestate.players[4].character_selected = enums.Character.UNKNOWN_CHARACTER
 
             # Coin down
             try:
-                gamestate.player[1].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2D)[0] == 2
+                gamestate.players[1].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2D)[0] == 2
             except TypeError:
-                gamestate.player[1].coin_down = False
+                gamestate.players[1].coin_down = False
             try:
-                gamestate.player[2].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2E)[0] == 2
+                gamestate.players[2].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2E)[0] == 2
             except TypeError:
-                gamestate.player[2].coin_down = False
+                gamestate.players[2].coin_down = False
             try:
-                gamestate.player[3].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2F)[0] == 2
+                gamestate.players[3].coin_down = np.ndarray((1,), ">B", event_bytes, 0x2F)[0] == 2
             except TypeError:
-                gamestate.player[3].coin_down = False
+                gamestate.players[3].coin_down = False
             try:
-                gamestate.player[4].coin_down = np.ndarray((1,), ">B", event_bytes, 0x30)[0] == 2
+                gamestate.players[4].coin_down = np.ndarray((1,), ">B", event_bytes, 0x30)[0] == 2
             except TypeError:
-                gamestate.player[4].coin_down = False
+                gamestate.players[4].coin_down = False
 
         if gamestate.menu_state == enums.Menu.STAGE_SELECT:
             # Stage
@@ -849,7 +849,7 @@ class Console:
         try:
             if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
                 for i in range(4):
-                    gamestate.player[i+1].costume = np.ndarray((1,), ">B", event_bytes, 0x3F)[0]
+                    gamestate.players[i+1].costume = np.ndarray((1,), ">B", event_bytes, 0x3F)[0]
         except TypeError:
             pass
 
@@ -867,7 +867,7 @@ class Console:
         # CPU Level
         try:
             for i in range(4):
-                gamestate.player[i+1].cpu_level = np.ndarray((1,), ">B", event_bytes, 0x41 + i)[0]
+                gamestate.players[i+1].cpu_level = np.ndarray((1,), ">B", event_bytes, 0x41 + i)[0]
         except TypeError:
             pass
         except KeyError:
@@ -876,21 +876,21 @@ class Console:
         # Is Holding CPU Slider
         try:
             for i in range(4):
-                gamestate.player[i+1].is_holding_cpu_slider = np.ndarray((1,), ">B", event_bytes, 0x45 + i)[0]
+                gamestate.players[i+1].is_holding_cpu_slider = np.ndarray((1,), ">B", event_bytes, 0x45 + i)[0]
         except TypeError:
             pass
         except KeyError:
             pass
 
         # Set CPU level to 0 if we're not a CPU
-        for port in gamestate.player:
-            if gamestate.player[port].controller_status != enums.ControllerStatus.CONTROLLER_CPU:
-                gamestate.player[port].cpu_level = 0
+        for port in gamestate.players:
+            if gamestate.players[port].controller_status != enums.ControllerStatus.CONTROLLER_CPU:
+                gamestate.players[port].cpu_level = 0
 
     def __fixframeindexing(self, gamestate):
         """ Melee's indexing of action frames is wildly inconsistent.
             Here we adjust all of the frames to be indexed at 1 (so math is easier)"""
-        for _, player in gamestate.player.items():
+        for _, player in gamestate.players.items():
             if player.action.value in self.zero_indices[player.character.value]:
                 player.action_frame = player.action_frame + 1
 
@@ -898,7 +898,7 @@ class Console:
         """ The IASA flag doesn't set or reset for special attacks.
             So let's just set IASA to False for all non-A attacks.
         """
-        for _, player in gamestate.player.items():
+        for _, player in gamestate.players.items():
             # Luckily for us, all the A-attacks are in a contiguous place in the enums!
             #   So we don't need to call them out one by one
             if player.action.value < Action.NEUTRAL_ATTACK_1.value or player.action.value > Action.DAIR.value:

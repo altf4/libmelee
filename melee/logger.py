@@ -52,7 +52,7 @@ class Logger():
         opponent_state = None
         ai_state = None
         count = 0
-        for i, player in gamestate.player.items():
+        for i, player in gamestate.players.items():
             if count == 0:
                 ai_state = player
                 count += 1

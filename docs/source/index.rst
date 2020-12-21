@@ -55,7 +55,7 @@ If you're looking to read SLP files and don't need to interface with Dolphin, th
       # step() returns None when the file ends
       if gamestate is None:
           break
-      print(gamestate.player[1].x, gamestate.player[1].y)
+      print(gamestate.players[1].x, gamestate.players[1].y)
 
 Getting Started
 --------------------

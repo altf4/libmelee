@@ -161,15 +161,15 @@ class MenuHelper():
         # NOTE: This assumes you have all characters unlocked
         # Positions will be totally wrong if something is not unlocked
         controlling_port = controller.port
-        if controlling_port not in gamestate.player:
+        if controlling_port not in gamestate.players:
             controller.release_all()
             return
 
-        ai_state = gamestate.player[controlling_port]
+        ai_state = gamestate.players[controlling_port]
 
         # Discover who is the opponent
         opponent_state = None
-        for i, player in gamestate.player.items():
+        for i, player in gamestate.players.items():
             # TODO For now, just assume they're the first controller port that isn't us
             if i != controlling_port:
                 opponent_state = player
@@ -181,9 +181,9 @@ class MenuHelper():
 
         isSlippiCSS = False
         if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
-            cursor_x, cursor_y = gamestate.player[1].cursor_x, gamestate.player[1].cursor_y
+            cursor_x, cursor_y = gamestate.players[1].cursor_x, gamestate.players[1].cursor_y
             isSlippiCSS = True
-            character_selected = gamestate.player[1].character_selected
+            character_selected = gamestate.players[1].character_selected
         if isSlippiCSS:
             swag = True
 
@@ -470,7 +470,7 @@ class MenuHelper():
             go to uplugged. If you've ever played Melee, you probably know this. If your
             friend walks away, you have to press the A button on THEIR controller. (or
             else actually unplug the controller) No way around it."""
-        ai_state = gamestate.player[controller.port]
+        ai_state = gamestate.players[controller.port]
         target_x, target_y = 0, -2.2
         if targetport == 1:
             target_x = -31.5
@@ -483,10 +483,10 @@ class MenuHelper():
         wiggleroom = 1.5
 
         correctcharacter = (character is None) or \
-            (character == gamestate.player[targetport].character_selected)
+            (character == gamestate.players[targetport].character_selected)
 
         #if we're in the right state already, do nothing
-        if gamestate.player[targetport].controller_status == status and correctcharacter:
+        if gamestate.players[targetport].controller_status == status and correctcharacter:
             controller.release_all()
             return
 
