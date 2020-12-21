@@ -11,6 +11,7 @@ import time
 import os
 import stat
 import configparser
+import collections
 import csv
 import subprocess
 import platform
@@ -538,8 +539,11 @@ class Console:
             playerstate.nana = PlayerState()
             playerstate = playerstate.nana
 
-        playerstate.x = np.ndarray((1,), ">f", event_bytes, 0xa)[0]
-        playerstate.y = np.ndarray((1,), ">f", event_bytes, 0xe)[0]
+        playerstate.position.x = np.ndarray((1,), ">f", event_bytes, 0xa)[0]
+        playerstate.position.y = np.ndarray((1,), ">f", event_bytes, 0xe)[0]
+
+        playerstate.x = playerstate.position.x
+        playerstate.y = playerstate.position.y
 
         playerstate.character = enums.Character(np.ndarray((1,), ">B", event_bytes, 0x7)[0])
         try:
@@ -630,7 +634,7 @@ class Console:
 
         # "off_stage" helper
         try:
-            if (abs(playerstate.x) > stages.EDGE_GROUND_POSITION[gamestate.stage] or \
+            if (abs(playerstate.position.x) > stages.EDGE_GROUND_POSITION[gamestate.stage] or \
                     playerstate.y < -6) and not playerstate.on_ground:
                 playerstate.off_stage = True
             else:
@@ -650,6 +654,9 @@ class Console:
             ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
         except TypeError:
             ecb_top_y = 0
+        playerstate.ecb.top = collections.namedtuple("Position", ['x', 'y'])
+        playerstate.ecb.top.x = ecb_top_x
+        playerstate.ecb.top.y = ecb_top_y
         playerstate.ecb_top = (ecb_top_x, ecb_top_y)
 
         # ECB bottom edge, x coord
@@ -664,6 +671,9 @@ class Console:
             ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
         except TypeError:
             ecb_bot_y = 0
+        playerstate.ecb.bottom = collections.namedtuple("Position", ['x', 'y'])
+        playerstate.ecb.bottom.x = ecb_bot_x
+        playerstate.ecb.bottom.y = ecb_bot_y
         playerstate.ecb_bottom = (ecb_bot_x, ecb_bot_y)
 
         # ECB left edge, x coord
@@ -678,6 +688,9 @@ class Console:
             ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
         except TypeError:
             ecb_left_y = 0
+        playerstate.ecb.left = collections.namedtuple("Position", ['x', 'y'])
+        playerstate.ecb.left.x = ecb_left_x
+        playerstate.ecb.left.y = ecb_left_y
         playerstate.ecb_left = (ecb_left_x, ecb_left_y)
 
         # ECB right edge, x coord
@@ -692,6 +705,9 @@ class Console:
             ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
         except TypeError:
             ecb_right_y = 0
+        playerstate.ecb.right = collections.namedtuple("Position", ['x', 'y'])
+        playerstate.ecb.right.x = ecb_right_x
+        playerstate.ecb.right.y = ecb_right_y
         playerstate.ecb_right = (ecb_right_x, ecb_right_y)
         if self._use_manual_bookends:
             self._frame = gamestate.frame
@@ -704,9 +720,9 @@ class Console:
         player_one_x, player_one_y, player_two_x, player_two_y = 0, 0, 0, 0
         for _, player_state in gamestate.players.items():
             if i == 0:
-                player_one_x, player_one_y = player_state.x, player_state.y
+                player_one_x, player_one_y = player_state.position.x, player_state.position.y
             if i == 1:
-                player_two_x, player_two_y = player_state.x, player_state.y
+                player_two_x, player_two_y = player_state.position.x, player_state.position.y
             i += 1
         xdist = player_one_x - player_two_x
         ydist = player_one_y - player_two_y
@@ -714,10 +730,14 @@ class Console:
 
     def __item_update(self, gamestate, event_bytes):
         projectile = Projectile()
-        projectile.x = np.ndarray((1,), ">f", event_bytes, 0x14)[0]
-        projectile.y = np.ndarray((1,), ">f", event_bytes, 0x18)[0]
-        projectile.x_speed = np.ndarray((1,), ">f", event_bytes, 0xc)[0]
-        projectile.y_speed = np.ndarray((1,), ">f", event_bytes, 0x10)[0]
+        projectile.position.x = np.ndarray((1,), ">f", event_bytes, 0x14)[0]
+        projectile.position.y = np.ndarray((1,), ">f", event_bytes, 0x18)[0]
+        projectile.x = projectile.position.x
+        projectile.y = projectile.position.y
+        projectile.speed.x = np.ndarray((1,), ">f", event_bytes, 0xc)[0]
+        projectile.speed.y = np.ndarray((1,), ">f", event_bytes, 0x10)[0]
+        projectile.x_speed = projectile.speed.x
+        projectile.y_speed = projectile.speed.y
         try:
             projectile.owner = np.ndarray((1,), ">B", event_bytes, 0x2A)[0] + 1
             if projectile.owner > 4:
@@ -746,6 +766,11 @@ class Console:
             gamestate.players[4] = PlayerState()
         elif scene in [0x0102, 0x0108]:
             gamestate.menu_state = enums.Menu.STAGE_SELECT
+            gamestate.players[1] = PlayerState()
+            gamestate.players[2] = PlayerState()
+            gamestate.players[3] = PlayerState()
+            gamestate.players[4] = PlayerState()
+
         elif scene == 0x0202:
             gamestate.menu_state = enums.Menu.IN_GAME
         elif scene == 0x0001:
@@ -783,20 +808,29 @@ class Console:
 
             # Character selected
             try:
-                gamestate.players[1].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x29)[0])
+                gamestate.players[1].character = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x29)[0])
+                gamestate.players[1].character_selected = gamestate.players[1].character
             except TypeError:
+                gamestate.players[1].character = enums.Character.UNKNOWN_CHARACTER
                 gamestate.players[1].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.players[2].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2A)[0])
+                gamestate.players[2].character = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2A)[0])
+                gamestate.players[2].character_selected = gamestate.players[2].character
             except TypeError:
+                gamestate.players[2].character = enums.Character.UNKNOWN_CHARACTER
                 gamestate.players[2].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.players[3].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2B)[0])
+                gamestate.players[3].character = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2B)[0])
+                gamestate.players[3].character_selected = gamestate.players[3].character
+
             except TypeError:
+                gamestate.players[3].character = enums.Character.UNKNOWN_CHARACTER
                 gamestate.players[3].character_selected = enums.Character.UNKNOWN_CHARACTER
             try:
-                gamestate.players[4].character_selected = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2C)[0])
+                gamestate.players[4].character = enums.to_internal(np.ndarray((1,), ">B", event_bytes, 0x2C)[0])
+                gamestate.players[4].character_selected = gamestate.players[4].character
             except TypeError:
+                gamestate.players[4].character = enums.Character.UNKNOWN_CHARACTER
                 gamestate.players[4].character_selected = enums.Character.UNKNOWN_CHARACTER
 
             # Coin down
@@ -825,8 +859,11 @@ class Console:
                 gamestate.stage = enums.Stage.NO_STAGE
 
             # Stage Select Cursor X, Y
-            gamestate.stage_select_cursor_x = np.ndarray((1,), ">f", event_bytes, 0x31)[0]
-            gamestate.stage_select_cursor_y = np.ndarray((1,), ">f", event_bytes, 0x35)[0]
+            for _, player in gamestate.players.items():
+                player.cursor.x = np.ndarray((1,), ">f", event_bytes, 0x31)[0]
+                player.cursor.y = np.ndarray((1,), ">f", event_bytes, 0x35)[0]
+                gamestate.stage_select_cursor_x = player.cursor.x
+                gamestate.stage_select_cursor_y = player.cursor.y
 
         # Frame count
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x39)[0]

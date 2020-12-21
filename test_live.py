@@ -43,7 +43,7 @@ class DolphinTest(unittest.TestCase):
                                                     autostart=False,
                                                     swag=False)
                 if gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT and (gamestate.frame > 30):
-                    self.assertEqual(gamestate.players[1].character_selected, melee.Character.FOX)
+                    self.assertEqual(gamestate.players[1].character, melee.Character.FOX)
                     break
         console.stop()
 

@@ -177,13 +177,13 @@ class MenuHelper():
 
         cursor_x, cursor_y = ai_state.cursor_x, ai_state.cursor_y
         coin_down = ai_state.coin_down
-        character_selected = ai_state.character_selected
+        character_selected = ai_state.character
 
         isSlippiCSS = False
         if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
             cursor_x, cursor_y = gamestate.players[1].cursor_x, gamestate.players[1].cursor_y
             isSlippiCSS = True
-            character_selected = gamestate.players[1].character_selected
+            character_selected = gamestate.players[1].character
         if isSlippiCSS:
             swag = True
 
@@ -430,22 +430,22 @@ class MenuHelper():
         #Wiggle room in positioning cursor
         wiggleroom = 1.5
         #Move up if we're too low
-        if gamestate.stage_select_cursor_y < target_y - wiggleroom:
+        if gamestate.players[controller.port].cursor.y < target_y - wiggleroom:
             controller.release_button(enums.Button.BUTTON_A)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
             return
         #Move downn if we're too high
-        if gamestate.stage_select_cursor_y > target_y + wiggleroom:
+        if gamestate.players[controller.port].cursor.y > target_y + wiggleroom:
             controller.release_button(enums.Button.BUTTON_A)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
         #Move right if we're too left
-        if gamestate.stage_select_cursor_x < target_x - wiggleroom:
+        if gamestate.players[controller.port].cursor.x < target_x - wiggleroom:
             controller.release_button(enums.Button.BUTTON_A)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
             return
         #Move left if we're too right
-        if gamestate.stage_select_cursor_x > target_x + wiggleroom:
+        if gamestate.players[controller.port].cursor.x > target_x + wiggleroom:
             controller.release_button(enums.Button.BUTTON_A)
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
             return
@@ -483,7 +483,7 @@ class MenuHelper():
         wiggleroom = 1.5
 
         correctcharacter = (character is None) or \
-            (character == gamestate.players[targetport].character_selected)
+            (character == gamestate.players[targetport].character)
 
         #if we're in the right state already, do nothing
         if gamestate.players[targetport].controller_status == status and correctcharacter:

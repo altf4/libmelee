@@ -89,8 +89,14 @@ Also, if you don't press a button, Dolphin will just use whatever you pressed la
 which will release all buttons and set all sticks / shoulders to neutral.
 
 ### API Changes
-
-`gamestate.player` has been changed to `gamestate.players` (plural) to be more Pythonic. `gamestate.player` will be removed in version 1.0.0.
+Each of these old values will be removed in version 1.0.0. So update your programs!
+1. `gamestate.player` has been changed to `gamestate.players` (plural) to be more Pythonic.
+2. `gamestate.x` and `gamestate.y` have been combined into a named tuple: `gamestate.position`. So you can now access it via `gamestate.position.x`.
+3. `projectile.x` and `projectile.y` have been combined into a named tuple: `projectile.position`. So you can now access it via `projectile.position.x`.
+4. `projectile.x_speed` and `projectile.y_speed` have been combined into a named tuple: `projectile.speed`. So you can now access it via `projectile.speed.x`
+5. `gamestate.stage_select_cursor_x` and `gamestate.stage_select_cursor_x` have both been combined into the PlayerState `cursor`. It makes the API cleaner to just have cursor be separate for each player, even though it's a shared cursor there.
+6. `playerstate.character_selected` has been combined into `playerstate.charcter`. Just use the menu to know the context.
+7. `playerstate.ecb_left` and the rest have been combined into named tuples like: `playerstate.ecb.left.x` for each of `left`, `right`, `top`, `bottom`. And `x`, `y` coords.
 
 ## OpenAI Gym
 libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.

@@ -63,10 +63,10 @@ class Logger():
         if not opponent_state or not ai_state:
             return
         self.log('Frame', gamestate.frame)
-        self.log('Opponent x', str(opponent_state.x))
-        self.log('Opponent y', str(opponent_state.y))
-        self.log('AI x', str(ai_state.x))
-        self.log('AI y', str(ai_state.y))
+        self.log('Opponent x', str(opponent_state.position.x))
+        self.log('Opponent y', str(opponent_state.position.y))
+        self.log('AI x', str(ai_state.position.x))
+        self.log('AI y', str(ai_state.position.y))
         self.log('Opponent Facing', str(opponent_state.facing))
         self.log('AI Facing', str(ai_state.facing))
         self.log('Opponent Action', str(opponent_state.action))

@@ -120,7 +120,7 @@ class FrameData:
         libmelee has a liberal definition of 'roll'. A roll is essentially a move that:
          1) Has no hitbox
          2) Is inactionable
-         
+
         Spot dodge and (most) taunts for example are considered 'rolls' to this function
 
         Args:
@@ -321,8 +321,8 @@ class FrameData:
         defender_y = defender.y + defender_size
 
         # Running totals of how far the attacker will travel each frame
-        attacker_x = attacker.x
-        attacker_y = attacker.y
+        attacker_x = attacker.position.x
+        attacker_y = attacker.position.y
 
         onground = attacker.on_ground
 
@@ -402,10 +402,10 @@ class FrameData:
                 hitbox_4_x += attacker_x
 
                 # Now see if any of the hitboxes are in range
-                distance1 = math.sqrt((hitbox_1_x - defender.x)**2 + (hitbox_1_y - defender_y)**2)
-                distance2 = math.sqrt((hitbox_2_x - defender.x)**2 + (hitbox_2_y - defender_y)**2)
-                distance3 = math.sqrt((hitbox_3_x - defender.x)**2 + (hitbox_3_y - defender_y)**2)
-                distance4 = math.sqrt((hitbox_4_x - defender.x)**2 + (hitbox_4_y - defender_y)**2)
+                distance1 = math.sqrt((hitbox_1_x - defender.position.x)**2 + (hitbox_1_y - defender_y)**2)
+                distance2 = math.sqrt((hitbox_2_x - defender.position.x)**2 + (hitbox_2_y - defender_y)**2)
+                distance3 = math.sqrt((hitbox_3_x - defender.position.x)**2 + (hitbox_3_y - defender_y)**2)
+                distance4 = math.sqrt((hitbox_4_x - defender.position.x)**2 + (hitbox_4_y - defender_y)**2)
 
                 if distance1 < defender_size + float(attackingframe["hitbox_1_size"]):
                     return i
@@ -543,7 +543,7 @@ class FrameData:
             if not (character_state.facing ^ facingchanged ^ backroll):
                 distance = -distance
 
-            position = character_state.x + distance
+            position = character_state.position.x + distance
 
             if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
                 # Adjust the position to account for the fact that we can't roll off the stage
@@ -552,7 +552,7 @@ class FrameData:
             return position
         # If we get a key error, just assume this animation doesn't go anywhere
         except KeyError:
-            return character_state.x
+            return character_state.position.x
 
     def first_hitbox_frame(self, character, action):
         """Returns the first frame that a hitbox appears for a given action
@@ -721,7 +721,7 @@ class FrameData:
             Action.EDGE_JUMP_1_SLOW, Action.EDGE_JUMP_1_QUICK, Action.EDGE_JUMP_2_SLOW, Action.EDGE_JUMP_2_QUICK]
 
         if gamestate.opponent_state.on_ground or airmoves:
-            xspeed = gamestate.opponent_state.x - gamestate.opponent_state.__prev_x
+            xspeed = gamestate.opponent_state.position.x - gamestate.opponent_state.__prev_x
 
         # This is a bit strange, but here's why:
         #   The vast majority of actions don't actually affect vertical speed
@@ -729,7 +729,7 @@ class FrameData:
         #   Any exceptions can be manually edited in
         #  However, there's plenty of attacks that make the character fly upward at a set
         #   distance, like up-b's. So keep those around
-        yspeed = max(gamestate.opponent_state.y - gamestate.opponent_state.__prev_y, 0)
+        yspeed = max(gamestate.opponent_state.position.y - gamestate.opponent_state.__prev_y, 0)
 
         # Some actions never have locomotion. Make sure to not count it
         if gamestate.opponent_state.action in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
@@ -740,20 +740,20 @@ class FrameData:
                 'action': gamestate.opponent_state.action.value,
                 'frame': gamestate.opponent_state.action_frame,
                 'hitbox_1_status': gamestate.opponent_state.hitbox_1_status,
-                'hitbox_1_x': (gamestate.opponent_state.hitbox_1_x - gamestate.opponent_state.x),
-                'hitbox_1_y': (gamestate.opponent_state.hitbox_1_y - gamestate.opponent_state.y),
+                'hitbox_1_x': (gamestate.opponent_state.hitbox_1_x - gamestate.opponent_state.position.x),
+                'hitbox_1_y': (gamestate.opponent_state.hitbox_1_y - gamestate.opponent_state.position.y),
                 'hitbox_1_size' : gamestate.opponent_state.hitbox_1_size,
                 'hitbox_2_status': gamestate.opponent_state.hitbox_2_status,
-                'hitbox_2_x': (gamestate.opponent_state.hitbox_2_x - gamestate.opponent_state.x),
-                'hitbox_2_y': (gamestate.opponent_state.hitbox_2_y - gamestate.opponent_state.y),
+                'hitbox_2_x': (gamestate.opponent_state.hitbox_2_x - gamestate.opponent_state.position.x),
+                'hitbox_2_y': (gamestate.opponent_state.hitbox_2_y - gamestate.opponent_state.position.y),
                 'hitbox_2_size' : gamestate.opponent_state.hitbox_2_size,
                 'hitbox_3_status': gamestate.opponent_state.hitbox_3_status,
-                'hitbox_3_x': (gamestate.opponent_state.hitbox_3_x - gamestate.opponent_state.x),
-                'hitbox_3_y': (gamestate.opponent_state.hitbox_3_y - gamestate.opponent_state.y),
+                'hitbox_3_x': (gamestate.opponent_state.hitbox_3_x - gamestate.opponent_state.position.x),
+                'hitbox_3_y': (gamestate.opponent_state.hitbox_3_y - gamestate.opponent_state.position.y),
                 'hitbox_3_size' : gamestate.opponent_state.hitbox_3_size,
                 'hitbox_4_status': gamestate.opponent_state.hitbox_4_status,
-                'hitbox_4_x': (gamestate.opponent_state.hitbox_4_x - gamestate.opponent_state.x),
-                'hitbox_4_y': (gamestate.opponent_state.hitbox_4_y - gamestate.opponent_state.y),
+                'hitbox_4_x': (gamestate.opponent_state.hitbox_4_x - gamestate.opponent_state.position.x),
+                'hitbox_4_y': (gamestate.opponent_state.hitbox_4_y - gamestate.opponent_state.position.y),
                 'hitbox_4_size' : gamestate.opponent_state.hitbox_4_size,
                 'locomotion_x' : xspeed,
                 'locomotion_y' : yspeed,

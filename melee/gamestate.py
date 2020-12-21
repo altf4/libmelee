@@ -1,6 +1,7 @@
 """ Gamestate is a single snapshot in time of the game that represents all necessary information
         to make gameplay decisions
 """
+import collections
 import melee
 from melee import enums
 from melee.enums import Action, Character
@@ -22,13 +23,13 @@ class GameState(object):
         """(dict of int - gamestate.PlayerState): Dict of PlayerState objects. Key is controller port"""
         self.player = self.players
         """(dict of int - gamestate.PlayerState): WARNING: Deprecated. Will be removed in version 1.0.0. Use `players` instead
-            Dict of PlayerState objects. Key is controller port"""
+                Dict of PlayerState objects. Key is controller port"""
         self.projectiles = []
         """(list of Projectile): All projectiles (items) currently existing"""
         self.stage_select_cursor_x = 0.0
-        """(float): Stage select cursor's X coordinate. Ranges from -27 to 27"""
+        """(float): DEPRECATED. Use `players[X].cursor` instead. Will be removed in 1.0.0. Stage select cursor's X coordinate. Ranges from -27 to 27"""
         self.stage_select_cursor_y = 0.0
-        """(float): Stage select cursor's Y coordinate. Ranges from -19 to 19"""
+        """(float): DEPRECATED. Use `players[X].cursor` instead. Will be removed in 1.0.0. Stage select cursor's Y coordinate. Ranges from -19 to 19"""
         self.ready_to_start = False
         """(bool): Is the 'ready to start' banner showing at the character select screen?"""
         self.distance = 0.0
@@ -44,7 +45,7 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right',
-                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana')
+                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus
@@ -54,12 +55,13 @@ class PlayerState(object):
         """(enum.Character): The player's current character"""
         # This value is what character is selected at the character select screen
         #   Don't use this value when in-game
-        #TODO Remove this and just use character
         self.character_selected = enums.Character.UNKNOWN_CHARACTER
+        self.position = collections.namedtuple("Position", ['x', 'y'])
+        """(namedtuple: float, float): x, y character position"""
         self.x = 0
-        """(float): The character's X position"""
+        """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. The character's X position"""
         self.y = 0
-        """(float): The character's Y position"""
+        """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. The character's Y position"""
         self.percent = 0
         """(int): The player's damage"""
         self.shield_strength = 60.
@@ -99,10 +101,12 @@ class PlayerState(object):
                 If the character is not Ice Climbers, Nana will be None.
                 Will also be None if this player state is Nana itself.
                 Lastly, the secondary climber is called 'Nana' here, regardless of the costume used."""
+        self.cursor = collections.namedtuple("Cursor", ['x', 'y'])
+        """(namedtuple: float, float): x, y cursor position"""
         self.cursor_x = 0
-        """(float): Cursor X value"""
+        """(float): DEPRECATED. Use `cursor` instead. Will be removed in 1.0.0. Cursor X value"""
         self.cursor_y = 0
-        """(float): Cursor Y value"""
+        """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. Cursor Y value"""
         self.coin_down = False
         """(bool): Is the player's character selection coin placed down? (Does not work in Slippi selection screen)"""
         self.controller_status = enums.ControllerStatus.CONTROLLER_UNPLUGGED
@@ -114,6 +118,7 @@ class PlayerState(object):
         """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
         self.controller_state = melee.controller.ControllerState()
         """(controller.ControllerState): What buttons were pressed for this character"""
+        self.ecb = collections.namedtuple("ECB", ['right', 'left', 'top', 'bottom'])
         self.ecb_right = (0, 0)
         """(float, float): Right edge of the ECB. (x, y) offset from player's center."""
         self.ecb_left = (0, 0)
@@ -131,15 +136,19 @@ class PlayerState(object):
 
 class Projectile:
     """ Represents the state of a projectile (items, lasers, etc...) """
-    def __init(self):
+    def __init__(self):
+        self.position = collections.namedtuple("Position", ['x', 'y'])
+        """(namedtuple: float, float): x, y projectile position"""
         self.x = 0
-        """(float): Projectile's X position"""
+        """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. Projectile's X position"""
         self.y = 0
-        """(float): Projectile's Y position"""
+        """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. Projectile's Y position"""
+        self.speed = collections.namedtuple("Speed", ['x', 'y'])
+        """(namedtuple: float, float): x, y projectile speed"""
         self.x_speed = 0
-        """(float): Projectile's horizontal speed"""
+        """(float): DEPRECATED. Use `speed` instead. Will be removed in 1.0.0. Projectile's horizontal speed"""
         self.y_speed = 0
-        """(float): Projectile's vertical speed"""
+        """(float): DEPRECATED. Use `speed` instead. Will be removed in 1.0.0. Projectile's vertical speed"""
         self.owner = -1
         """(int): Player port of the projectile's owner. -1 for no owner"""
         self.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
