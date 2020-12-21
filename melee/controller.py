@@ -84,6 +84,10 @@ class Controller:
         # Configure our controller with the console
         self._console.setup_dolphin_controller(port, type)
 
+    def __del__(self):
+        """Clean up any resources held by the controller object"""
+        self.disconnect()
+
     def connect(self):
         """Connect the controller to the console
 
