@@ -234,7 +234,7 @@ class Console:
 
         exe_name = "dolphin-emu"
         if platform.system() == "Windows":
-            exe_name = "Dolphin.exe"
+            exe_name = "Slippi Dolphin.exe"
         elif platform.system() == "Darwin":
             exe_name = "Slippi Dolphin"
 
