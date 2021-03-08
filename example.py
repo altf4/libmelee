@@ -124,6 +124,11 @@ while True:
         else:
             # If the discovered port was unsure, reroll our costume for next time
             costume = random.randint(0, 4)
+
+        # Log this frame's detailed info if we're in game
+        if log:
+            log.logframe(gamestate)
+            log.writeframe()
     else:
         melee.MenuHelper.menu_helper_simple(gamestate,
                                             controller,
@@ -133,6 +138,7 @@ while True:
                                             costume=costume,
                                             autostart=True,
                                             swag=False)
-    if log:
-        log.logframe(gamestate)
-        log.writeframe()
+
+        # If we're not in game, don't log the frame
+        if log:
+            log.skipframe()
