@@ -121,6 +121,7 @@ class Console:
         self._use_manual_bookends = False
         self._costumes = {0:0, 1:0, 2:0, 3:0}
         self._cpu_level = {0:0, 1:0, 2:0, 3:0}
+        self._invuln_start = {1:(0,0), 2:(0,0), 3:(0,0), 4:(0,0)}
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -611,14 +612,17 @@ class Console:
 
         # Keep track of a player's invulnerability due to respawn or ledge grab
         if controller_port in self._prev_gamestate.players:
-            playerstate.invulnerability_left = max(0, self._prev_gamestate.players[controller_port].invulnerability_left - 1)
+            playerstate.invulnerability_left = max(0, self._invuln_start[controller_port][1] - (gamestate.frame - self._invuln_start[controller_port][0]))
         if playerstate.action == Action.ON_HALO_WAIT:
             playerstate.invulnerability_left = 120
+            self._invuln_start[controller_port] = (gamestate.frame, 120)
         # Don't give invulnerability to the first descent
         if playerstate.action == Action.ON_HALO_DESCENT and gamestate.frame > 150:
             playerstate.invulnerability_left = 120
+            self._invuln_start[controller_port] = (gamestate.frame, 120)
         if playerstate.action == Action.EDGE_CATCHING and playerstate.action_frame == 1:
             playerstate.invulnerability_left = 36
+            self._invuln_start[controller_port] = (gamestate.frame, 36)
 
         # The pre-warning occurs when we first start a dash dance.
         if controller_port in self._prev_gamestate.players:
