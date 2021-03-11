@@ -623,6 +623,10 @@ class Console:
         if playerstate.action == Action.EDGE_CATCHING and playerstate.action_frame == 1:
             playerstate.invulnerability_left = 36
             self._invuln_start[controller_port] = (gamestate.frame, 36)
+        # First frame of the game
+        if gamestate.frame == -123:
+            playerstate.invulnerability_left = 0
+            self._invuln_start[controller_port] = (gamestate.frame, 0)
 
         # The pre-warning occurs when we first start a dash dance.
         if controller_port in self._prev_gamestate.players:
