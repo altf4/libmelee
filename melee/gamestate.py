@@ -157,7 +157,7 @@ class Projectile:
         """(enums.ProjectileType): Which actual projectile type this is"""
         self.frame = 0
         """(int): How long the item has been out"""
-        self.subtype
+        self.subtype = 0
         """(int): The subtype of the item. Many projectiles have 'subtypes' that make them different. They're all different, so it's not an enum"""
 
 def port_detector(gamestate, character, costume):
