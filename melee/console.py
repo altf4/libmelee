@@ -751,9 +751,27 @@ class Console:
         except TypeError:
             projectile.owner = -1
         try:
-            projectile.subtype = enums.ProjectileSubtype(np.ndarray((1,), ">H", event_bytes, 0x5)[0])
+            projectile.type = enums.ProjectileType(np.ndarray((1,), ">H", event_bytes, 0x5)[0])
         except ValueError:
-            projectile.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
+            projectile.type = enums.ProjectileType.UNKNOWN_PROJECTILE
+
+        try:
+            projectile.frame = int(np.ndarray((1,), ">f", event_bytes, 0x1E)[0])
+        except ValueError:
+            projectile.frame = -1
+
+        projectile.subtype = np.ndarray((1,), ">B", event_bytes, 0x7)[0]
+
+        # Ignore exploded Samus bombs. They are subtype 3
+        if projectile.type == enums.ProjectileType.SAMUS_BOMB and projectile.subtype == 3:
+            return
+        # Ignore exploded Samus missles
+        if projectile.type == enums.ProjectileType.SAMUS_MISSLE and projectile.subtype in [2, 3]:
+            return
+        # Ignore Samus charge beam while charging (not firing)
+        if projectile.type == enums.ProjectileType.SAMUS_CHARGE_BEAM and projectile.subtype == 0:
+            return
+
         # Add the projectile to the gamestate list
         gamestate.projectiles.append(projectile)
 

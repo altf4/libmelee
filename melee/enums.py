@@ -663,7 +663,7 @@ class Action(Enum):
     THROWN_KIRBY_SPIT_S_SHOT = 0x17E
     UNKNOWN_ANIMATION = 0xffff
 
-class ProjectileSubtype(Enum):
+class ProjectileType(Enum):
     """Primary type of prejectile or item """
     BOB_OMB = 0x06 # Bob-omb (BombHei)
     MR_SATURN = 0x07 # Mr. Saturn (Dosei)

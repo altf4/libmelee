@@ -98,6 +98,7 @@ Each of these old values will be removed in version 1.0.0. So update your progra
 6. `playerstate.character_selected` has been combined into `playerstate.charcter`. Just use the menu to know the context.
 7. `playerstate.ecb_left` and the rest have been combined into named tuples like: `playerstate.ecb.left.x` for each of `left`, `right`, `top`, `bottom`. And `x`, `y` coords.
 8. `hitlag` boolean has been changed to `hitlag_left` int
+9. `ProjectileSubtype` has been renamed to `ProjectileType` to refer to its primary type enum. There is a new `subtype` int that refers to a subtype.
 
 ## OpenAI Gym
 libmelee is inspired by, but not exactly conforming to, the OpenAI Gym API.

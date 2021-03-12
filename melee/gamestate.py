@@ -153,8 +153,12 @@ class Projectile:
         """(float): DEPRECATED. Use `speed` instead. Will be removed in 1.0.0. Projectile's vertical speed"""
         self.owner = -1
         """(int): Player port of the projectile's owner. -1 for no owner"""
-        self.subtype = enums.ProjectileSubtype.UNKNOWN_PROJECTILE
-        """(enums.ProjectileSubtype): Which actual projectile type this is"""
+        self.type = enums.ProjectileType.UNKNOWN_PROJECTILE
+        """(enums.ProjectileType): Which actual projectile type this is"""
+        self.frame = 0
+        """(int): How long the item has been out"""
+        self.subtype
+        """(int): The subtype of the item. Many projectiles have 'subtypes' that make them different. They're all different, so it's not an enum"""
 
 def port_detector(gamestate, character, costume):
     """Autodiscover what port the given character is on
