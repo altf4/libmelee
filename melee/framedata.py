@@ -878,3 +878,46 @@ class FrameData:
             totaldistance = -totaldistance
 
         return totaldistance
+
+    def hit_distance(self, character_state):
+        """How far does the given character fly, assuming they've been hit?
+            Does not take the stage into account.
+
+        Args:
+            character_state: The character state to calculate for
+
+        Returns:
+            (float, float): x, y coordinates of the place the character will end up at the end of hitstun`
+        """
+        speed_x, speed_y = character_state.speed_x_attack, character_state.speed_y_attack
+        position_x, position_y = character_state.position.x, character_state.position.y
+        termvelocity = self.characterdata[character_state.character]["TerminalVelocity"]
+        gravity = self.characterdata[character_state.character]["Gravity"]
+        airfriction = self.characterdata[character_state.character]["AirFriction"]
+        hitstun_left = character_state.hitstun_frames_left
+
+        # Always quit out after 180 iterations just in case. So we don't accidentally infinite loop here
+        failsafe = 180
+
+        while hitstun_left > 0 and failsafe > 0:
+            position_x += speed_x
+            position_y += speed_y
+
+            print(speed_x, speed_y)
+
+            # Update the speeds
+            #  Too fast, slow down
+            if speed_y < -termvelocity:
+                speed_y += airfriction
+            else:
+                # Speed up towards terminal velocity
+                speed_y = max(-termvelocity, speed_y - gravity)
+
+            if speed_x > 0:
+                speed_x = max(0, speed_x - airfriction)
+            else:
+                speed_x = min(0, speed_x + airfriction)
+            failsafe -= 1
+            hitstun_left -= 1
+
+        return position_x, position_y
