@@ -47,12 +47,12 @@ def top_platform_position(gamestate):
         (gamestate.GameState): The current GameState
 
     Returns:
-        (float, float, float): Tuple of height, left edge, right edge. None if no platform
+        (float, float, float): Tuple of height, left edge, right edge. (None, None, None) if no platform
     """
     if gamestate.stage == enums.Stage.FINAL_DESTINATION:
-        return None
+        return (None, None, None)
     if gamestate.stage == enums.Stage.POKEMON_STADIUM:
-        return None
+        return (None, None, None)
     if gamestate.stage == enums.Stage.BATTLEFIELD:
         return (54.40010070800781, -18.80000114440918, 18.80000114440918)
     if gamestate.stage == enums.Stage.DREAMLAND:
@@ -61,7 +61,7 @@ def top_platform_position(gamestate):
         return (42.750099182128906, -14.25, 14.25)
     if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (42.000099182128906, -15.75, 15.75)
-    return None
+    return (None, None, None)
 
 def side_platform_position(right_platform, gamestate):
     """Gets the position of the specified side platform
@@ -88,7 +88,7 @@ def left_platform_position(gamestate):
         (float, float, float): Tuple of height, left edge, right edge
     """
     if gamestate.stage == enums.Stage.FINAL_DESTINATION:
-        return None
+        return (None, None, None)
     if gamestate.stage == enums.Stage.POKEMON_STADIUM:
         return (25.000099182128906, -55, -25)
     if gamestate.stage == enums.Stage.BATTLEFIELD:
@@ -96,10 +96,10 @@ def left_platform_position(gamestate):
     if gamestate.stage == enums.Stage.DREAMLAND:
         return (30.14219856262207, -61.39289855957031, -31.725400924682617)
     if gamestate.stage == enums.Stage.FOUNTAIN_OF_DREAMS:
-        return None #TODO
+        return (None, None, None) #TODO
     if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (23.450098037719727, -59.5, -28.0)
-    return None
+    return (None, None, None)
 
 def right_platform_position(gamestate):
     """Gets the position of the right platform
@@ -111,7 +111,7 @@ def right_platform_position(gamestate):
         (float, float, float): Tuple of height, left edge, right edge
     """
     if gamestate.stage == enums.Stage.FINAL_DESTINATION:
-        return None
+        return (None, None, None)
     if gamestate.stage == enums.Stage.POKEMON_STADIUM:
         return (25.000099182128906, 25, 55)
     if gamestate.stage == enums.Stage.BATTLEFIELD:
@@ -119,10 +119,10 @@ def right_platform_position(gamestate):
     if gamestate.stage == enums.Stage.DREAMLAND:
         return (30.242599487304688, 31.70359992980957, 63.074501037597656)
     if gamestate.stage == enums.Stage.FOUNTAIN_OF_DREAMS:
-        return None #TODO
+        return (None, None, None) #TODO
     if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (23.450098037719727, 28.0, 59.5)
-    return None
+    return (None, None, None)
 
 _RANDALL_CORNER_POSITIONS = {
     416: (-33.184478759765625, 89.75263977050781),
