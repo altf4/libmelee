@@ -546,9 +546,18 @@ class FrameData:
             position = character_state.position.x + distance
 
             if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
-                # Adjust the position to account for the fact that we can't roll off the stage
-                position = min(position, stages.EDGE_GROUND_POSITION[stage])
-                position = max(position, -stages.EDGE_GROUND_POSITION[stage])
+                # Adjust the position to account for the fact that we can't roll off the platform
+                side_platform_height, side_platform_left, side_platform_right = stages.side_platform_position(character_state.position.x > 0, stage)
+                top_platform_height, top_platform_left, top_platform_right = stages.top_platform_position(stage)
+                if character_state.position.y < 5:
+                    position = min(position, stages.EDGE_GROUND_POSITION[stage])
+                    position = max(position, -stages.EDGE_GROUND_POSITION[stage])
+                elif (side_platform_height is not None) and abs(character_state.position.y - side_platform_height) < 5:
+                    position = min(position, side_platform_right)
+                    position = max(position, side_platform_left)
+                elif (top_platform_height is not None) and abs(character_state.position.y - top_platform_height) < 5:
+                    position = min(position, top_platform_right)
+                    position = max(position, top_platform_left)
             return position
         # If we get a key error, just assume this animation doesn't go anywhere
         except KeyError:
