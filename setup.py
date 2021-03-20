@@ -9,7 +9,7 @@ setup(
         'pywin32; platform_system=="Windows"',
         'packaging'
     ],
-    version = '0.26.0',
+    version = '0.27.0',
     description = 'Open API written in Python 3 for making your own Smash Bros: Melee AI that works with Slippi Online',
     author = 'AltF4',
     author_email = 'altf4petro@gmail.com',
