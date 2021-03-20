@@ -111,11 +111,6 @@ while True:
     # What menu are we in?
     if gamestate.menu_state in [melee.Menu.IN_GAME, melee.Menu.SUDDEN_DEATH]:
 
-        if log:
-            log.log("Notes", " At end of hit: " + str(framedata.hit_distance(gamestate.player[2])) + " ", concat=True)
-            log.log("Notes", " Current speed: " + str(gamestate.player[2].speed_x_attack) + " " +  str(gamestate.player[2].speed_y_attack) + " " + str(gamestate.player[2].speed_y_self), concat=True)
-
-        print(framedata.hit_distance(gamestate.player[2]))
         # Slippi Online matches assign you a random port once you're in game that's different
         #   than the one you're physically plugged into. This helper will autodiscover what
         #   port we actually are.

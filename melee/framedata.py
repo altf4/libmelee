@@ -879,45 +879,51 @@ class FrameData:
 
         return totaldistance
 
-    def hit_distance(self, character_state):
+    def project_hit_location(self, character_state, frames=-1):
         """How far does the given character fly, assuming they've been hit?
-            Does not take the stage into account.
+            Does not take the stage into account. Only considers air-movement, not ground sliding
 
         Args:
-            character_state: The character state to calculate for
+            character_state (gamestate.PlayerState): The character state to calculate for
+            frames (int): The number of frames to calculate for. -1 means "until end of hitstun"
 
         Returns:
             (float, float): x, y coordinates of the place the character will end up at the end of hitstun`
         """
-        speed_x, speed_y = character_state.speed_x_attack, character_state.speed_y_attack
+        speed_x, speed_y_attack, speed_y_self = character_state.speed_x_attack, character_state.speed_y_attack, character_state.speed_y_self
         position_x, position_y = character_state.position.x, character_state.position.y
         termvelocity = self.characterdata[character_state.character]["TerminalVelocity"]
         gravity = self.characterdata[character_state.character]["Gravity"]
-        airfriction = self.characterdata[character_state.character]["AirFriction"]
-        hitstun_left = character_state.hitstun_frames_left
+
+        angle = math.atan2(speed_x, speed_y_attack)
+        horizontal_decay = 0.051 * math.cos(angle)
+        vertical_decay = 0.051 * math.sin(angle)
+
+        frames_left = frames
+        if frames_left == -1:
+            frames_left = character_state.hitstun_frames_left
 
         # Always quit out after 180 iterations just in case. So we don't accidentally infinite loop here
         failsafe = 180
 
-        while hitstun_left > 0 and failsafe > 0:
+        while frames_left > 0 and failsafe > 0:
             position_x += speed_x
-            position_y += speed_y
-
-            print(speed_x, speed_y)
+            position_y += speed_y_attack
+            position_y += speed_y_self
 
             # Update the speeds
-            #  Too fast, slow down
-            if speed_y < -termvelocity:
-                speed_y += airfriction
+            speed_y_self = max(-termvelocity, speed_y_self - gravity)
+
+            if speed_y_attack > 0:
+                speed_y_attack = max(0, speed_y_attack - vertical_decay)
             else:
-                # Speed up towards terminal velocity
-                speed_y = max(-termvelocity, speed_y - gravity)
+                speed_y_attack = min(0, speed_y_attack + vertical_decay)
 
             if speed_x > 0:
-                speed_x = max(0, speed_x - airfriction)
+                speed_x = max(0, speed_x - horizontal_decay)
             else:
-                speed_x = min(0, speed_x + airfriction)
+                speed_x = min(0, speed_x + horizontal_decay)
             failsafe -= 1
-            hitstun_left -= 1
+            frames_left -= 1
 
         return position_x, position_y
