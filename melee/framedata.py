@@ -905,8 +905,8 @@ class FrameData:
         gravity = self.characterdata[character_state.character]["Gravity"]
 
         angle = math.atan2(speed_x, speed_y_attack)
-        horizontal_decay = 0.051 * math.cos(angle)
-        vertical_decay = 0.051 * math.sin(angle)
+        horizontal_decay = abs(0.051 * math.cos(-angle + (math.pi/2)))
+        vertical_decay = abs(0.051 * math.sin(-angle + (math.pi/2)))
 
         frames_left = frames
         if frames_left == -1:
