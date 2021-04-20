@@ -546,9 +546,18 @@ class FrameData:
             position = character_state.position.x + distance
 
             if character_state.action not in [Action.TECH_MISS_UP, Action.TECH_MISS_DOWN]:
-                # Adjust the position to account for the fact that we can't roll off the stage
-                position = min(position, stages.EDGE_GROUND_POSITION[stage])
-                position = max(position, -stages.EDGE_GROUND_POSITION[stage])
+                # Adjust the position to account for the fact that we can't roll off the platform
+                side_platform_height, side_platform_left, side_platform_right = stages.side_platform_position(character_state.position.x > 0, stage)
+                top_platform_height, top_platform_left, top_platform_right = stages.top_platform_position(stage)
+                if character_state.position.y < 5:
+                    position = min(position, stages.EDGE_GROUND_POSITION[stage])
+                    position = max(position, -stages.EDGE_GROUND_POSITION[stage])
+                elif (side_platform_height is not None) and abs(character_state.position.y - side_platform_height) < 5:
+                    position = min(position, side_platform_right)
+                    position = max(position, side_platform_left)
+                elif (top_platform_height is not None) and abs(character_state.position.y - top_platform_height) < 5:
+                    position = min(position, top_platform_right)
+                    position = max(position, top_platform_left)
             return position
         # If we get a key error, just assume this animation doesn't go anywhere
         except KeyError:
@@ -878,3 +887,88 @@ class FrameData:
             totaldistance = -totaldistance
 
         return totaldistance
+
+    def _ccw(A,B,C):
+        return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
+
+    def _intersect(A,B,C,D):
+        """Return true if line segments AB and CD intersect"""
+        return FrameData._ccw(A,C,D) != FrameData._ccw(B,C,D) and FrameData._ccw(A,B,C) != FrameData._ccw(A,B,D)
+
+    def project_hit_location(self, character_state, stage, frames=-1):
+        """How far does the given character fly, assuming they've been hit?
+            Only considers air-movement, not ground sliding.
+            Projection ends if hitstun ends, or if a platform is encountered
+
+        Note:
+            Platform collision doesn't take ECB changes into account.
+                This means that the timing of collision can be off by a couple frames. Since it's possible
+                for someone's Y position to travel below the platform by quite a bit before registering as "collided"
+
+        Args:
+            character_state (GameState.PlayerState): The character state to calculate for
+            stage (enums.Stage): The stage being played on
+            frames (int): The number of frames to calculate for. -1 means "until end of hitstun"
+
+        Returns:
+            (float, float, int): x, y coordinates of the place the character will end up at the end of hitstun, plus frames until that position
+        """
+        speed_x, speed_y_attack, speed_y_self = character_state.speed_x_attack, character_state.speed_y_attack, character_state.speed_y_self
+        position_x, position_y = character_state.position.x, character_state.position.y
+        termvelocity = self.characterdata[character_state.character]["TerminalVelocity"]
+        gravity = self.characterdata[character_state.character]["Gravity"]
+
+        # Get list of all platforms, tuples of (height, left, right)
+        platforms = []
+        platforms.append((0, -stages.EDGE_GROUND_POSITION[stage], stages.EDGE_GROUND_POSITION[stage]))
+        left_plat = stages.left_platform_position(stage)
+        if left_plat[0] is not None:
+            platforms.append(left_plat)
+        right_plat = stages.right_platform_position(stage)
+        if right_plat[0] is not None:
+            platforms.append(right_plat)
+
+        angle = math.atan2(speed_x, speed_y_attack)
+        horizontal_decay = abs(0.051 * math.cos(-angle + (math.pi/2)))
+        vertical_decay = abs(0.051 * math.sin(-angle + (math.pi/2)))
+
+        frames_left = frames
+        if frames_left == -1:
+            frames_left = character_state.hitstun_frames_left
+
+        # Always quit out after 180 iterations just in case. So we don't accidentally infinite loop here
+        failsafe = 180
+
+        while frames_left > 0 and failsafe > 0:
+            # Check if the character will hit a platform
+            for platform in platforms:
+                # We have two line segments. Check if they intersect
+                #   AB is platform, CD is character
+                A = (platform[1], platform[0])
+                B = (platform[2], platform[0])
+                C = (position_x, position_y + character_state.ecb.bottom.y)
+                D = (position_x+speed_x, position_y + character_state.ecb.bottom.y + speed_y_attack + speed_y_self)
+                if FrameData._intersect(A, B, C, D):
+                    # speed_x/2 to just assume we intersect half way through. This will be wrong, but close enough
+                    return (position_x+(speed_x/2), platform[0], 181-failsafe)
+
+            position_x += speed_x
+            position_y += speed_y_attack
+            position_y += speed_y_self
+
+            # Update the speeds
+            speed_y_self = max(-termvelocity, speed_y_self - gravity)
+
+            if speed_y_attack > 0:
+                speed_y_attack = max(0, speed_y_attack - vertical_decay)
+            else:
+                speed_y_attack = min(0, speed_y_attack + vertical_decay)
+
+            if speed_x > 0:
+                speed_x = max(0, speed_x - horizontal_decay)
+            else:
+                speed_x = min(0, speed_x + horizontal_decay)
+            failsafe -= 1
+            frames_left -= 1
+
+        return position_x, position_y, character_state.hitstun_frames_left
