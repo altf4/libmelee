@@ -94,6 +94,7 @@ if not controller.connect():
 print("Controller connected")
 
 costume = 0
+framedata = melee.framedata.FrameData()
 
 # Main loop
 while True:
