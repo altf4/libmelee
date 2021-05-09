@@ -349,8 +349,8 @@ class Console:
         self.processingtime = time.time() - self._frametimestamp
 
         # Flush the controllers
-        for controler in self.controllers:
-            controler.flush()
+        for controller in self.controllers:
+            controller.flush()
 
         if self._temp_gamestate is None:
             self._temp_gamestate = GameState()
