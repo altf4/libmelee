@@ -661,6 +661,7 @@ class Action(Enum):
     THROWN_KOOPA_AIR_END_B = 0x17C
     THROWN_KIRBY_DRINK_S_SHOT = 0x17D
     THROWN_KIRBY_SPIT_S_SHOT = 0x17E
+    DK_GROUND_POUND = 0x180    
     UNKNOWN_ANIMATION = 0xffff
 
 class ProjectileType(Enum):
