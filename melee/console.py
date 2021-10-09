@@ -386,6 +386,20 @@ class Console:
         self._temp_gamestate = None
         self.__fixframeindexing(gamestate)
         self.__fixiasa(gamestate)
+        # Insert some metadata into the gamestate
+        gamestate.playedOn = self._slippstream.playedOn
+        gamestate.startAt = self._slippstream.timestamp
+        gamestate.consoleNick = self._slippstream.consoleNick
+        for i, names in self._slippstream.players.items():
+            try:
+                gamestate.players[int(i)+1].nickName = names["names"]["netplay"]
+            except KeyError:
+                pass
+            try:
+                gamestate.players[int(i)+1].connectCode = names["names"]["code"]
+            except KeyError:
+                pass
+
         # Start the processing timer now that we're done reading messages
         self._frametimestamp = time.time()
         return gamestate

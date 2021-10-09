@@ -41,6 +41,11 @@ class SlippstreamClient():
         self.realtime = realtime
         self.address = address
         self.port = port
+        # Not yet supported
+        self.playedOn = "dolphin"
+        self.timestamp = ""
+        self.consoleNick = ""
+        self.players = {}
 
     def shutdown(self):
         """ Close down the socket and connection to the console """

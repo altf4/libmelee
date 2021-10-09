@@ -27,6 +27,10 @@ class SLPFileStreamer:
         self.eventsize = [0] * 0x100
         self._index = 0
         self._frame = -9999
+        self.playedOn = ""
+        self.timestamp = ""
+        self.consoleNick = ""
+        self.players = {}
 
     def shutdown(self):
         pass
@@ -87,4 +91,20 @@ class SLPFileStreamer:
             full = ubjson.loadb(file.read())
             raw = full["raw"]
             self._contents = raw
+            try:
+                self.playedOn = full["metadata"]["playedOn"]
+            except KeyError:
+                pass
+            try:
+                self.timestamp = full["metadata"]["startAt"]
+            except KeyError:
+                pass
+            try:
+                self.consoleNick = full["metadata"]["consoleNick"]
+            except KeyError:
+                pass
+            try:
+                self.players = full["metadata"]["players"]
+            except KeyError:
+                pass
             return True

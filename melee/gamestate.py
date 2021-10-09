@@ -9,7 +9,8 @@ from melee.enums import Action, Character
 class GameState(object):
     """Represents the state of a running game of Melee at a given moment in time"""
     __slots__ = ('frame', 'stage', 'menu_state', 'submenu', 'player', 'players', 'projectiles', 'stage_select_cursor_x',
-                 'stage_select_cursor_y', 'ready_to_start', 'distance', 'menu_selection', '_newframe', 'custom')
+                 'stage_select_cursor_y', 'ready_to_start', 'distance', 'menu_selection', '_newframe', 'playedOn', 'startAt',
+                 'consoleNick', 'custom')
     def __init__(self):
         self.frame = -10000
         """int: The current frame number. Monotonically increases. Can be negative."""
@@ -36,6 +37,12 @@ class GameState(object):
         """(float): Euclidian distance between the two players. (or just Popo for climbers)"""
         self.menu_selection = 0
         """(int): The index of the selected menu item for when in menus."""
+        self.startAt = ""
+        """(string): Timestamp string of when the game started. Such as '2018-06-22T07:52:59Z'"""
+        self.playedOn = ""
+        """(string): Platform the game was played on (values include dolphin, console, and network). Might be blank."""
+        self.consoleNick = ""
+        """(string): The name of the console the replay was created on. Might be blank."""
         self._newframe = True
         self.custom = dict()
         """(dict): Custom fields to be added by the user"""
@@ -47,7 +54,7 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right',
-                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb')
+                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb', 'nickName', 'connectCode')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus
@@ -135,6 +142,10 @@ class PlayerState(object):
         """(bool): CPU level of player. 0 for a libmelee-controller bot or human player."""
         self.is_holding_cpu_slider = False
         """(bool): Is the player holding the CPU slider in the character select screen?"""
+        self.nickName = ""
+        """(string): The in-game nickname for the player. Might be blank."""
+        self.connectCode = ""
+        """(string): The rollback connect code for the player. Might be blank."""
 
 class Projectile:
     """ Represents the state of a projectile (items, lasers, etc...) """
