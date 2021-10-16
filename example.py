@@ -3,6 +3,7 @@ import argparse
 import signal
 import sys
 import melee
+import random
 
 # This example program demonstrates how to use the Melee API to run a console,
 #   setup controllers, and send button presses over to a console
