@@ -54,7 +54,8 @@ class PlayerState(object):
                  'jumps_left', 'on_ground', 'speed_air_x_self', 'speed_y_self', 'speed_x_attack', 'speed_y_attack',
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right',
-                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb', 'nickName', 'connectCode')
+                 'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb', 'nickName', 'connectCode',
+                 'team_id')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus
@@ -146,6 +147,8 @@ class PlayerState(object):
         """(string): The in-game nickname for the player. Might be blank."""
         self.connectCode = ""
         """(string): The rollback connect code for the player. Might be blank."""
+        self.team_id = 0
+        """(int): The team ID of the player. This is different than costume, and only relevant during teams."""
 
 class Projectile:
     """ Represents the state of a projectile (items, lasers, etc...) """

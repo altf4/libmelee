@@ -121,6 +121,7 @@ class Console:
         self._use_manual_bookends = False
         self._costumes = {0:0, 1:0, 2:0, 3:0}
         self._cpu_level = {0:0, 1:0, 2:0, 3:0}
+        self._team_id = {0:0, 1:0, 2:0, 3:0}
         self._invuln_start = {1:(0,0), 2:(0,0), 3:(0,0), 4:(0,0)}
 
         # Keep a running copy of the last gamestate produced
@@ -492,6 +493,9 @@ class Console:
             self._cpu_level[i] = np.ndarray((1,), ">B", event_bytes, 0x74 + (0x24 * i))[0]
 
         for i in range(4):
+            self._team_id[i] = np.ndarray((1,), ">B", event_bytes, 0x6E + (0x24 * i))[0]
+
+        for i in range(4):
             if np.ndarray((1,), ">B", event_bytes, 0x66 + (0x24 * i))[0] != 1:
                 self._cpu_level[i] = 0
 
@@ -510,6 +514,7 @@ class Console:
 
         playerstate.costume = self._costumes[controller_port-1]
         playerstate.cpu_level = self._cpu_level[controller_port-1]
+        playerstate.team_id = self._team_id[controller_port-1]
 
         main_x = (np.ndarray((1,), ">f", event_bytes, 0x19)[0] / 2) + 0.5
         main_y = (np.ndarray((1,), ">f", event_bytes, 0x1D)[0] / 2) + 0.5
