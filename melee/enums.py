@@ -726,6 +726,7 @@ class ProjectileType(Enum):
     IC_BLIZZARD = 0x6B # Blizzard
     ZELDA_FIRE = 0x6C # Zelda's fire
     ZELDA_FIRE_EXPLOSION = 0x6D # Zelda's fire (explosion)
+    MEWTO_DISABLE = 0x6E # Mewtwo's down-B
     TOAD_SPORE = 0x6F # Toad's spore
     SHADOWBALL = 0x70 # Mewtwo's Shadowball
     IC_UP_B = 0x71 # Iceclimbers' Up  #B
