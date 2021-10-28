@@ -605,6 +605,8 @@ class FrameData:
         #   Because the hitboxes are contiguous
         if character == Character.SAMUS and action in [Action.SWORD_DANCE_3_MID, Action.SWORD_DANCE_3_LOW]:
             return 7
+        if character == Character.YLINK and action == Action.SWORD_DANCE_4_MID:
+            return 10
 
         hitboxes = []
         for action_frame, frame in self.framedata[character][action].items():
