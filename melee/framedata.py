@@ -112,6 +112,10 @@ class FrameData:
                 action in [Action.NEUTRAL_B_CHARGING_AIR, Action.SWORD_DANCE_2_MID]:
             return True
 
+        if character == Character.MEWTWO and \
+                action in [Action.SWORD_DANCE_2_MID]:
+            return True
+
         return False
 
     def is_roll(self, character, action):
