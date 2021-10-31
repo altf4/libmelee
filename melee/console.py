@@ -647,6 +647,9 @@ class Console:
             playerstate.invulnerability_left = 0
             self._invuln_start[controller_port] = (gamestate.frame, 0)
 
+        if playerstate.invulnerability_left > 0:
+            playerstate.invulnerable = True
+
         # The pre-warning occurs when we first start a dash dance.
         if controller_port in self._prev_gamestate.players:
             if playerstate.action == Action.DASHING and \
