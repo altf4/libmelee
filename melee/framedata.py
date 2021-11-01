@@ -113,7 +113,7 @@ class FrameData:
             return True
 
         if character == Character.MEWTWO and \
-                action in [Action.SWORD_DANCE_2_MID]:
+                action in [Action.SWORD_DANCE_2_MID, Action.SWORD_DANCE_3_HIGH]:
             return True
 
         return False
