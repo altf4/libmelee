@@ -55,7 +55,7 @@ class PlayerState(object):
                  'speed_ground_x_self', 'cursor_x', 'cursor_y', 'coin_down', 'controller_status', 'off_stage', 'iasa',
                  'moonwalkwarning', 'controller_state', 'ecb_bottom', 'ecb_top', 'ecb_left', 'ecb_right',
                  'costume', 'cpu_level', 'is_holding_cpu_slider', 'nana', 'position', 'cursor', 'ecb', 'nickName', 'connectCode',
-                 'team_id')
+                 'team_id', 'is_powershield')
     def __init__(self):
         # This value is what the character currently is IN GAME
         #   So this will have no meaning while in menus
@@ -76,6 +76,8 @@ class PlayerState(object):
         """(int): The player's damage"""
         self.shield_strength = 60.
         """(float): The player's shield strength (max 60). Shield breaks at 0"""
+        self.is_powershield = False
+        """(bool): Is the current action a Powershield? (not directly determinable via action states)"""
         self.stock = 0
         """(int): The player's remaining stock count"""
         self.facing = True

@@ -580,6 +580,12 @@ class Console:
         playerstate.action_frame = int(np.ndarray((1,), ">f", event_bytes, 0x22)[0])
 
         try:
+            sb4 = int(np.ndarray((1,), ">B", event_bytes, 0x29)[0])
+            playerstate.is_powershield = (sb4 & 0x20) == 0x20
+        except TypeError:
+            playerstate.is_powershield = False
+
+        try:
             playerstate.hitstun_frames_left = int(np.ndarray((1,), ">f", event_bytes, 0x2B)[0])
         except TypeError:
             playerstate.hitstun_frames_left = 0
