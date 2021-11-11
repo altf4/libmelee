@@ -123,6 +123,7 @@ class Console:
         self._cpu_level = {0:0, 1:0, 2:0, 3:0}
         self._team_id = {0:0, 1:0, 2:0, 3:0}
         self._invuln_start = {1:(0,0), 2:(0,0), 3:(0,0), 4:(0,0)}
+        self._is_teams = False
 
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
@@ -486,6 +487,8 @@ class Console:
         except ValueError:
             self._current_stage = enums.Stage.NO_STAGE
 
+        self._is_teams = not (np.ndarray((1,), ">H", event_bytes, 0xD)[0] == 0)
+
         for i in range(4):
             self._costumes[i] = np.ndarray((1,), ">B", event_bytes, 0x68 + (0x24 * i))[0]
 
@@ -547,6 +550,7 @@ class Console:
 
     def __post_frame(self, gamestate, event_bytes):
         gamestate.stage = self._current_stage
+        gamestate.is_teams = self._is_teams
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
 
