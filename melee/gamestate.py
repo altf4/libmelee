@@ -1,10 +1,27 @@
 """ Gamestate is a single snapshot in time of the game that represents all necessary information
         to make gameplay decisions
 """
-import collections
+from dataclasses import dataclass, field
+
+import numpy as np
+
 import melee
 from melee import enums
-from melee.enums import Action, Character
+
+@dataclass
+class Position:
+    x: np.float32 = np.float32(0)
+    y: np.float32 = np.float32(0)
+
+Speed = Position
+Cursor = Position
+
+@dataclass
+class ECB:
+    top: Position = field(default_factory=Position)
+    bottom: Position = field(default_factory=Position)
+    left: Position = field(default_factory=Position)
+    right: Position = field(default_factory=Position)
 
 class GameState(object):
     """Represents the state of a running game of Melee at a given moment in time"""
@@ -68,7 +85,7 @@ class PlayerState(object):
         # This value is what character is selected at the character select screen
         #   Don't use this value when in-game
         self.character_selected = enums.Character.UNKNOWN_CHARACTER
-        self.position = collections.namedtuple("Position", ['x', 'y'])
+        self.position = Position()
         """(namedtuple: float, float): x, y character position"""
         self.x = 0
         """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. The character's X position"""
@@ -115,7 +132,7 @@ class PlayerState(object):
                 If the character is not Ice Climbers, Nana will be None.
                 Will also be None if this player state is Nana itself.
                 Lastly, the secondary climber is called 'Nana' here, regardless of the costume used."""
-        self.cursor = collections.namedtuple("Cursor", ['x', 'y'])
+        self.cursor = Cursor()
         """(namedtuple: float, float): x, y cursor position"""
         self.cursor_x = 0
         """(float): DEPRECATED. Use `cursor` instead. Will be removed in 1.0.0. Cursor X value"""
@@ -132,7 +149,7 @@ class PlayerState(object):
         """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
         self.controller_state = melee.controller.ControllerState()
         """(controller.ControllerState): What buttons were pressed for this character"""
-        self.ecb = collections.namedtuple("ECB", ['right', 'left', 'top', 'bottom'])
+        self.ecb = ECB()
         self.ecb_right = (0, 0)
         """(float, float): Right edge of the ECB. (x, y) offset from player's center."""
         self.ecb_left = (0, 0)
@@ -157,13 +174,13 @@ class PlayerState(object):
 class Projectile:
     """ Represents the state of a projectile (items, lasers, etc...) """
     def __init__(self):
-        self.position = collections.namedtuple("Position", ['x', 'y'])
+        self.position = Position()
         """(namedtuple: float, float): x, y projectile position"""
         self.x = 0
         """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. Projectile's X position"""
         self.y = 0
         """(float): DEPRECATED. Use `position` instead. Will be removed in 1.0.0. Projectile's Y position"""
-        self.speed = collections.namedtuple("Speed", ['x', 'y'])
+        self.speed = Speed()
         """(namedtuple: float, float): x, y projectile speed"""
         self.x_speed = 0
         """(float): DEPRECATED. Use `speed` instead. Will be removed in 1.0.0. Projectile's horizontal speed"""
