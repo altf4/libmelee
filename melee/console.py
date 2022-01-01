@@ -5,6 +5,7 @@ is your method to start and stop Dolphin, set configs, and get the latest GameSt
 """
 
 from collections import defaultdict
+from typing import Optional
 from packaging import version
 
 import time
@@ -76,14 +77,20 @@ class Console:
                  dolphin_home_path=None,
                  tmp_home_directory=True,
                  copy_home_directory=True,
-                 setup_gecko_codes=False,
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
                  blocking_input=False,
                  polling_mode=False,
                  allow_old_version=False,
-                 logger=None):
+                 logger=None,
+                 setup_gecko_codes=False,
+                 fullscreen=True,
+                 gfx_backend="",
+                 disable_audio=False,
+                 overclock: Optional[float] = None,
+                 save_replays=True,
+                ):
         """Create a Console object
 
         Args:
@@ -95,8 +102,6 @@ class Console:
                 This is useful so instances don't interfere with each other.
             copy_home_directory (bool): Copy an existing home directory on the system.
                 Unset to get a fresh directory that doesn't depend on system state.
-            setup_gecko_codes (bool): Overwrites the user's GALE01r2.ini with libmelee's
-                custom gecko codes. Should be used with tmp_home_directory.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
@@ -109,6 +114,13 @@ class Console:
                 Only enable if you know what you're doing. You probably don't want this.
                 Gamestates will be missing key information, come in really late, or possibly not work at all
             logger (logger.Logger): Logger instance to use. None for no logger.
+            setup_gecko_codes (bool): Overwrites the user's GALE01r2.ini with libmelee's
+                custom gecko codes. Should be used with tmp_home_directory.
+            fullscreen: Run melee fullscreen.
+            gfx_backend: Graphics backend. Leave blank to use default.
+            disable_audio: Turn off sound.
+            overclock: Overclock the dolphin CPU.
+            save_replays: Save slippi replays.
         """
         self.logger = logger
         self.is_dolphin = is_dolphin
@@ -149,6 +161,15 @@ class Console:
         self._invuln_start = {1:(0,0), 2:(0,0), 3:(0,0), 4:(0,0)}
         self._is_teams = False
 
+        self.setup_gecko_codes = setup_gecko_codes
+        self.online_delay = online_delay
+        self.blocking_input = blocking_input
+        self.fullscreen = fullscreen
+        self.gfx_backend = gfx_backend
+        self.disable_audio = disable_audio
+        self.overclock = overclock
+        self.save_replays = save_replays
+
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
         # Half-completed gamestate not yet ready to add to the list
@@ -157,11 +178,7 @@ class Console:
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
             if self.path:
-                self._setup_home_directory(
-                    slippi_port,
-                    online_delay,
-                    blocking_input,
-                    setup_gecko_codes)
+                self._setup_home_directory()
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
@@ -218,7 +235,7 @@ class Console:
             os.makedirs(pipes_path, exist_ok=True)
         return pipes_path + f"slippibot{port}"
 
-    def run(self, iso_path=None, dolphin_user_path=None, environment_vars=None):
+    def run(self, iso_path=None, dolphin_user_path=None, environment_vars=None, exe_name=None):
         """Run the Dolphin emulator.
 
         This starts the Dolphin process, so don't run this if you're connecting to an
@@ -229,12 +246,13 @@ class Console:
             dolphin_user_path (str, optional): Alternative user path for dolphin
                 if not using the default
             environment_vars (dict, optional): Dict (string->string) of environment variables to set
+            exe_name (str, optional): Name of the dolphin executable.
         """
         assert self.is_dolphin and self.path
 
         dolphin_user_path = dolphin_user_path or self._get_dolphin_home_path()
 
-        exe_name = "dolphin-emu"
+        exe_name = exe_name or "dolphin-emu"
         if platform.system() == "Windows":
             exe_name = "Slippi Dolphin.exe"
         elif platform.system() == "Darwin":
@@ -276,23 +294,12 @@ class Console:
         if self.temp_dir:
             shutil.rmtree(self.temp_dir)
 
-    def _setup_home_directory(
-        self,
-        slippi_port: int,
-        online_delay: int,
-        blocking_input: bool,
-        setup_gecko_codes: bool = False,
-    ):
-        self._setup_dolphin_ini(slippi_port, online_delay, blocking_input)
-        if setup_gecko_codes:
+    def _setup_home_directory(self,):
+        self._setup_dolphin_ini()
+        if self.setup_gecko_codes:
             self._setup_gecko_codes()
 
-    def _setup_dolphin_ini(
-        self,
-        slippi_port: int,
-        online_delay: int,
-        blocking_input: bool,
-    ):
+    def _setup_dolphin_ini(self):
         # Setup some dolphin config options
         config_path = self._get_dolphin_config_path()
         os.makedirs(config_path, exist_ok=True)
@@ -302,16 +309,27 @@ class Console:
         if os.path.isfile(dolphin_ini_path):
             config.read(dolphin_ini_path)
 
-        for section in ["Core", "Input"]:
+        for section in ["Core", "Input", "Display", "DSP"]:
             if not config.has_section(section):
                 config.add_section(section)
         config.set("Core", 'slippienablespectator', "True")
-        config.set("Core", 'slippispectatorlocalport', str(slippi_port))
+        config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
         # Set online delay
-        config.set("Core", 'slippionlinedelay', str(online_delay))
+        config.set("Core", 'slippionlinedelay', str(self.online_delay))
         # Turn on background input so we don't need to have window focus on dolphin
         config.set("Input", 'backgroundinput', "True")
-        config.set("Core", 'BlockingPipes', str(blocking_input))
+        config.set("Core", 'BlockingPipes', str(self.blocking_input))
+        config.set("Core", "GFXBackend", self.gfx_backend)
+        config.set("Display", "Fullscreen", str(self.fullscreen))
+        if self.disable_audio:
+            config.set("DSP", "Backend", "No audio output")
+
+        if self.overclock:
+            config.set("Core", "Overclock", str(self.overclock))
+            config.set("Core", "OverclockEnable", "True")
+
+        config.set("Core", "SlippiSaveReplays", str(self.save_replays))
+
         with open(dolphin_ini_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
@@ -323,7 +341,6 @@ class Console:
         gale01r2_ini_path = os.path.join(libmelee_path, "GALE01r2.ini")
 
         shutil.copy(gale01r2_ini_path, game_settings_path)
-
 
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
