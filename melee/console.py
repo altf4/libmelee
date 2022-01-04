@@ -74,6 +74,7 @@ class Console:
                  is_dolphin=True,
                  dolphin_home_path=None,
                  tmp_home_directory=True,
+                 copy_home_directory=True,
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
@@ -90,6 +91,8 @@ class Console:
             is_dolphin (bool): Is this console a dophin instance, or SLP file?
             tmp_home_directory (bool): Use a temporary directory for the dolphin User path
                 This is useful so instances don't interfere with each other.
+            copy_home_directory (bool): Copy an existing home directory on the system.
+                Unset to get a fresh directory that doesn't depend on system state.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
@@ -110,7 +113,8 @@ class Console:
         if tmp_home_directory and self.is_dolphin:
             temp_dir = tempfile.mkdtemp(prefix='libmelee_')
             temp_dir += "/User/"
-            _copytree_safe(self._get_dolphin_home_path(), temp_dir)
+            if copy_home_directory:
+                _copytree_safe(self._get_dolphin_home_path(), temp_dir)
             self.dolphin_home_path = temp_dir
 
         self.processingtime = 0
@@ -149,11 +153,15 @@ class Console:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
             if self.path:
                 # Setup some dolphin config options
-                dolphin_ini_path = self._get_dolphin_config_path() + "Dolphin.ini"
-                if not os.path.isfile(dolphin_ini_path):
-                    raise InvalidDolphinPath(self._get_dolphin_config_path())
                 config = configparser.ConfigParser()
-                config.read(dolphin_ini_path)
+                dolphin_ini_path = self._get_dolphin_config_path() + "Dolphin.ini"
+                if os.path.isfile(dolphin_ini_path):
+                    config.read(dolphin_ini_path)
+                else:
+                    os.makedirs(self._get_dolphin_config_path(), exist_ok=True)
+                for section in ["Core", "Input"]:
+                    if not config.has_section(section):
+                        config.add_section(section)
                 config.set("Core", 'slippienablespectator', "True")
                 config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
                 # Set online delay
