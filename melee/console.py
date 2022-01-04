@@ -50,6 +50,21 @@ def _ignore_fifos(src, names):
 def _copytree_safe(src, dst):
     shutil.copytree(src, dst, ignore=_ignore_fifos)
 
+def _default_home_path(path: str) -> str:
+    if platform.system() == "Darwin":
+        return path + "/Contents/Resources/User/"
+
+    # Next check if the home path is in the same dir as the exe
+    user_path = path + "/User/"
+    if os.path.isdir(user_path):
+        return user_path
+
+    # Otherwise, this must be an appimage install. Use the .config
+    if platform.system() == "Linux":
+        return str(Path.home()) + "/.config/SlippiOnline/"
+
+    raise FileNotFoundError("Could not find dolphin home directory.")
+
 # pylint: disable=too-many-instance-attributes
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
@@ -188,19 +203,7 @@ class Console:
 
         assert self.path, "Must specify a dolphin path."
 
-        if platform.system() == "Darwin":
-            return self.path + "/Contents/Resources/User/"
-
-        # Next check if the home path is in the same dir as the exe
-        user_path = self.path + "/User/"
-        if os.path.isdir(user_path):
-            return user_path
-
-        # Otherwise, this must be an appimage install. Use the .config
-        if platform.system() == "Linux":
-            return str(Path.home()) + "/.config/SlippiOnline/"
-
-        raise FileNotFoundError("Could not find dolphin home directory.")
+        return _default_home_path(self.path)
 
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory."""
