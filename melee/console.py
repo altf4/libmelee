@@ -65,6 +65,7 @@ def _default_home_path(path: str) -> str:
 
     raise FileNotFoundError("Could not find dolphin home directory.")
 
+
 # pylint: disable=too-many-instance-attributes
 class Console:
     """The console object that represents your Dolphin / Wii / SLP file
@@ -75,6 +76,7 @@ class Console:
                  dolphin_home_path=None,
                  tmp_home_directory=True,
                  copy_home_directory=True,
+                 setup_gecko_codes=False,
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
@@ -93,6 +95,8 @@ class Console:
                 This is useful so instances don't interfere with each other.
             copy_home_directory (bool): Copy an existing home directory on the system.
                 Unset to get a fresh directory that doesn't depend on system state.
+            setup_gecko_codes (bool): Overwrites the user's GALE01r2.ini with libmelee's
+                custom gecko codes. Should be used with tmp_home_directory.
             slippi_address (str): IP address of the Dolphin / Wii to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
@@ -153,25 +157,11 @@ class Console:
         if self.is_dolphin:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
             if self.path:
-                # Setup some dolphin config options
-                config = configparser.ConfigParser()
-                dolphin_ini_path = self._get_dolphin_config_path() + "Dolphin.ini"
-                if os.path.isfile(dolphin_ini_path):
-                    config.read(dolphin_ini_path)
-                else:
-                    os.makedirs(self._get_dolphin_config_path(), exist_ok=True)
-                for section in ["Core", "Input"]:
-                    if not config.has_section(section):
-                        config.add_section(section)
-                config.set("Core", 'slippienablespectator', "True")
-                config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
-                # Set online delay
-                config.set("Core", 'slippionlinedelay', str(online_delay))
-                # Turn on background input so we don't need to have window focus on dolphin
-                config.set("Input", 'backgroundinput', "True")
-                config.set("Core", 'BlockingPipes', str(blocking_input))
-                with open(dolphin_ini_path, 'w') as dolphinfile:
-                    config.write(dolphinfile)
+                self._setup_home_directory(
+                    slippi_port,
+                    online_delay,
+                    blocking_input,
+                    setup_gecko_codes)
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
@@ -216,9 +206,6 @@ class Console:
 
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory."""
-        if platform.system() == "Darwin":
-            return self.path + "/Contents/Resources/User/Config/"
-
         return self._get_dolphin_home_path() + "Config/"
 
     def get_dolphin_pipes_path(self, port):
@@ -288,6 +275,55 @@ class Console:
                 self._process.terminate()
         if self.temp_dir:
             shutil.rmtree(self.temp_dir)
+
+    def _setup_home_directory(
+        self,
+        slippi_port: int,
+        online_delay: int,
+        blocking_input: bool,
+        setup_gecko_codes: bool = False,
+    ):
+        self._setup_dolphin_ini(slippi_port, online_delay, blocking_input)
+        if setup_gecko_codes:
+            self._setup_gecko_codes()
+
+    def _setup_dolphin_ini(
+        self,
+        slippi_port: int,
+        online_delay: int,
+        blocking_input: bool,
+    ):
+        # Setup some dolphin config options
+        config_path = self._get_dolphin_config_path()
+        os.makedirs(config_path, exist_ok=True)
+        dolphin_ini_path = os.path.join(config_path, "Dolphin.ini")
+
+        config = configparser.ConfigParser()
+        if os.path.isfile(dolphin_ini_path):
+            config.read(dolphin_ini_path)
+
+        for section in ["Core", "Input"]:
+            if not config.has_section(section):
+                config.add_section(section)
+        config.set("Core", 'slippienablespectator', "True")
+        config.set("Core", 'slippispectatorlocalport', str(slippi_port))
+        # Set online delay
+        config.set("Core", 'slippionlinedelay', str(online_delay))
+        # Turn on background input so we don't need to have window focus on dolphin
+        config.set("Input", 'backgroundinput', "True")
+        config.set("Core", 'BlockingPipes', str(blocking_input))
+        with open(dolphin_ini_path, 'w') as dolphinfile:
+            config.write(dolphinfile)
+
+    def _setup_gecko_codes(self):
+        game_settings_path = os.path.join(self._get_dolphin_home_path(), 'GameSettings')
+        os.makedirs(game_settings_path, exist_ok=True)
+
+        libmelee_path = os.path.dirname(os.path.realpath(__file__))
+        gale01r2_ini_path = os.path.join(libmelee_path, "GALE01r2.ini")
+
+        shutil.copy(gale01r2_ini_path, game_settings_path)
+
 
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
