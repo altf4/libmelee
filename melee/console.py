@@ -110,12 +110,13 @@ class Console:
         self.is_dolphin = is_dolphin
         self.path = path
         self.dolphin_home_path = dolphin_home_path
+        self.temp_dir = None
         if tmp_home_directory and self.is_dolphin:
-            temp_dir = tempfile.mkdtemp(prefix='libmelee_')
-            temp_dir += "/User/"
+            self.temp_dir = tempfile.mkdtemp(prefix='libmelee_')
+            home_dir = self.temp_dir + "/User/"
             if copy_home_directory:
-                _copytree_safe(self._get_dolphin_home_path(), temp_dir)
-            self.dolphin_home_path = temp_dir
+                _copytree_safe(self._get_dolphin_home_path(), home_dir)
+            self.dolphin_home_path = home_dir
 
         self.processingtime = 0
         self._frametimestamp = time.time()
@@ -285,6 +286,8 @@ class Console:
             # If dolphin, kill the process
             if self._process is not None:
                 self._process.terminate()
+        if self.temp_dir:
+            shutil.rmtree(self.temp_dir)
 
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
