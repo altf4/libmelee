@@ -262,19 +262,19 @@ class MenuHelper():
                 target_x = -30.9 + (15.4 * (controlling_port-1))
                 #Move up if we're too low
                 if cursor_y < target_y - wiggleroom:
-                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, .8)
                     return
                 #Move down if we're too high
                 if cursor_y > target_y + wiggleroom:
-                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, .2)
                     return
                 #Move right if we're too left
                 if cursor_x < target_x - wiggleroom:
-                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .8, .5)
                     return
                 #Move left if we're too right
                 if cursor_x > target_x + wiggleroom:
-                    controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
+                    controller.tilt_analog(enums.Button.BUTTON_MAIN, .2, .5)
                     return
                 if gamestate.frame % 2 == 0:
                     controller.press_button(enums.Button.BUTTON_A)
