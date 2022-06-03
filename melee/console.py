@@ -485,7 +485,8 @@ class Console:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
                 print("\tDidn't have enough data for event")
                 return False
-            if EventType(event_bytes[0]) == EventType.PAYLOADS:
+            event_type = EventType(event_bytes[0])
+            if event_type == EventType.PAYLOADS:
                 cursor = 0x2
                 payload_size = event_bytes[1]
                 num_commands = (payload_size - 1) // 3
@@ -496,10 +497,10 @@ class Console:
                     cursor += 3
                 event_bytes = event_bytes[payload_size + 1:]
 
-            elif EventType(event_bytes[0]) == EventType.FRAME_START:
+            elif event_type == EventType.FRAME_START:
                 event_bytes = event_bytes[event_size:]
 
-            elif EventType(event_bytes[0]) == EventType.GAME_START:
+            elif event_type == EventType.GAME_START:
                 self.__game_start(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
                 # The game needs to know what to press on the first frame of the game
@@ -508,22 +509,22 @@ class Console:
                     controller.release_all()
                     controller.flush()
 
-            elif EventType(event_bytes[0]) == EventType.GAME_END:
+            elif event_type == EventType.GAME_END:
                 event_bytes = event_bytes[event_size:]
                 return self._use_manual_bookends
 
-            elif EventType(event_bytes[0]) == EventType.PRE_FRAME:
+            elif event_type == EventType.PRE_FRAME:
                 self.__pre_frame(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
 
-            elif EventType(event_bytes[0]) == EventType.POST_FRAME:
+            elif event_type == EventType.POST_FRAME:
                 self.__post_frame(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
 
-            elif EventType(event_bytes[0]) == EventType.GECKO_CODES:
+            elif event_type == EventType.GECKO_CODES:
                 event_bytes = event_bytes[event_size:]
 
-            elif EventType(event_bytes[0]) == EventType.FRAME_BOOKEND:
+            elif event_type == EventType.FRAME_BOOKEND:
                 self.__frame_bookend(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
                 # If this is an old frame, then don't return it.
@@ -532,7 +533,7 @@ class Console:
                 self._frame = gamestate.frame
                 return True
 
-            elif EventType(event_bytes[0]) == EventType.ITEM_UPDATE:
+            elif event_type == EventType.ITEM_UPDATE:
                 self.__item_update(gamestate, event_bytes)
                 event_bytes = event_bytes[event_size:]
 
