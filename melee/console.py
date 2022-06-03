@@ -291,8 +291,11 @@ class Console:
             # If dolphin, kill the process
             if self._process is not None:
                 self._process.terminate()
+                self._process = None
+
         if self.temp_dir:
             shutil.rmtree(self.temp_dir)
+            self.temp_dir = None
 
     def _setup_home_directory(self,):
         self._setup_dolphin_ini()
