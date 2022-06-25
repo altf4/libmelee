@@ -84,7 +84,7 @@ class Console:
                  polling_mode=False,
                  allow_old_version=False,
                  logger=None,
-                 setup_gecko_codes=False,
+                 setup_gecko_codes=True,
                  fullscreen=True,
                  gfx_backend="",
                  disable_audio=False,
