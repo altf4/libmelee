@@ -116,11 +116,11 @@ class Console:
             logger (logger.Logger): Logger instance to use. None for no logger.
             setup_gecko_codes (bool): Overwrites the user's GALE01r2.ini with libmelee's
                 custom gecko codes. Should be used with tmp_home_directory.
-            fullscreen: Run melee fullscreen.
-            gfx_backend: Graphics backend. Leave blank to use default.
-            disable_audio: Turn off sound.
-            overclock: Overclock the dolphin CPU.
-            save_replays: Save slippi replays.
+            fullscreen (bool): Run melee fullscreen.
+            gfx_backend (str): Graphics backend. Leave blank to use default.
+            disable_audio (bool): Turn off sound.
+            overclock (bool): Overclock the dolphin CPU.
+            save_replays (bool): Save slippi replays.
         """
         self.logger = logger
         self.is_dolphin = is_dolphin
