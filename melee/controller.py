@@ -1,9 +1,12 @@
 """ Defines a Clontroller class that manages pressing buttons for your console"""
 
+from cmath import e
 import platform
 import sys
 import copy
 import time
+import serial
+from struct import pack
 try:
     import win32file
     import pywintypes
@@ -43,6 +46,44 @@ class ControllerState:
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
 
+    def toBytes(self):
+        """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
+        buttons_total = 0x0080
+        if self.button[enums.Button.BUTTON_A]:
+            buttons_total += 0x0100
+        if self.button[enums.Button.BUTTON_B]:
+            buttons_total += 0x0200
+        if self.button[enums.Button.BUTTON_X]:
+            buttons_total += 0x0400
+        if self.button[enums.Button.BUTTON_Y]:
+            buttons_total += 0x0800
+        if self.button[enums.Button.BUTTON_Z]:
+            buttons_total += 0x1000
+        if self.button[enums.Button.BUTTON_L]:
+            buttons_total += 0x0002
+        if self.button[enums.Button.BUTTON_R]:
+            buttons_total += 0x0004
+
+        buffer = pack(">H", buttons_total)
+
+        # Convert from a float 0-1 to int 1-255
+        val = pack(">B", (int((max(min(self.main_stick[0], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.main_stick[1], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.c_stick[0], 1), 0) * 254)) + 1))
+        buffer += val
+        val = pack(">B", (int((max(min(self.c_stick[1], 1), 0) * 254)) + 1))
+        buffer += val
+
+        # Convert from a float 0-1 to int 0-255
+        #   The max/min thing just ensures the value is between 0 and 1
+        val = pack(">B", int(max(min(self.l_shoulder, 1), 0) * 255))
+        buffer += val
+        val = pack(">B", int(max(min(self.r_shoulder, 1), 0) * 255))
+        buffer += val
+        return buffer
+
     def __str__(self):
         string = ""
         for val in self.button:
@@ -61,7 +102,7 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, type=enums.ControllerType.STANDARD):
+    def __init__(self, console, port, type=enums.ControllerType.STANDARD, serial_device="/dev/ttyACM1"):
         """Create a new virtual controller
 
         Args:
@@ -73,6 +114,13 @@ class Controller:
         if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None
+        else:
+            try:
+                self.tastm32 = serial.Serial(serial_device, 115200, timeout=None, rtscts=True)
+            except serial.serialutil.SerialException:
+                print("TAStm32 was not ready. It might be booting up. " +
+                      "Wait a few seconds and try again")
+                sys.exit(-1)
 
         self.port = port
         self.prev = ControllerState()
@@ -82,7 +130,8 @@ class Controller:
         self._type = type
 
         # Configure our controller with the console
-        self._console.setup_dolphin_controller(port, type)
+        if self._is_dolphin:
+            self._console.setup_dolphin_controller(port, type)
 
     def __del__(self):
         """Clean up any resources held by the controller object"""
@@ -121,7 +170,29 @@ class Controller:
                 else:
                     self.pipe = open(self.pipe_path, "w")
                 return True
-            else:
+            else:                
+                # Remove any extra garbage that might have accumulated in the buffer
+                self.tastm32.reset_input_buffer()
+
+                # Send reset command
+                self.tastm32.write(b'R') # reset
+                cmd = self.tastm32.read(2)
+                if cmd != b'\x01R':
+                    # TODO Better error handling logic here
+                    print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
+                    return False
+                # controller mode                    
+                self.tastm32.write(b'C1') 
+                # Set to gamecube mode
+                self.tastm32.write(b'SAG\x80\x00')
+                # no bulk transfer
+                self.tastm32.write(b'QA0') 
+                cmd = self.tastm32.read(2)
+                self.tastm32.reset_input_buffer()
+                if cmd != b'\x01S':
+                    # TODO Better error handling logic here
+                    print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
+                    return False
                 return True
         else:
             return True
@@ -176,13 +247,14 @@ class Controller:
             button (enums.Button): Button to press
         """
         self.current.button[button] = True
+        command = "PRESS " + str(button.value) + "\n"
+        if self.logger:
+            self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
             if not self.pipe:
                 return
-            command = "PRESS " + str(button.value) + "\n"
-            if self.logger:
-                self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
+        
 
     def release_button(self, button):
         """Release a single button
@@ -193,12 +265,12 @@ class Controller:
             button (enums.Button): Button to release
         """
         self.current.button[button] = False
+        command = "RELEASE " + str(button.value) + "\n"
+        if self.logger:
+            self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
             if not self.pipe:
                 return
-            command = "RELEASE " + str(button.value) + "\n"
-            if self.logger:
-                self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
 
     def press_shoulder(self, button, amount):
@@ -217,12 +289,12 @@ class Controller:
             self.current.l_shoulder = amount
         elif button == enums.Button.BUTTON_R:
             self.current.r_shoulder = amount
+        command = "SET " + str(button.value) + " " + str(amount) + "\n"
+        if self.logger:
+            self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
             if not self.pipe:
                 return
-            command = "SET " + str(button.value) + " " + str(amount) + "\n"
-            if self.logger:
-                self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
 
     def tilt_analog(self, button, x, y):
@@ -237,12 +309,12 @@ class Controller:
             self.current.main_stick = (x, y)
         else:
             self.current.c_stick = (x, y)
+        command = "SET " + str(button.value) + " " + str(x) + " " + str(y) + "\n"
+        if self.logger:
+            self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
             if not self.pipe:
                 return
-            command = "SET " + str(button.value) + " " + str(x) + " " + str(y) + "\n"
-            if self.logger:
-                self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
 
     def tilt_analog_unit(self, button, x, y):
@@ -260,12 +332,12 @@ class Controller:
             self.current.main_stick = (x, y)
         else:
             self.current.c_stick = (x, y)
+        command = "SET " + str(button.value) + " " + str((x/2) + 0.5) + " " + str((y/2) + 0.5) + "\n"
+        if self.logger:
+            self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
             if not self.pipe:
                 return
-            command = "SET " + str(button.value) + " " + str((x/2) + 0.5) + " " + str((y/2) + 0.5) + "\n"
-            if self.logger:
-                self.logger.log("Buttons Pressed", command, concat=True)
             self._write(command)
 
     # Left around for compat reasons. Might disappear at any time
@@ -316,8 +388,8 @@ class Controller:
             command += "SET R 0" + "\n"
             #Send the presses to dolphin
             self._write(command)
-            if self.logger:
-                self.logger.log("Buttons Pressed", "Empty Input", concat=True)
+        if self.logger:
+            self.logger.log("Buttons Pressed", "Empty Input", concat=True)
 
     def _write(self, command):
         """ Platform independent button write function.
@@ -345,3 +417,12 @@ class Controller:
                 if not self.pipe:
                     return
                 self.pipe.flush()
+        else:
+            # Command for "send single controller poll" is 'A'
+            # Serialize controller state into bytes and send
+            self.tastm32.write(b'A' + self.current.toBytes())
+            start = time.time()
+            cmd = self.tastm32.read(1)
+
+            if cmd != b'A':
+                print("Got error response: ", bytes(cmd))

@@ -9,6 +9,13 @@ import socket
 from enum import Enum
 import enet
 import json
+from ubjson.decoder import DecoderException
+import ubjson
+from struct import pack, unpack
+import time
+
+# The null token used for initial SlippiComm handshakes
+NULL_TOKEN = b'\x00\x00\x00\x00'
 
 # pylint: disable=too-few-public-methods
 class EventType(Enum):
@@ -33,12 +40,12 @@ class CommType(Enum):
 class SlippstreamClient():
     """ Container representing a client to some SlippiComm server """
 
-    def __init__(self, address="127.0.0.1", port=51441, realtime=True):
+    def __init__(self, address="127.0.0.1", port=51441, wii=False):
         """ Constructor for this object """
         self._host = enet.Host(None, 1, 0, 0)
         self._peer = None
         self.buf = bytearray()
-        self.realtime = realtime
+        self.wii = wii
         self.address = address
         self.port = port
         # Not yet supported
@@ -46,6 +53,8 @@ class SlippstreamClient():
         self.timestamp = ""
         self.consoleNick = ""
         self.players = {}
+        self.now_frame_time = 0
+        self.last_frame_time = 0
 
     def shutdown(self):
         """ Close down the socket and connection to the console """
@@ -57,6 +66,10 @@ class SlippstreamClient():
 
         if self._host:
             self._host = None
+
+        if self.wii:
+            self.server.close()
+
         return False
 
     def dispatch(self, polling_mode):
@@ -64,33 +77,86 @@ class SlippstreamClient():
         event = None
         event_type = 1000
         while event_type not in [enet.EVENT_TYPE_RECEIVE]:
-            wait_time = 1000
-            if polling_mode:
-                wait_time = 0
-            event = self._host.service(wait_time)
-            event_type = event.type
-
-            if event.type == enet.EVENT_TYPE_NONE:
+            if not self.wii:
+                wait_time = 1000
                 if polling_mode:
+                    wait_time = 0
+                event = self._host.service(wait_time)
+                event_type = event.type
+
+                if event.type == enet.EVENT_TYPE_NONE:
+                    if polling_mode:
+                        return None
+                if event.type == enet.EVENT_TYPE_RECEIVE:
+                    try:
+                        return json.loads(event.packet.data)
+                    except json.JSONDecodeError:
+                        # This happens at the end of a game for some reason?
+                        if len(event.packet.data) == 0:
+                            event_type = 0
+                            continue
+                        return None
+                elif event.type == enet.EVENT_TYPE_CONNECT:
+                    handshake = json.dumps({
+                        "type" : "connect_request",
+                        "cursor" : 0,
+                    })
+                    self._peer.send(0, enet.Packet(handshake.encode()))
+                elif event.type == enet.EVENT_TYPE_DISCONNECT:
                     return None
-            if event.type == enet.EVENT_TYPE_RECEIVE:
-                try:
-                    return json.loads(event.packet.data)
-                except json.JSONDecodeError:
-                    # This happens at the end of a game for some reason?
-                    if len(event.packet.data) == 0:
-                        event_type = 0
-                        continue
-                    return None
-            elif event.type == enet.EVENT_TYPE_CONNECT:
-                handshake = json.dumps({
-                    "type" : "connect_request",
-                    "cursor" : 0,
-                })
-                self._peer.send(0, enet.Packet(handshake.encode()))
-            elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                return None
+            else:
+                # The first 4 bytes are the message's length
+                #   read this first
+                while (len(self.buf) < 4):
+                    print("Receiving")
+                    self.buf += self.server.recv(4 - len(self.buf))
+                    # TODO remove timer testing
+                    self.now_frame_time = time.time_ns()
+                    print("Time since last message: ", (self.now_frame_time - self.last_frame_time) / 1000000, "ms")
+                    self.last_frame_time = self.now_frame_time
+
+                    if(len(self.buf) == 0):
+                        return None
+                message_len = unpack(">L", self.buf[0:4])[0]
+
+                # Now read in message_len amount of data
+                while (len(self.buf) < (message_len + 4)):
+                    self.buf += self.server.recv((message_len + 4) - len(self.buf))
+
+                # Exclude the the message length in the header
+                msg = ubjson.loadb(self.buf[4:])
+                # Clear out the old buffer
+                del self.buf
+                self.buf = bytearray()
+                event = {}
+                # Connect Reply
+                if msg["type"] == 1:
+                    event = {"type": "connect_reply", 
+                            "nick": msg["payload"]["nick"], 
+                            "version": msg["payload"]["nintendontVersion"],
+                            "cursor": msg["payload"]["pos"]}
+                if msg["type"] == 2:
+                    event = {"type": "game_event", 
+                            "payload": msg["payload"]["data"]}
+                return event 
+
+                
         return None
+
+    def __new_handshake(self, cursor=0, token=NULL_TOKEN):
+        """ Returns a new binary handshake message """
+        handshake = bytearray()
+        handshake_contents = ubjson.dumpb({
+            'type': CommType.HANDSHAKE.value,
+            'payload': {
+                'cursor': cursor,
+                'clientToken': token,
+                'isRealtime': True,
+            }
+        })
+        handshake += pack(">L", len(handshake_contents))
+        handshake += handshake_contents
+        return handshake
 
     def connect(self):
         """ Connect to the server
@@ -98,20 +164,28 @@ class SlippstreamClient():
         Returns True on success, False on failure
         """
         # Try to connect to the server and send a handshake
-        try:
-            self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
-        except OSError:
-            return False
-        try:
-            for _ in range(4):
-                event = self._host.service(1000)
-                if event.type == enet.EVENT_TYPE_CONNECT:
-                    handshake = json.dumps({
-                                "type" : "connect_request",
-                                "cursor" : 0,
-                            })
-                    self._peer.send(0, enet.Packet(handshake.encode()))
-                    return True
-            return False
-        except OSError:
-            return False
+        if not self.wii:
+            try:
+                self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
+            except OSError:
+                return False
+            try:
+                for _ in range(4):
+                    event = self._host.service(1000)
+                    if event.type == enet.EVENT_TYPE_CONNECT:
+                        handshake = json.dumps({
+                                    "type" : "connect_request",
+                                    "cursor" : 0,
+                                })
+                        self._peer.send(0, enet.Packet(handshake.encode()))
+                        return True
+                return False
+            except OSError:
+                return False
+        else:
+            print("trying raw socket to " + self.address)
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print(self.server.connect((self.address, 51441)))
+            self.server.send(self.__new_handshake())
+            # self.sock.send(b"aaa")
+            return True

@@ -175,8 +175,8 @@ class Console:
         # Half-completed gamestate not yet ready to add to the list
         self._temp_gamestate = None
         self._process = None
-        if self.is_dolphin:
-            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
+        if self.is_dolphin or self.path is None:
+            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, True)
             if self.path:
                 self._setup_home_directory()
         else:
@@ -439,7 +439,7 @@ class Console:
 
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
-                        if self.is_dolphin:
+                        if not self.is_dolphin and self.path is not None:
                             frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), self._temp_gamestate)
                         else:
                             frame_ended = self.__handle_slippstream_events(message["payload"], self._temp_gamestate)
