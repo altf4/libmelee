@@ -40,12 +40,12 @@ class CommType(Enum):
 class SlippstreamClient():
     """ Container representing a client to some SlippiComm server """
 
-    def __init__(self, address="127.0.0.1", port=51441, wii=False):
+    def __init__(self, address="127.0.0.1", port=51441, gamecube=False):
         """ Constructor for this object """
         self._host = enet.Host(None, 1, 0, 0)
         self._peer = None
         self.buf = bytearray()
-        self.wii = wii
+        self.gamecube = gamecube
         self.address = address
         self.port = port
         # Not yet supported
@@ -67,7 +67,7 @@ class SlippstreamClient():
         if self._host:
             self._host = None
 
-        if self.wii:
+        if self.gamecube:
             self.server.close()
 
         return False
@@ -77,7 +77,7 @@ class SlippstreamClient():
         event = None
         event_type = 1000
         while event_type not in [enet.EVENT_TYPE_RECEIVE]:
-            if not self.wii:
+            if not self.gamecube:
                 wait_time = 1000
                 if polling_mode:
                     wait_time = 0
@@ -105,42 +105,23 @@ class SlippstreamClient():
                 elif event.type == enet.EVENT_TYPE_DISCONNECT:
                     return None
             else:
-                # The first 4 bytes are the message's length
-                #   read this first
-                while (len(self.buf) < 4):
-                    print("Receiving")
-                    self.buf += self.server.recv(4 - len(self.buf))
-                    # TODO remove timer testing
-                    self.now_frame_time = time.time_ns()
-                    print("Time since last message: ", (self.now_frame_time - self.last_frame_time) / 1000000, "ms")
-                    self.last_frame_time = self.now_frame_time
-
-                    if(len(self.buf) == 0):
-                        return None
-                message_len = unpack(">L", self.buf[0:4])[0]
-
-                # Now read in message_len amount of data
-                while (len(self.buf) < (message_len + 4)):
-                    self.buf += self.server.recv((message_len + 4) - len(self.buf))
-
+                self.buf += self.server.recv(1000)
                 # Exclude the the message length in the header
-                msg = ubjson.loadb(self.buf[4:])
+                # msg = ubjson.loadb(self.buf[4:])
+                payload = self.buf[4:]
                 # Clear out the old buffer
                 del self.buf
                 self.buf = bytearray()
-                event = {}
-                # Connect Reply
-                if msg["type"] == 1:
-                    event = {"type": "connect_reply", 
-                            "nick": msg["payload"]["nick"], 
-                            "version": msg["payload"]["nintendontVersion"],
-                            "cursor": msg["payload"]["pos"]}
-                if msg["type"] == 2:
-                    event = {"type": "game_event", 
-                            "payload": msg["payload"]["data"]}
+                # event = {}
+                # if msg["type"] == 1:
+                #     event = {"type": "connect_reply", 
+                #             "nick": msg["payload"]["nick"], 
+                #             "version": msg["payload"]["nintendontVersion"],
+                #             "cursor": msg["payload"]["pos"]}
+                event = {"type": "game_event", 
+                        "payload": payload}
                 return event 
 
-                
         return None
 
     def __new_handshake(self, cursor=0, token=NULL_TOKEN):
@@ -164,7 +145,7 @@ class SlippstreamClient():
         Returns True on success, False on failure
         """
         # Try to connect to the server and send a handshake
-        if not self.wii:
+        if not self.gamecube:
             try:
                 self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
             except OSError:
@@ -183,9 +164,8 @@ class SlippstreamClient():
             except OSError:
                 return False
         else:
-            print("trying raw socket to " + self.address)
-            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print(self.server.connect((self.address, 51441)))
-            self.server.send(self.__new_handshake())
-            # self.sock.send(b"aaa")
+            # There is nothing to connect to on cube
+            self.server = socket.socket(socket.AF_INET, 
+                                socket.SOCK_DGRAM)
+            self.server.bind(("0.0.0.0", 55559))
             return True

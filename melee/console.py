@@ -69,7 +69,7 @@ def _default_home_path(path: str) -> str:
 
 # pylint: disable=too-many-instance-attributes
 class Console:
-    """The console object that represents your Dolphin / Wii / SLP file
+    """The console object that represents your Dolphin / GameCube / SLP file
     """
     def __init__(self,
                  path=None,
@@ -102,7 +102,7 @@ class Console:
                 This is useful so instances don't interfere with each other.
             copy_home_directory (bool): Copy an existing home directory on the system.
                 Unset to get a fresh directory that doesn't depend on system state.
-            slippi_address (str): IP address of the Dolphin / Wii to connect to.
+            slippi_address (str): IP address of the Dolphin / gamecube to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
             blocking_input (bool): Should dolphin block waiting for bot input
@@ -137,7 +137,7 @@ class Console:
         self.processingtime = 0
         self._frametimestamp = time.time()
         self.slippi_address = slippi_address
-        """(str): IP address of the Dolphin / Wii to connect to."""
+        """(str): IP address of the Dolphin / gamecube to connect to."""
         self.slippi_port = slippi_port
         """(int): UDP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
@@ -205,7 +205,7 @@ class Console:
                 self.characterdata[enums.Character(line["CharacterIndex"])] = line
 
     def connect(self):
-        """ Connects to the Slippi server (dolphin or wii).
+        """ Connects to the Slippi server (dolphin or gamecube).
 
         Returns:
             True is successful, False otherwise
@@ -283,7 +283,7 @@ class Console:
         """ Stop the console.
 
         For Dolphin instances, this will kill the dolphin process.
-        For Wiis and SLP files, it just shuts down our connection
+        For gamecubes and SLP files, it just shuts down our connection
          """
         if self.path:
             self.connected = False
