@@ -108,19 +108,19 @@ class SlippstreamClient():
                 self.buf += self.server.recv(1000)
                 # Exclude the the message length in the header
                 # msg = ubjson.loadb(self.buf[4:])
-                payload = self.buf[4:]
+                payload = self.buf[:]
                 # Clear out the old buffer
                 del self.buf
                 self.buf = bytearray()
                 # event = {}
                 # if msg["type"] == 1:
-                #     event = {"type": "connect_reply", 
-                #             "nick": msg["payload"]["nick"], 
+                #     event = {"type": "connect_reply",
+                #             "nick": msg["payload"]["nick"],
                 #             "version": msg["payload"]["nintendontVersion"],
                 #             "cursor": msg["payload"]["pos"]}
-                event = {"type": "game_event", 
+                event = {"type": "game_event",
                         "payload": payload}
-                return event 
+                return event
 
         return None
 
@@ -165,7 +165,7 @@ class SlippstreamClient():
                 return False
         else:
             # There is nothing to connect to on cube
-            self.server = socket.socket(socket.AF_INET, 
+            self.server = socket.socket(socket.AF_INET,
                                 socket.SOCK_DGRAM)
             self.server.bind(("0.0.0.0", 55559))
             return True

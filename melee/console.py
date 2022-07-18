@@ -480,6 +480,9 @@ class Console:
         """ Handle a series of events, provided sequentially in a byte array """
         gamestate.menu_state = enums.Menu.IN_GAME
         while len(event_bytes) > 0:
+            # A null message type means that the rest of the data is padding
+            if event_bytes[0] == 0x00:
+                return True
             event_size = self.eventsize[event_bytes[0]]
             if len(event_bytes) < event_size:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
