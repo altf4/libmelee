@@ -110,7 +110,7 @@ class Controller:
             port (int): Which controller port to plug into. Must be 1-4.
             type (enums.ControllerType): The type of controller this is
         """
-        self._is_dolphin = console.is_dolphin
+        self._is_dolphin = console.system == "dolphin"
         if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
             self.pipe = None

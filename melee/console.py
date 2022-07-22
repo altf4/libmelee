@@ -73,7 +73,7 @@ class Console:
     """
     def __init__(self,
                  path=None,
-                 is_dolphin=True,
+                 system="dolphin",
                  dolphin_home_path=None,
                  tmp_home_directory=True,
                  copy_home_directory=True,
@@ -97,7 +97,7 @@ class Console:
             path (str): Path to the directory where your dolphin executable is located.
                 If None, will assume the dolphin is remote and won't try to configure it.
             dolphin_home_path (str): Path to dolphin user directory. Optional.
-            is_dolphin (bool): Is this console a dophin instance, or SLP file?
+            system (string): One of "dolphin", "file", or "gamecube"
             tmp_home_directory (bool): Use a temporary directory for the dolphin User path
                 This is useful so instances don't interfere with each other.
             copy_home_directory (bool): Copy an existing home directory on the system.
@@ -123,11 +123,11 @@ class Console:
             save_replays (bool): Save slippi replays.
         """
         self.logger = logger
-        self.is_dolphin = is_dolphin
+        self.system = system
         self.path = path
         self.dolphin_home_path = dolphin_home_path
         self.temp_dir = None
-        if tmp_home_directory and self.is_dolphin:
+        if tmp_home_directory and self.system =="dolphin":
             self.temp_dir = tempfile.mkdtemp(prefix='libmelee_')
             home_dir = self.temp_dir + "/User/"
             if copy_home_directory:
@@ -175,7 +175,7 @@ class Console:
         # Half-completed gamestate not yet ready to add to the list
         self._temp_gamestate = None
         self._process = None
-        if self.is_dolphin or self.path is None:
+        if self.system == "dolphin" or self.path is None:
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, True)
             if self.path:
                 self._setup_home_directory()
@@ -248,7 +248,7 @@ class Console:
             environment_vars (dict, optional): Dict (string->string) of environment variables to set
             exe_name (str, optional): Name of the dolphin executable.
         """
-        assert self.is_dolphin and self.path
+        assert self.system == "dolphin" and self.path
 
         dolphin_user_path = dolphin_user_path or self._get_dolphin_home_path()
 
@@ -439,7 +439,7 @@ class Console:
 
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
-                        if not self.is_dolphin and self.path is not None:
+                        if self.system == "dolphin":
                             frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), self._temp_gamestate)
                         else:
                             frame_ended = self.__handle_slippstream_events(message["payload"], self._temp_gamestate)

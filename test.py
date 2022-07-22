@@ -12,7 +12,7 @@ class SLPFile(unittest.TestCase):
         """
         Load and parse SLP file
         """
-        console = melee.Console(is_dolphin=False,
+        console = melee.Console(system="file",
                                 allow_old_version=False,
                                 path="test_artifacts/test_game_1.slp")
         self.assertTrue(console.connect())
@@ -38,7 +38,7 @@ class SLPFile(unittest.TestCase):
         """
         Load and parse old SLP file
         """
-        console = melee.Console(is_dolphin=False,
+        console = melee.Console(system="file",
                                 allow_old_version=True,
                                 path="test_artifacts/test_game_2.slp")
         self.assertTrue(console.connect())
