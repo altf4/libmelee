@@ -58,11 +58,11 @@ class ControllerState:
         if self.button[enums.Button.BUTTON_Y]:
             buttons_total += 0x0800
         if self.button[enums.Button.BUTTON_Z]:
-            buttons_total += 0x1000
+            buttons_total += 0x0010
         if self.button[enums.Button.BUTTON_L]:
-            buttons_total += 0x0002
+            buttons_total += 0x0040
         if self.button[enums.Button.BUTTON_R]:
-            buttons_total += 0x0004
+            buttons_total += 0x0020
 
         buffer = pack(">H", buttons_total)
 
@@ -102,7 +102,7 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, type=enums.ControllerType.STANDARD, serial_device="/dev/ttyACM1"):
+    def __init__(self, console, port, type=enums.ControllerType.STANDARD, serial_device="/dev/ttyACM0"):
         """Create a new virtual controller
 
         Args:
@@ -170,7 +170,7 @@ class Controller:
                 else:
                     self.pipe = open(self.pipe_path, "w")
                 return True
-            else:                
+            else:
                 # Remove any extra garbage that might have accumulated in the buffer
                 self.tastm32.reset_input_buffer()
 
@@ -181,12 +181,12 @@ class Controller:
                     # TODO Better error handling logic here
                     print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
                     return False
-                # controller mode                    
-                self.tastm32.write(b'C1') 
+                # controller mode
+                self.tastm32.write(b'C1')
                 # Set to gamecube mode
                 self.tastm32.write(b'SAG\x80\x00')
                 # no bulk transfer
-                self.tastm32.write(b'QA0') 
+                self.tastm32.write(b'QA0')
                 cmd = self.tastm32.read(2)
                 self.tastm32.reset_input_buffer()
                 if cmd != b'\x01S':
@@ -254,7 +254,7 @@ class Controller:
             if not self.pipe:
                 return
             self._write(command)
-        
+
 
     def release_button(self, button):
         """Release a single button
