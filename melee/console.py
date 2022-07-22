@@ -757,12 +757,12 @@ class Console:
         ecb_top_x = 0
         ecb_top_y = 0
         try:
-            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
+            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
         except TypeError:
             ecb_top_x = 0
         # ECB Top edge, y
         try:
-            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
+            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
         except TypeError:
             ecb_top_y = 0
         playerstate.ecb.top.x = ecb_top_x
@@ -773,12 +773,12 @@ class Console:
         ecb_bot_x = 0
         ecb_bot_y = 0
         try:
-            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
+            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
         except TypeError:
             ecb_bot_x = 0
         # ECB Bottom edge, y coord
         try:
-            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
+            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
         except TypeError:
             ecb_bot_y = 0
         playerstate.ecb.bottom.x = ecb_bot_x
@@ -789,12 +789,12 @@ class Console:
         ecb_left_x = 0
         ecb_left_y = 0
         try:
-            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
+            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
         except TypeError:
             ecb_left_x = 0
         # ECB left edge, y coord
         try:
-            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
+            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
         except TypeError:
             ecb_left_y = 0
         playerstate.ecb.left.x = ecb_left_x
@@ -805,12 +805,12 @@ class Console:
         ecb_right_x = 0
         ecb_right_y = 0
         try:
-            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
+            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x69)[0]
         except TypeError:
             ecb_right_x = 0
         # ECB right edge, y coord
         try:
-            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x69)[0]
+            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x6D)[0]
         except TypeError:
             ecb_right_y = 0
         playerstate.ecb.right.x = ecb_right_x
