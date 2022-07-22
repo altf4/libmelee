@@ -7,7 +7,7 @@ import signal
 log = melee.Logger()
 
 console = melee.Console(path=None,
-                        is_dolphin=False,
+                        system="gamecube",
                         copy_home_directory=False,
                         logger=log)
 
