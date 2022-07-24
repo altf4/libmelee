@@ -61,14 +61,13 @@ while True:
     if gamestate is not None:
         if 1 in gamestate.players:
             ai_state = gamestate.player[1]
-            # Add one ms delay every minute
-            if (gamestate.frame + 123) % 3600 == 3599:
-                added_delay += .001
-                frame_delays = {}
-                print("Now at ", added_delay * 1000, "ms delay")
-
-            time.sleep(added_delay)
             if args.lagtest:
+                # Add one ms delay every minute
+                if (gamestate.frame + 123) % 3600 == 3599:
+                    added_delay += .001
+                    frame_delays = {}
+                    print("Now at ", added_delay * 1000, "ms delay")
+                time.sleep(added_delay)
                 if gamestate.frame % 360 == 0:
                     print(frame_delays)
                 delay = melee.techskill.latency_test(gamestate=gamestate, ai_state=ai_state, controller=controller)
