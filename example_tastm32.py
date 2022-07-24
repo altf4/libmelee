@@ -4,6 +4,15 @@ import melee
 import sys
 import signal
 import melee.serial_helper
+import time
+import argparse
+
+parser = argparse.ArgumentParser(description='Example of libmelee in action')
+parser.add_argument('--lagtest', '-l',
+                    action='store_true',
+                    help='Test end-to-end latency',
+                    default=False)
+args = parser.parse_args()
 
 log = melee.Logger()
 
@@ -43,13 +52,33 @@ if not console.connect():
     sys.exit(-1)
 print("Console connected")
 
+frame_delays = {}
+added_delay = 0
+
 while True:
     # "step" to the next frame
     gamestate = console.step()
     if gamestate is not None:
         if 1 in gamestate.players:
             ai_state = gamestate.player[1]
-            melee.techskill.multishine(ai_state=ai_state, controller=controller)
+            # Add one ms delay every minute
+            if (gamestate.frame + 123) % 3600 == 3599:
+                added_delay += .001
+                frame_delays = {}
+                print("Now at ", added_delay * 1000, "ms delay")
+
+            time.sleep(added_delay)
+            if args.lagtest:
+                if gamestate.frame % 360 == 0:
+                    print(frame_delays)
+                delay = melee.techskill.latency_test(gamestate=gamestate, ai_state=ai_state, controller=controller)
+                if delay >= 0:
+                    if delay not in frame_delays:
+                        frame_delays[delay] = 1
+                    else:
+                        frame_delays[delay] += 1
+            else:
+                melee.techskill.multishine(ai_state=ai_state, controller=controller)
         if log:
             log.logframe(gamestate)
             log.writeframe()
