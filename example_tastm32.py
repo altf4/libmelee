@@ -2,7 +2,7 @@
 
 import melee
 import sys
-import signal 
+import signal
 import melee.serial_helper
 
 log = melee.Logger()
@@ -21,14 +21,14 @@ controller = melee.Controller(console=console,
                               type=melee.ControllerType.STANDARD)
 
 # This isn't necessary, but makes it so that Dolphin will get killed when you ^C
-# def signal_handler(sig, frame):
-#     log.writelog()
-#     print("") #because the ^C will be on the terminal
-#     print("Log file created: " + log.filename)
-#     print("Shutting down cleanly...")
-#     sys.exit(0)
+def signal_handler(sig, frame):
+    log.writelog()
+    print("") #because the ^C will be on the terminal
+    print("Log file created: " + log.filename)
+    print("Shutting down cleanly...")
+    sys.exit(0)
 
-# signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 print("Connecting controller to console...")
 if not controller.connect():

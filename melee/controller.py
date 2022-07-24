@@ -421,7 +421,6 @@ class Controller:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
             self.tastm32.write(b'A' + self.current.toBytes())
-            start = time.time()
             cmd = self.tastm32.read(1)
 
             if cmd != b'A':
