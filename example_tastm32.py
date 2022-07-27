@@ -59,29 +59,41 @@ while True:
     # "step" to the next frame
     gamestate = console.step()
     if gamestate is not None:
-        if 1 in gamestate.players:
-            ai_state = gamestate.player[1]
-            if args.lagtest:
-                # Add one ms delay every minute
-                if (gamestate.frame + 123) % 3600 == 3599:
-                    added_delay += .001
-                    frame_delays = {}
-                    print("Now at ", added_delay * 1000, "ms delay")
-                time.sleep(added_delay)
-                if gamestate.frame % 360 == 0:
-                    print(frame_delays)
-                delay = melee.techskill.latency_test(gamestate=gamestate, ai_state=ai_state, controller=controller)
-                if delay >= 0:
-                    if delay not in frame_delays:
-                        frame_delays[delay] = 1
-                    else:
-                        frame_delays[delay] += 1
+        # What menu are we in?
+        if gamestate.menu_state in [melee.Menu.IN_GAME, melee.Menu.SUDDEN_DEATH]:
+
+            if 1 in gamestate.players:
+                ai_state = gamestate.player[1]
+                if args.lagtest:
+                    # Add one ms delay every minute
+                    if (gamestate.frame + 123) % 3600 == 3599:
+                        added_delay += .001
+                        frame_delays = {}
+                        print("Now at ", added_delay * 1000, "ms delay")
+                    time.sleep(added_delay)
+                    if gamestate.frame % 360 == 0:
+                        print(frame_delays)
+                    delay = melee.techskill.latency_test(gamestate=gamestate, ai_state=ai_state, controller=controller)
+                    if delay >= 0:
+                        if delay not in frame_delays:
+                            frame_delays[delay] = 1
+                        else:
+                            frame_delays[delay] += 1
+                else:
+                    melee.techskill.multishine(ai_state=ai_state, controller=controller)
+            if log:
+                log.logframe(gamestate)
+                log.writeframe()
             else:
-                melee.techskill.multishine(ai_state=ai_state, controller=controller)
-        if log:
-            log.logframe(gamestate)
-            log.writeframe()
+                pass
         else:
-            pass
+            melee.MenuHelper.menu_helper_simple(gamestate,
+                                                controller,
+                                                melee.Character.FOX,
+                                                melee.Stage.FINAL_DESTINATION,
+                                                "",
+                                                costume=1,
+                                                autostart=False,
+                                                swag=True)
     else:
         print("Not in game")

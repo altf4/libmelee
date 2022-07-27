@@ -446,7 +446,10 @@ class Console:
 
                 elif message["type"] == "menu_event":
                     if len(message["payload"]) > 0:
-                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
+                        if self.system == "dolphin":
+                            self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
+                        else:
+                            self.__handle_slippstream_menu_event(message["payload"], self._temp_gamestate)                            
                         frame_ended = True
 
                 elif self._use_manual_bookends and message["type"] == "frame_end" and self._frame != -10000:
