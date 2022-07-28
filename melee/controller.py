@@ -63,6 +63,8 @@ class ControllerState:
             buttons_total += 0x0040
         if self.button[enums.Button.BUTTON_R]:
             buttons_total += 0x0020
+        if self.button[enums.Button.BUTTON_START]:
+            buttons_total += 0x1000
 
         buffer = pack(">H", buttons_total)
 
