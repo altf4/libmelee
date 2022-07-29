@@ -55,6 +55,9 @@ class MenuHelper():
         # If we're at the postgame scores screen, spam START
         elif gamestate.menu_state == enums.Menu.POSTGAME_SCORES:
             MenuHelper.skip_postgame(controller=controller)
+        # Skip the press start screen
+        elif gamestate.menu_state == enums.Menu.PRESS_START:
+            MenuHelper.choose_versus_mode(gamestate=gamestate, controller=controller)
         # If we're at the stage select screen, choose a stage
         elif gamestate.menu_state == enums.Menu.STAGE_SELECT:
             MenuHelper.choose_stage(stage=stage_selected,
@@ -281,6 +284,11 @@ class MenuHelper():
                 else:
                     controller.release_all()
                 return
+            return
+
+        # Make sure the port is set to "Human"
+        if gamestate.players[controlling_port].controller_status != enums.ControllerStatus.CONTROLLER_HUMAN:
+            MenuHelper.change_controller_status(controller, gamestate, controlling_port, enums.ControllerStatus.CONTROLLER_HUMAN)
             return
 
         # We are already set, so let's taunt our opponent
