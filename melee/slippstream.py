@@ -77,7 +77,7 @@ class SlippstreamClient():
         event = None
         event_type = 1000
         while event_type not in [enet.EVENT_TYPE_RECEIVE]:
-            if not self.gamecube:
+            if self.gamecube:
                 wait_time = 1000
                 if polling_mode:
                     wait_time = 0
@@ -148,7 +148,7 @@ class SlippstreamClient():
         Returns True on success, False on failure
         """
         # Try to connect to the server and send a handshake
-        if not self.gamecube:
+        if self.gamecube:
             try:
                 self._peer = self._host.connect(enet.Address(bytes(self.address, 'utf-8'), int(self.port)), 1)
             except OSError:

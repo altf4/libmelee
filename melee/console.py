@@ -175,10 +175,13 @@ class Console:
         # Half-completed gamestate not yet ready to add to the list
         self._temp_gamestate = None
         self._process = None
-        if self.system == "dolphin" or self.path is None:
+        assert(self.system in ["dolphin", "gamecube", "file"])
+        if self.system == "dolphin":
             self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, True)
             if self.path:
                 self._setup_home_directory()
+        elif self.system == "gamecube":
+            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, False)
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
