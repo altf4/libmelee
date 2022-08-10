@@ -119,7 +119,7 @@ class SlippstreamClient():
                 #             "version": msg["payload"]["nintendontVersion"],
                 #             "cursor": msg["payload"]["pos"]}
                 event = {"payload": payload}
-                if payload[0] == 0x3E:
+                if payload[0] in [0x3E, 0x74]:
                     event["type"] = "menu_event"
                 else:
                     event["type"] = "game_event"

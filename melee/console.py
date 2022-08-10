@@ -887,6 +887,17 @@ class Console:
 
         Modifies specified gamestate based on the event bytes
          """
+        if event_bytes[0] == 0x74:
+            gamestate.menu_state = enums.Menu.ALLSTAR_LINEUP
+            character = int(np.ndarray((1,), ">B", event_bytes, 0x1)[0])
+            costume = int(np.ndarray((1,), ">B", event_bytes, 0x2)[0])
+            difficulty = int(np.ndarray((1,), ">B", event_bytes, 0x3)[0])
+
+            gamestate.custom["AllstarCharacter"] = character
+            gamestate.custom["AllStarCostume"] = costume
+            gamestate.custom["AllStarDifficulty"] = difficulty
+            return
+
         scene = np.ndarray((1,), ">H", event_bytes, 0x1)[0]
         if scene == 0x02:
             gamestate.menu_state = enums.Menu.CHARACTER_SELECT

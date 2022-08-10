@@ -60,6 +60,10 @@ while True:
     gamestate = console.step()
     if gamestate is not None:
         # What menu are we in?
+        if gamestate.menu_state == melee.Menu.ALLSTAR_LINEUP:
+            print("Logic goes here:", gamestate.custom)
+            pass
+
         if gamestate.menu_state in [melee.Menu.IN_GAME, melee.Menu.SUDDEN_DEATH]:
 
             if 1 in gamestate.players:
@@ -86,7 +90,7 @@ while True:
                 log.writeframe()
             else:
                 pass
-        else:
+        elif gamestate.menu_state == melee.Menu.CHARACTER_SELECT:
             melee.MenuHelper.menu_helper_simple(gamestate,
                                                 controller,
                                                 melee.Character.FOX,
@@ -95,5 +99,7 @@ while True:
                                                 costume=1,
                                                 autostart=False,
                                                 swag=True)
+        else:
+            controller.release_all()
     else:
         print("Not in game")
