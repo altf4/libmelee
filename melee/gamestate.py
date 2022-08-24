@@ -29,7 +29,7 @@ class GameState(object):
     """Represents the state of a running game of Melee at a given moment in time"""
     __slots__ = ('frame', 'stage', 'menu_state', 'submenu', 'player', 'players', 'projectiles', 'stage_select_cursor_x',
                  'stage_select_cursor_y', 'ready_to_start', 'distance', 'menu_selection', '_newframe', 'playedOn', 'startAt',
-                 'consoleNick', 'is_teams', 'custom')
+                 'consoleNick', 'is_teams', '_menu_scene', 'custom')
     def __init__(self):
         self.frame = -10000
         """int: The current frame number. Monotonically increases. Can be negative."""
@@ -65,6 +65,8 @@ class GameState(object):
         self.consoleNick = ""
         """(string): The name of the console the replay was created on. Might be blank."""
         self._newframe = True
+        self._menu_scene = 0x0000
+        """(int): INTERNAL: Current menu scene"""
         self.custom = dict()
         """(dict): Custom fields to be added by the user"""
 

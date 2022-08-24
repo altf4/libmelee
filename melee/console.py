@@ -888,6 +888,7 @@ class Console:
         Modifies specified gamestate based on the event bytes
          """
         scene = np.ndarray((1,), ">H", event_bytes, 0x1)[0]
+        gamestate._menu_scene = scene
         if scene == 0x02:
             gamestate.menu_state = enums.Menu.CHARACTER_SELECT
             # All the controller ports are active on this screen
