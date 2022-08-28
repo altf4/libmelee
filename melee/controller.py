@@ -14,6 +14,8 @@ except ImportError:
     pass
 
 from melee import enums
+import melee.tastm32
+import melee.serial_helper
 
 class ControllerState:
     """A snapshot of the state of a virtual controller"""
@@ -118,7 +120,7 @@ class Controller:
             self.pipe = None
         else:
             try:
-                self.tastm32 = serial.Serial(serial_device, 115200, timeout=None, rtscts=True)
+                self.tastm32 = serial.Serial(serial_device, 115200, timeout=0.1, rtscts=True)
             except serial.serialutil.SerialException:
                 print("TAStm32 was not ready. It might be booting up. " +
                       "Wait a few seconds and try again")
@@ -341,6 +343,31 @@ class Controller:
             if not self.pipe:
                 return
             self._write(command)
+
+    def send_dtm(self, buffer):
+        """buffer (bytes): """
+        dev = melee.tastm32.TAStm32(self.tastm32)
+        dev.reset()
+        run_id = dev.setup_run('gc', '1', None, None, None)
+
+        fn = 0
+        for latch in range(1024):
+            try:
+                data = run_id + buffer[fn]
+                dev.write(data)
+                if fn % 100 == 0:
+                    print(f'Sending Latch: {fn}')
+                fn += 1
+            except IndexError:
+                pass
+        err = dev.read(1024)
+        fn -= err.count(b'\xB0')
+        if err.count(b'\xB0') != 0:
+            print('Buffer Overflow x{}'.format(err.count(b'\xB0')))
+
+        run = melee.tastm32.RunObject(run_id, buffer, fn, b'\x00\x00\x00\x00\x00\x00\x00\x00')
+        dev.set_bulk_data_mode(run_id, b"1")
+        dev.main_loop(run)
 
     # Left around for compat reasons. Might disappear at any time
     #   left undocumented. Just use release_all()
