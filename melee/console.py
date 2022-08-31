@@ -494,6 +494,11 @@ class Console:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
                 print("\tDidn't have enough data for event")
                 return False
+            try:
+                EventType(event_bytes[0])
+            except ValueError:
+                print("WARNING: " + str(event_bytes[0]) + " is not a valid EventType")
+                return False
             if EventType(event_bytes[0]) == EventType.PAYLOADS:
                 cursor = 0x2
                 payload_size = event_bytes[1]
