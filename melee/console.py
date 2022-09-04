@@ -512,6 +512,7 @@ class Console:
                 event_bytes = event_bytes[payload_size + 1:]
 
             elif EventType(event_bytes[0]) == EventType.FRAME_START:
+                gamestate.rng_state = np.ndarray((1,), ">I", event_bytes, 0x5)[0]
                 event_bytes = event_bytes[event_size:]
 
             elif EventType(event_bytes[0]) == EventType.GAME_START:

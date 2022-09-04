@@ -29,7 +29,7 @@ class GameState(object):
     """Represents the state of a running game of Melee at a given moment in time"""
     __slots__ = ('frame', 'stage', 'menu_state', 'submenu', 'player', 'players', 'projectiles', 'stage_select_cursor_x',
                  'stage_select_cursor_y', 'ready_to_start', 'distance', 'menu_selection', '_newframe', 'playedOn', 'startAt',
-                 'consoleNick', 'is_teams', '_menu_scene', 'stage_raw', 'custom')
+                 'consoleNick', 'is_teams', '_menu_scene', 'stage_raw', 'rng_state', 'custom')
     def __init__(self):
         self.frame = -10000
         """int: The current frame number. Monotonically increases. Can be negative."""
@@ -69,6 +69,8 @@ class GameState(object):
         """(int): INTERNAL: Current menu scene"""
         self.stage_raw = 0
         """(int): INTERNAL: Current raw stage value"""
+        self.rng_state = 0
+        """(int): INTERNAL: RNG state as of pre-frame update"""
         self.custom = dict()
         """(dict): Custom fields to be added by the user"""
 
