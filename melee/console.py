@@ -149,6 +149,7 @@ class Console:
         self.cursor = 0
         self.controllers = []
         self._current_stage = enums.Stage.NO_STAGE
+        self._current_stage_raw = 0
         self._frame = 0
         self._polling_mode = polling_mode
         self.slp_version = "unknown"
@@ -568,6 +569,7 @@ class Console:
             raise SlippiVersionTooLow(self.slp_version)
         try:
             self._current_stage = enums.to_internal_stage(np.ndarray((1,), ">H", event_bytes, 0x13)[0])
+            self._current_stage_raw = np.ndarray((1,), ">H", event_bytes, 0x13)[0]
         except ValueError:
             self._current_stage = enums.Stage.NO_STAGE
 
@@ -634,6 +636,7 @@ class Console:
 
     def __post_frame(self, gamestate, event_bytes):
         gamestate.stage = self._current_stage
+        gamestate.stage_raw = self._current_stage_raw
         gamestate.is_teams = self._is_teams
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1

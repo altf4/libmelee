@@ -47,6 +47,8 @@ class ControllerState:
         """(float): L shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
+        self.dtm_mode = False
+        """(bool): Are we pressing buttons via DTMs? (False for controller mode)"""
 
     def toBytes(self):
         """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
@@ -344,10 +346,37 @@ class Controller:
                 return
             self._write(command)
 
-    def send_dtm(self, buffer):
-        """buffer (bytes): """
+    def pause_dtm(self):
+        """Pauses execution of DTM playing."""
+        self.tastm32.write(b'p1')
+
+    def unpause_dtm(self):
+        """Unpauses execution of DTM playing"""
+        self.tastm32.write(b'p0')
+
+    def reset_tastm32(self, controller_mode):
+        """Resets the TAStm32"""
         dev = melee.tastm32.TAStm32(self.tastm32)
         dev.reset()
+        if controller_mode:
+            # controller mode
+            self.tastm32.write(b'C1')
+            # Set to gamecube mode
+            self.tastm32.write(b'SAG\x80\x00')
+            # no bulk transfer
+            self.tastm32.write(b'QA0')
+            cmd = self.tastm32.read(2)
+            self.tastm32.reset_input_buffer()
+            if cmd != b'\x01S':
+                print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
+
+    def preload_dtm(self, buffer):
+        """Loads a given buffer (small) into the Tastm32 and then returns
+        Does not loop
+
+        Returns: The number of bytes in the buffer that were sent
+        """
+        dev = melee.tastm32.TAStm32(self.tastm32)
         run_id = dev.setup_run('gc', '1', None, None, None)
 
         fn = 0
@@ -364,9 +393,38 @@ class Controller:
         fn -= err.count(b'\xB0')
         if err.count(b'\xB0') != 0:
             print('Buffer Overflow x{}'.format(err.count(b'\xB0')))
+        return fn
 
-        run = melee.tastm32.RunObject(run_id, buffer, fn, b'\x00\x00\x00\x00\x00\x00\x00\x00')
-        dev.set_bulk_data_mode(run_id, b"1")
+    def send_remaining_dtm(self, buffer):
+        """Send the rest of the DTM, after having preloaded it"""
+        dev = melee.tastm32.TAStm32(self.tastm32)
+        run = melee.tastm32.RunObject(self._run_id, buffer, 0, b'\x00\x00\x00\x00\x00\x00\x00\x00')
+        dev.set_bulk_data_mode(self._run_id, b"1")
+        dev.main_loop(run)
+
+    def send_whole_dtm(self, buffer):
+        """Send whole DTM, blocking until it's done"""
+        dev = melee.tastm32.TAStm32(self.tastm32)
+        dev.reset()
+        self._run_id = dev.setup_run('gc', '1', None, None, None)
+
+        fn = 0
+        for latch in range(1024):
+            try:
+                data = self._run_id + buffer[fn]
+                dev.write(data)
+                if fn % 100 == 0:
+                    print(f'Sending Latch: {fn}')
+                fn += 1
+            except IndexError:
+                pass
+        err = dev.read(1024)
+        fn -= err.count(b'\xB0')
+        if err.count(b'\xB0') != 0:
+            print('Buffer Overflow x{}'.format(err.count(b'\xB0')))
+
+        run = melee.tastm32.RunObject(self._run_id, buffer, fn, b'\x00\x00\x00\x00\x00\x00\x00\x00')
+        dev.set_bulk_data_mode(self._run_id, b"1")
         dev.main_loop(run)
 
     # Left around for compat reasons. Might disappear at any time
@@ -447,10 +505,11 @@ class Controller:
                     return
                 self.pipe.flush()
         else:
-            # Command for "send single controller poll" is 'A'
-            # Serialize controller state into bytes and send
-            self.tastm32.write(b'A' + self.current.toBytes())
-            cmd = self.tastm32.read(1)
+            if not self.dtm_mode:
+                # Command for "send single controller poll" is 'A'
+                # Serialize controller state into bytes and send
+                self.tastm32.write(b'A' + self.current.toBytes())
+                cmd = self.tastm32.read(1)
 
-            if cmd != b'A':
-                print("Got error response: ", bytes(cmd))
+                if cmd != b'A':
+                    print("Got error response: ", bytes(cmd))
