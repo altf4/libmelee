@@ -105,7 +105,7 @@ class SlippstreamClient():
                 elif event.type == enet.EVENT_TYPE_DISCONNECT:
                     return None
             else:
-                self.buf += self.server.recv(1000)
+                self.buf += self.server.recv(2048)
                 # Exclude the the message length in the header
                 # msg = ubjson.loadb(self.buf[4:])
                 payload = self.buf[:]
