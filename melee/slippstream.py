@@ -55,6 +55,7 @@ class SlippstreamClient():
         self.players = {}
         self.now_frame_time = 0
         self.last_frame_time = 0
+        self.server = None
 
     def shutdown(self):
         """ Close down the socket and connection to the console """
@@ -67,7 +68,7 @@ class SlippstreamClient():
         if self._host:
             self._host = None
 
-        if self.gamecube:
+        if self.gamecube and self.server is not None:
             self.server.close()
 
         return False

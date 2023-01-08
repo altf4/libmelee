@@ -825,6 +825,16 @@ class Console:
         if self._use_manual_bookends:
             self._frame = gamestate.frame
 
+        # FoD platform heights
+        try:
+            gamestate._fod_platform_left = np.ndarray((1,), ">f", event_bytes, 0x71)[0]
+        except TypeError:
+            gamestate._fod_platform_left = 0
+        try:
+            gamestate._fod_platform_right = np.ndarray((1,), ">f", event_bytes, 0x75)[0]
+        except TypeError:
+            gamestate._fod_platform_right = 0
+
     def __frame_bookend(self, gamestate, event_bytes):
         self._prev_gamestate = gamestate
         # Calculate helper distance variable
