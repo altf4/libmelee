@@ -178,13 +178,13 @@ class MenuHelper():
                 opponent_state = player
                 break
 
-        cursor_x, cursor_y = ai_state.cursor_x, ai_state.cursor_y
+        cursor_x, cursor_y = ai_state.cursor.x, ai_state.cursor.y
         coin_down = ai_state.coin_down
         character_selected = ai_state.character
 
         isSlippiCSS = False
         if gamestate.menu_state == enums.Menu.SLIPPI_ONLINE_CSS:
-            cursor_x, cursor_y = gamestate.players[1].cursor_x, gamestate.players[1].cursor_y
+            cursor_x, cursor_y = gamestate.players[1].cursor.x, gamestate.players[1].cursor.y
             isSlippiCSS = True
             character_selected = gamestate.players[1].character
         if isSlippiCSS:
@@ -296,8 +296,8 @@ class MenuHelper():
             delta_x = 3 * math.cos(gamestate.frame / 1.5)
             delta_y = 3 * math.sin(gamestate.frame / 1.5)
 
-            target_x = opponent_state.cursor_x + delta_x
-            target_y = opponent_state.cursor_y + delta_y
+            target_x = opponent_state.cursor.x + delta_x
+            target_y = opponent_state.cursor.y + delta_y
 
             diff_x = abs(target_x - cursor_x)
             diff_y = abs(target_y - cursor_y)
@@ -498,19 +498,19 @@ class MenuHelper():
             return
 
         #Move up if we're too low
-        if ai_state.cursor_y < target_y - wiggleroom:
+        if ai_state.cursor.y < target_y - wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 1)
             return
         #Move downn if we're too high
-        if ai_state.cursor_y > target_y + wiggleroom:
+        if ai_state.cursor.y > target_y + wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, .5, 0)
             return
         #Move right if we're too left
-        if ai_state.cursor_x < target_x - wiggleroom:
+        if ai_state.cursor.x < target_x - wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 1, .5)
             return
         #Move left if we're too right
-        if ai_state.cursor_x > target_x + wiggleroom:
+        if ai_state.cursor.x > target_x + wiggleroom:
             controller.tilt_analog(enums.Button.BUTTON_MAIN, 0, .5)
             return
 
