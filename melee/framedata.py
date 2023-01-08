@@ -9,8 +9,11 @@ import csv
 import os
 import math
 from collections import defaultdict
-from melee.enums import Action, Character, AttackState
+from typing import Tuple
+
+from melee.enums import Action, Character, AttackState, Stage
 from melee import stages
+import melee.gamestate
 
 class FrameData:
     """Set of helper functions and data structures for knowing Melee frame data
@@ -19,7 +22,7 @@ class FrameData:
         The frame data in libmelee is written to be useful to bots, and behave in a sane way,
         not necessarily be binary-compatible with in-game structures or values.
     """
-    def __init__(self, write=False):
+    def __init__(self, write: bool=False):
         if write:
             self.csvfile = open('framedata.csv', 'a')
             fieldnames = ['character', 'action', 'frame',
@@ -88,7 +91,7 @@ class FrameData:
                     line[key] = float(value)
                 self.characterdata[Character(line["CharacterIndex"])] = line
 
-    def is_grab(self, character, action):
+    def is_grab(self, character: Character, action: Action) -> bool:
         """For the given character, is the supplied action a grab?
 
         Args:
@@ -118,7 +121,7 @@ class FrameData:
 
         return False
 
-    def is_roll(self, character, action):
+    def is_roll(self, character: Character, action: Action) -> bool:
         """For a given character, is the supplied action a roll?
 
         libmelee has a liberal definition of 'roll'. A roll is essentially a move that:
@@ -149,7 +152,7 @@ class FrameData:
             Action.SHIELD_BREAK_STAND_U, Action.SHIELD_BREAK_STAND_D, Action.TAUNT_RIGHT, Action.TAUNT_LEFT, Action.SHIELD_BREAK_TEETER]
         return action in rolls
 
-    def is_bmove(self, character, action):
+    def is_bmove(self, character: Character, action: Action) -> bool:
         """For a given character, is the supplied action a 'B-Move'
 
         B-Moves tend to be weird, so it's useful to know if this is a thing that warrants a special case
@@ -178,7 +181,7 @@ class FrameData:
         return False
 
     #Returns boolean on if the given action is an attack (contains a hitbox)
-    def is_attack(self, character, action):
+    def is_attack(self, character: Character, action: Action) -> bool:
         """For a given character, is the supplied action an attack?
 
         It is an attack if it has a hitbox at any point in the action. Not necessarily right now.
@@ -195,7 +198,7 @@ class FrameData:
                     return True
         return False
 
-    def is_shield(self, action):
+    def is_shield(self, action: Action) -> bool:
         """Is the given action a Shielding action?
 
         Args:
@@ -203,7 +206,7 @@ class FrameData:
         """
         return action in [Action.SHIELD, Action.SHIELD_START, Action.SHIELD_REFLECT, Action.SHIELD_STUN, Action.SHIELD_RELEASE]
 
-    def max_jumps(self, character):
+    def max_jumps(self, character: Character) -> int:
         """ Returns the number of double-jumps the given character has.
 
         Args:
@@ -223,7 +226,7 @@ class FrameData:
     #    ATTACKING
     #    COOLDOWN
     #    NOT_ATTACKING
-    def attack_state(self, character, action, action_frame):
+    def attack_state(self, character: Character, action: Action, action_frame: int) -> AttackState:
         """For the given player, returns their current attack state as an AttackState enum
 
         Args:
@@ -243,7 +246,7 @@ class FrameData:
         return AttackState.ATTACKING
 
 
-    def range_forward(self, character, action, action_frame):
+    def range_forward(self, character: Character, action: Action, action_frame: int) -> float:
         """Returns the maximum remaining range of the given attack, in the forward direction
             (relative to how the character starts facing)
 
@@ -271,7 +274,7 @@ class FrameData:
                 attackrange = max(attackingframe["hitbox_4_size"] + attackingframe["hitbox_4_x"], attackrange)
         return attackrange
 
-    def range_backward(self, character, action, action_frame):
+    def range_backward(self, character: Character, action: Action, action_frame: int) -> float:
         """Returns the maximum remaining range of the given attack, in the backwards direction
         (relative to how the character starts facing)
 
@@ -300,7 +303,7 @@ class FrameData:
         return abs(attackrange)
 
 
-    def in_range(self, attacker, defender, stage):
+    def in_range(self, attacker: melee.gamestate.PlayerState, defender: melee.gamestate.PlayerState, stage: Stage):
         """Calculates if an attack is in range of a given defender
 
         Args:
@@ -421,13 +424,14 @@ class FrameData:
                     return i
         return 0
 
-    def dj_height(self, character_state):
+    def dj_height(self, character_state: melee.gamestate.PlayerState) -> float:
         """Returns the height the character's double jump will take them.
         If character is in jump already, returns how heigh that one goes
 
         Args:
             character_state (gamestate.PlayerState): The player we're calculating for
         """
+        # TODO: Also: m2 and ness??
         # Peach's DJ doesn't follow normal physics rules. Hardcoded it
         if character_state.character == Character.PEACH:
             # She can't get height if not in the jump action
@@ -462,7 +466,7 @@ class FrameData:
             initdjspeed -= gravity
         return distance
 
-    def frames_until_dj_apex(self, character_state):
+    def frames_until_dj_apex(self, character_state: melee.gamestate.PlayerState) -> int:
         """Return the number of frames it takes for the character to reach the apex of
         their double jump. If they haven't used it yet, then calculate it as if they
         jumped right now.
@@ -498,13 +502,13 @@ class FrameData:
             initdjspeed -= gravity
         return frames
 
-    def _getframe(self, character, action, action_frame):
+    def _getframe(self, character: melee.gamestate.PlayerState, action: Action, action_frame: int):
         """Returns a raw frame dict for the specified frame """
         if self.framedata[character][action][action_frame]:
             return self.framedata[character][action][action_frame]
         return None
 
-    def last_roll_frame(self, character, action):
+    def last_roll_frame(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the last frame of the roll
          -1 if not a roll
 
@@ -521,7 +525,7 @@ class FrameData:
             return -1
         return max(frames)
 
-    def roll_end_position(self, character_state, stage):
+    def roll_end_position(self, character_state: melee.gamestate.PlayerState, stage: Stage) -> float:
         """Returns the x coordinate that the current roll will end in
 
         Args:
@@ -567,7 +571,7 @@ class FrameData:
         except KeyError:
             return character_state.position.x
 
-    def first_hitbox_frame(self, character, action):
+    def first_hitbox_frame(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the first frame that a hitbox appears for a given action
            returns -1 if no hitboxes (not an attack action)
 
@@ -588,7 +592,7 @@ class FrameData:
             return -1
         return min(hitboxes)
 
-    def hitbox_count(self, character, action):
+    def hitbox_count(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the number of hitboxes an attack has
 
         Args:
@@ -628,7 +632,7 @@ class FrameData:
             hashitbox = hashitbox_new
         return count
 
-    def iasa(self, character, action):
+    def iasa(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the first frame of an attack that the character is interruptible (actionable)
 
         returns -1 if not an attack
@@ -651,7 +655,7 @@ class FrameData:
             return max(allframes)
         return min(iasaframes)
 
-    def last_hitbox_frame(self, character, action):
+    def last_hitbox_frame(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the last frame that a hitbox appears for a given action
 
         returns -1 if no hitboxes (not an attack action)
@@ -674,7 +678,7 @@ class FrameData:
             return -1
         return max(hitboxes)
 
-    def frame_count(self, character, action):
+    def frame_count(self, character: melee.gamestate.PlayerState, action: Action) -> int:
         """Returns the count of total frames in the given action.
 
         Args:
@@ -705,7 +709,7 @@ class FrameData:
                     and not self.is_bmove(Character(row['character']), Action(row['action'])):
                 self.rows.remove(row)
 
-    def _record_frame(self, gamestate):
+    def _record_frame(self, gamestate: melee.gamestate.GameState):
         """ Record the frame in the given gamestate"""
 
         # First, adjust and record zero-indexing
@@ -855,7 +859,7 @@ class FrameData:
         self.csvfile.close()
         self.actionfile.close()
 
-    def slide_distance(self, character_state, initspeed, frames):
+    def slide_distance(self, character_state: melee.gamestate.PlayerState, initspeed: float, frames: int) -> float:
         """How far a character will slide in the given number of frames
 
         Args:
@@ -901,7 +905,7 @@ class FrameData:
         """Return true if line segments AB and CD intersect"""
         return FrameData._ccw(A,C,D) != FrameData._ccw(B,C,D) and FrameData._ccw(A,B,C) != FrameData._ccw(A,B,D)
 
-    def project_hit_location(self, character_state, stage, frames=-1):
+    def project_hit_location(self, character_state: melee.gamestate.PlayerState, stage: Stage, frames: int=-1) -> Tuple[float, float, int]:
         """How far does the given character fly, assuming they've been hit?
             Only considers air-movement, not ground sliding.
             Projection ends if hitstun ends, or if a platform is encountered

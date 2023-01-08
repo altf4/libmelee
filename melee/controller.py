@@ -46,7 +46,7 @@ class ControllerState:
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
 
-    def toBytes(self):
+    def toBytes(self) -> bytes:
         """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
         buttons_total = 0x0080
         if self.button[enums.Button.BUTTON_A]:
@@ -86,7 +86,7 @@ class ControllerState:
         buffer += val
         return buffer
 
-    def __str__(self):
+    def __str__(self) -> str:
         string = ""
         for val in self.button:
             string += str(val) + ": " + str(self.button[val])
@@ -104,13 +104,14 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, type=enums.ControllerType.STANDARD, serial_device="/dev/ttyACM0"):
+    def __init__(self, console, port: int, type: enums.ControllerType=enums.ControllerType.STANDARD, serial_device: str="/dev/ttyACM0"):
         """Create a new virtual controller
 
         Args:
             console (console.Console): A console object to attach the controller to
             port (int): Which controller port to plug into. Must be 1-4.
             type (enums.ControllerType): The type of controller this is
+            serial_device (str): The local serial device, when this is a TASTm32
         """
         self._is_dolphin = console.system == "dolphin"
         if self._is_dolphin:
@@ -139,7 +140,7 @@ class Controller:
         """Clean up any resources held by the controller object"""
         self.disconnect()
 
-    def connect(self):
+    def connect(self) -> bool:
         """Connect the controller to the console
 
             Note:
@@ -206,13 +207,18 @@ class Controller:
                 self.pipe.close()
                 self.pipe = None
 
-    def simple_press(self, x, y, button):
+    def simple_press(self, x: float, y: float, button: enums.Button = None):
         """Here is a simpler representation of a button press, in case
             you don't want to bother with the tedium of manually doing everything.
             It isn't capable of doing everything the normal controller press functions
             can, but probably covers most scenarios.
             Notably, a difference here is that doing a button press releases all
             other buttons pressed previously.
+
+            Args:
+                x (float): Control stick x
+                y (float): Control stick y
+                button (enums.Button): Button to press. None for no button
 
             Note:
                 Don't call this function twice in the same frame
@@ -240,7 +246,7 @@ class Controller:
                 else:
                     self.release_button(item)
 
-    def press_button(self, button):
+    def press_button(self, button: enums.Button):
         """Press a single button
 
         If already pressed, this has no effect
@@ -258,7 +264,7 @@ class Controller:
             self._write(command)
 
 
-    def release_button(self, button):
+    def release_button(self, button: enums.Button):
         """Release a single button
 
         If already released, this has no effect
@@ -275,7 +281,7 @@ class Controller:
                 return
             self._write(command)
 
-    def press_shoulder(self, button, amount):
+    def press_shoulder(self, button: enums.Button, amount: float):
         """Press the analog shoulder buttons to a given amount
 
         Args:
@@ -299,7 +305,7 @@ class Controller:
                 return
             self._write(command)
 
-    def tilt_analog(self, button, x, y):
+    def tilt_analog(self, button: enums.Button, x: float, y: float):
         """ Tilt one of the analog sticks to a given (x,y) value
 
         Args:
@@ -319,7 +325,7 @@ class Controller:
                 return
             self._write(command)
 
-    def tilt_analog_unit(self, button, x, y):
+    def tilt_analog_unit(self, button: enums.Button, x: float, y: float):
         """ Tilt one of the analog sticks to a given (x,y) value, normalized to a unit vector
 
         This mean the values range from -1 -> 1 (with 0 center) rather than 0 -> 1 (with 0.5 center)
@@ -393,7 +399,7 @@ class Controller:
         if self.logger:
             self.logger.log("Buttons Pressed", "Empty Input", concat=True)
 
-    def _write(self, command):
+    def _write(self, command: str):
         """ Platform independent button write function.
         """
         if platform.system() == "Windows":

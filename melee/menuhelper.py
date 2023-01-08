@@ -3,22 +3,24 @@ cumbersome to do on your own. The goal here is to get you into the game
 as easily as possible so you don't have to worry about it. Your AI should
 concentrate on playing the game, not futzing with menus.
 """
-from melee import enums
 import math
+from melee import enums
+import melee.gamestate
+import melee.controller
 
 class MenuHelper():
     name_tag_index = 0
     inputs_live = False
 
-    def menu_helper_simple(gamestate,
-                            controller,
-                            character_selected,
-                            stage_selected,
-                            connect_code="",
-                            cpu_level=0,
-                            costume=0,
-                            autostart=False,
-                            swag=False):
+    def menu_helper_simple(gamestate: melee.gamestate.GameState,
+                            controller: melee.controller.Controller,
+                            character_selected: enums.Character,
+                            stage_selected: enums.Stage,
+                            connect_code: str="",
+                            cpu_level: int=0,
+                            costume: int=0,
+                            autostart: bool=False,
+                            swag: bool=False):
         """Siplified menu helper function to get you through the menus and into a game
 
         Does everything for you but play the game. Gets you to the right menu screen, picks
@@ -69,7 +71,7 @@ class MenuHelper():
             else:
                 MenuHelper.choose_versus_mode(gamestate=gamestate, controller=controller)
 
-    def enter_direct_code(gamestate, controller, connect_code, index):
+    def enter_direct_code(gamestate: melee.gamestate.GameState, controller: melee.controller.Controller, connect_code: str, index: int):
         """At the nametag entry screen, enter the given direct connect code and exit
 
         Args:
@@ -141,7 +143,13 @@ class MenuHelper():
 
         return index
 
-    def choose_character(character, gamestate, controller, cpu_level=0, costume=2, swag=False, start=False):
+    def choose_character(character: enums.Character, 
+                        gamestate: melee.gamestate.GameState, 
+                        controller: melee.controller.Controller, 
+                        cpu_level: int=0, 
+                        costume: int=2, 
+                        swag: bool=False, 
+                        start: bool=False):
         """Choose a character from the character select menu
 
         Args:
@@ -406,7 +414,7 @@ class MenuHelper():
                 return
         controller.release_all()
 
-    def choose_stage(stage, gamestate, controller):
+    def choose_stage(stage: enums.Stage, gamestate: melee.gamestate.GameState, controller: melee.controller.Controller):
         """Choose a stage from the stage select menu
 
         Intended to be called each frame while in the stage select menu
@@ -461,15 +469,26 @@ class MenuHelper():
         #If we get in the right area, press A
         controller.press_button(enums.Button.BUTTON_A)
 
-    def skip_postgame(controller, gamestate):
+    def skip_postgame(controller: melee.controller.Controller, gamestate: melee.gamestate.GameState):
         """ Spam the start button """
         if gamestate.frame % 60 == 0:
             controller.press_button(enums.Button.BUTTON_START)
         else:
             controller.release_all()
 
-    def change_controller_status(controller, gamestate, targetport, status, character=None):
+    def change_controller_status(controller: melee.controller.Controller, 
+                                gamestate: melee.gamestate.GameState, 
+                                targetport: int, 
+                                status: enums.ControllerStatus, 
+                                character: enums.Character=None):
         """Switch a given player's controller to be of the given state
+
+        Args:
+            controller (controller.Controller): The controller to press buttons on
+            gamestate (gamestate.GameState): The current gamestate
+            targetport (int): The controller port to change status of 
+            status (enums.ControllerStatus): The desired status
+            character (enums.Character): The desired character of the target port
 
         Note:
             There's a condition on this you need to know. The way controllers work
@@ -521,7 +540,7 @@ class MenuHelper():
         else:
             controller.release_button(enums.Button.BUTTON_A)
 
-    def choose_versus_mode(gamestate, controller):
+    def choose_versus_mode(gamestate: melee.gamestate.GameState, controller: melee.controller.Controller):
         """Helper function to bring us into the versus mode menu
 
         Args:
@@ -551,7 +570,7 @@ class MenuHelper():
         else:
             controller.release_all()
 
-    def choose_direct_online(gamestate, controller):
+    def choose_direct_online(gamestate: melee.gamestate.GameState, controller: melee.controller.Controller):
         """Helper function to bring us into the direct connect online menu
 
         Args:

@@ -5,6 +5,7 @@ import csv
 import os
 from datetime import datetime
 from pathlib import Path
+import melee.gamestate
 
 class Logger():
     """A custom logger for a console. Writes the gametstate out to a CSV file each frame
@@ -25,7 +26,7 @@ class Logger():
         self.rows = []
         self.filename = self.csvfile.name
 
-    def log(self, column, contents, concat=False):
+    def log(self, column: str, contents: str, concat: bool=False):
         """Write 'contents' to the log at given 'column'
 
         Args:
@@ -43,7 +44,7 @@ class Logger():
         else:
             self.current_row[column] = contents
 
-    def logframe(self, gamestate):
+    def logframe(self, gamestate: melee.gamestate.GameState):
         """Log any common per-frame things
 
         Args:

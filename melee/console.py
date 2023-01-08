@@ -7,6 +7,7 @@ is your method to start and stop Dolphin, set configs, and get the latest GameSt
 from collections import defaultdict
 from typing import Optional
 from packaging import version
+from typing import Dict
 
 import time
 import os
@@ -28,7 +29,7 @@ from melee.gamestate import GameState, Projectile, PlayerState
 from melee.slippstream import SlippstreamClient, EventType
 from melee.slpfilestreamer import SLPFileStreamer
 from melee import stages
-
+from melee.logger import Logger
 
 class SlippiVersionTooLow(Exception):
     """Raised when the Slippi version is not recent enough"""
@@ -72,24 +73,24 @@ class Console:
     """The console object that represents your Dolphin / GameCube / SLP file
     """
     def __init__(self,
-                 path=None,
-                 system="dolphin",
-                 dolphin_home_path=None,
-                 tmp_home_directory=True,
-                 copy_home_directory=True,
-                 slippi_address="127.0.0.1",
-                 slippi_port=51441,
-                 online_delay=2,
-                 blocking_input=False,
-                 polling_mode=False,
-                 allow_old_version=False,
-                 logger=None,
-                 setup_gecko_codes=True,
-                 fullscreen=True,
-                 gfx_backend="",
-                 disable_audio=False,
+                 path: str = None,
+                 system: str = "dolphin",
+                 dolphin_home_path: str = None,
+                 tmp_home_directory: str = True,
+                 copy_home_directory: bool = True,
+                 slippi_address: str = "127.0.0.1",
+                 slippi_port: int = 51441,
+                 online_delay: int = 2,
+                 blocking_input: bool = False,
+                 polling_mode: bool = False,
+                 allow_old_version: bool = False,
+                 logger: Logger = None,
+                 setup_gecko_codes: bool = True,
+                 fullscreen: bool = True,
+                 gfx_backend: str = "",
+                 disable_audio: bool = False,
                  overclock: Optional[float] = None,
-                 save_replays=True,
+                 save_replays: bool = True,
                 ):
         """Create a Console object
 
@@ -207,7 +208,7 @@ class Console:
                     line[key] = float(value)
                 self.characterdata[enums.Character(line["CharacterIndex"])] = line
 
-    def connect(self):
+    def connect(self) -> bool:
         """ Connects to the Slippi server (dolphin or gamecube).
 
         Returns:
@@ -215,7 +216,7 @@ class Console:
         """
         return self._slippstream.connect()
 
-    def _get_dolphin_home_path(self):
+    def _get_dolphin_home_path(self) -> str:
         """Return the path to dolphin's home directory"""
         if self.dolphin_home_path:
             return self.dolphin_home_path
@@ -224,11 +225,11 @@ class Console:
 
         return _default_home_path(self.path)
 
-    def _get_dolphin_config_path(self):
+    def _get_dolphin_config_path(self) -> str:
         """ Return the path to dolphin's config directory."""
         return self._get_dolphin_home_path() + "Config/"
 
-    def get_dolphin_pipes_path(self, port):
+    def get_dolphin_pipes_path(self, port: int) -> str:
         """Get the path of the named pipe input file for the given controller port
         """
         if platform.system() == "Windows":
@@ -238,7 +239,7 @@ class Console:
             os.makedirs(pipes_path, exist_ok=True)
         return pipes_path + f"slippibot{port}"
 
-    def run(self, iso_path=None, dolphin_user_path=None, environment_vars=None, exe_name=None):
+    def run(self, iso_path: str=None, dolphin_user_path: str=None, environment_vars: Dict[str, str]=None, exe_name: str=None):
         """Run the Dolphin emulator.
 
         This starts the Dolphin process, so don't run this if you're connecting to an
@@ -300,7 +301,7 @@ class Console:
             shutil.rmtree(self.temp_dir)
             self.temp_dir = None
 
-    def _setup_home_directory(self,):
+    def _setup_home_directory(self):
         self._setup_dolphin_ini()
         if self.setup_gecko_codes:
             self._setup_gecko_codes()
@@ -348,9 +349,14 @@ class Console:
 
         shutil.copy(gale01r2_ini_path, game_settings_path)
 
-    def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
+    def setup_dolphin_controller(self, port: int, controllertype: enums.ControllerType=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
-        controller port and type"""
+        controller port and type
+        
+        Args:
+            port (int): Controller port to setup
+            controllertype (enums.ControllerType): The controller type to set this up as
+        """
 
         pipes_path = self.get_dolphin_pipes_path(port)
         if platform.system() != "Windows" and controllertype == enums.ControllerType.STANDARD:
@@ -416,7 +422,7 @@ class Console:
         with open(dolphin_config_path, 'w') as dolphinfile:
             config.write(dolphinfile)
 
-    def step(self):
+    def step(self) -> GameState:
         """ 'step' to the next state of the game and flushes all controllers
 
         Returns:
@@ -482,7 +488,7 @@ class Console:
         self._frametimestamp = time.time()
         return gamestate
 
-    def __handle_slippstream_events(self, event_bytes, gamestate):
+    def __handle_slippstream_events(self, event_bytes: list, gamestate: GameState):
         """ Handle a series of events, provided sequentially in a byte array """
         gamestate.menu_state = enums.Menu.IN_GAME
         while len(event_bytes) > 0:
@@ -552,7 +558,7 @@ class Console:
                 return False
         return False
 
-    def __game_start(self, gamestate, event_bytes):
+    def __game_start(self, gamestate: GameState, event_bytes: list):
         self._frame = -10000
         major = np.ndarray((1,), ">B", event_bytes, 0x1)[0]
         minor = np.ndarray((1,), ">B", event_bytes, 0x2)[0]
@@ -581,7 +587,7 @@ class Console:
             if np.ndarray((1,), ">B", event_bytes, 0x66 + (0x24 * i))[0] != 1:
                 self._cpu_level[i] = 0
 
-    def __pre_frame(self, gamestate, event_bytes):
+    def __pre_frame(self, gamestate: GameState, event_bytes: list):
         # Grab the physical controller state and put that into the controller state
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
 
@@ -627,7 +633,7 @@ class Console:
         if self._use_manual_bookends:
             self._frame = gamestate.frame
 
-    def __post_frame(self, gamestate, event_bytes):
+    def __post_frame(self, gamestate: GameState, event_bytes: list):
         gamestate.stage = self._current_stage
         gamestate.is_teams = self._is_teams
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
@@ -828,7 +834,7 @@ class Console:
         except TypeError:
             gamestate._fod_platform_right = 0
 
-    def __frame_bookend(self, gamestate, event_bytes):
+    def __frame_bookend(self, gamestate: GameState, event_bytes: list):
         self._prev_gamestate = gamestate
         # Calculate helper distance variable
         #   This is a bit kludgey.... :/
@@ -844,7 +850,7 @@ class Console:
         ydist = player_one_y - player_two_y
         gamestate.distance = math.sqrt((xdist**2) + (ydist**2))
 
-    def __item_update(self, gamestate, event_bytes):
+    def __item_update(self, gamestate: GameState, event_bytes: list):
         projectile = Projectile()
         projectile.position.x = np.ndarray((1,), ">f", event_bytes, 0x14)[0]
         projectile.position.y = np.ndarray((1,), ">f", event_bytes, 0x18)[0]
@@ -882,7 +888,7 @@ class Console:
         # Add the projectile to the gamestate list
         gamestate.projectiles.append(projectile)
 
-    def __handle_slippstream_menu_event(self, event_bytes, gamestate):
+    def __handle_slippstream_menu_event(self, event_bytes: list, gamestate: GameState):
         """ Internal handler for slippstream menu events
 
         Modifies specified gamestate based on the event bytes
@@ -1054,14 +1060,14 @@ class Console:
             if gamestate.players[port].controller_status != enums.ControllerStatus.CONTROLLER_CPU:
                 gamestate.players[port].cpu_level = 0
 
-    def __fixframeindexing(self, gamestate):
+    def __fixframeindexing(self, gamestate: GameState):
         """ Melee's indexing of action frames is wildly inconsistent.
             Here we adjust all of the frames to be indexed at 1 (so math is easier)"""
         for _, player in gamestate.players.items():
             if player.action.value in self.zero_indices[player.character.value]:
                 player.action_frame = player.action_frame + 1
 
-    def __fixiasa(self, gamestate):
+    def __fixiasa(self, gamestate: GameState):
         """ The IASA flag doesn't set or reset for special attacks.
             So let's just set IASA to False for all non-A attacks.
         """

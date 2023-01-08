@@ -1,7 +1,10 @@
 """ Stages is a collection of helper data for information regarding stages
 """
 
+from typing import Tuple
+
 from melee import enums
+import melee.gamestate
 
 """Get the 4 blast zone boundaries for a given stage.  Values are tuples in
 order of (left x boundary, right x boundary, upper y boundary, lower y boundary).
@@ -40,7 +43,7 @@ EDGE_GROUND_POSITION = {
     enums.Stage.YOSHIS_STORY : 56
 }
 
-def top_platform_position(gamestate):
+def top_platform_position(gamestate: melee.gamestate.GameState) -> Tuple[float, float, float]:
     """Gets the position of the top platform
 
     Args:
@@ -63,7 +66,7 @@ def top_platform_position(gamestate):
         return (42.000099182128906, -15.75, 15.75)
     return (None, None, None)
 
-def side_platform_position(right_platform, gamestate):
+def side_platform_position(right_platform: bool, gamestate: melee.gamestate.GameState) -> Tuple[float, float, float]:
     """Gets the position of the specified side platform
 
     Args:
@@ -78,7 +81,7 @@ def side_platform_position(right_platform, gamestate):
     else:
         return left_platform_position(gamestate)
 
-def left_platform_position(gamestate):
+def left_platform_position(gamestate: melee.gamestate.GameState) -> Tuple[float, float, float]:
     """Gets the position of the left platform
 
     Args:
@@ -101,7 +104,7 @@ def left_platform_position(gamestate):
         return (23.450098037719727, -59.5, -28.0)
     return (None, None, None)
 
-def right_platform_position(gamestate):
+def right_platform_position(gamestate: melee.gamestate.GameState) -> Tuple[float, float, float]:
     """Gets the position of the right platform
 
     Args:
@@ -157,7 +160,7 @@ _RANDALL_CORNER_POSITIONS = {
     1022: (-14.954894065856934, -103.46499633789062)
 }
 
-def randall_position(frame):
+def randall_position(frame: int) -> Tuple[float, float, float]:
     """Gets the current position of Randall
 
     Args:

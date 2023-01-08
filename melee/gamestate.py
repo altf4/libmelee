@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from melee import enums
-from melee import controller
+import melee.controller
 
 @dataclass
 class Position:
@@ -74,7 +74,7 @@ class PlayerState(object):
     #   Don't use this value when in-game
     character_selected: enums.Character = enums.Character.UNKNOWN_CHARACTER
     """(enums.Character): What character is selected at the character select screen"""
-    position: Position = Position()
+    position: Position = field(default_factory=Position)
     """(Position): x, y character position"""
     percent: int = 0
     """(int): The player's damage"""
@@ -117,7 +117,7 @@ class PlayerState(object):
             If the character is not Ice Climbers, Nana will be None.
             Will also be None if this player state is Nana itself.
             Lastly, the secondary climber is called 'Nana' here, regardless of the costume used."""
-    cursor: Position = Cursor()
+    cursor: Position = field(default_factory=Cursor)
     """(Position): x, y cursor position"""
     coin_down: bool = False
     """(bool): Is the player's character selection coin placed down? (Does not work in Slippi selection screen)"""
@@ -129,9 +129,9 @@ class PlayerState(object):
     """(int): Interruptible as soon as"""
     moonwalkwarning: bool = False
     """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
-    controller_state: controller.ControllerState = controller.ControllerState()
+    controller_state: melee.controller.ControllerState = melee.controller.ControllerState()
     """(controller.ControllerState): What buttons were pressed for this character"""
-    ecb: ECB = ECB()
+    ecb: ECB = field(default_factory=ECB)
     """(gamestate.ECB): Environmental Collision Box"""
     costume: int = 0
     """(int): Index for which costume the player is wearing"""
@@ -149,9 +149,9 @@ class PlayerState(object):
 @dataclass
 class Projectile:
     """ Represents the state of a projectile (items, lasers, etc...) """
-    position: Position = Position()
+    position: Position = field(default_factory=Position)
     """(Position): x, y projectile position"""
-    speed: Position = Speed()
+    speed: Position = field(default_factory=Speed)
     """(Position): x, y projectile speed"""
     owner: int = -1
     """(int): Player port of the projectile's owner. -1 for no owner"""
@@ -162,7 +162,7 @@ class Projectile:
     subtype: int = 0
     """(int): The subtype of the item. Many projectiles have 'subtypes' that make them different. They're all different, so it's not an enum"""
 
-def port_detector(gamestate, character, costume):
+def port_detector(gamestate: GameState, character: enums.Character, costume: int) -> int:
     """Autodiscover what port the given character is on
 
     Slippi Online assigns us a random port when playing online. Find out which we are
@@ -172,9 +172,9 @@ def port_detector(gamestate, character, costume):
         0: We don't know.
 
     Args:
-        gamestate: Current gamestate
-        character: The character we know we picked
-        costume: Costume index we picked
+        gamestate: (gamestate.GameState) Current gamestate
+        character: (enums.Character) The character we know we picked
+        costume: (int) Costume index we picked
     """
     detected_port = 0
     for i, player in gamestate.players.items():

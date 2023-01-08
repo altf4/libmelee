@@ -13,7 +13,7 @@ class Stage(Enum):
     YOSHIS_STORY = 0x6
     RANDOM_STAGE = 0x1D # not technically a stage, but it's useful to call it one
 
-def to_internal_stage(stage_id):
+def to_internal_stage(stage_id: int) -> Stage:
     if stage_id == 0x03:
         return Stage.POKEMON_STADIUM
     if stage_id == 0x08:
@@ -27,6 +27,7 @@ def to_internal_stage(stage_id):
     if stage_id == 0x1C:
         return Stage.DREAMLAND
     return Stage.NO_STAGE
+
 
 class Menu(Enum):
     """A primary menu scene the game can be in """
@@ -124,7 +125,7 @@ class Character(Enum):
     SANDBAG = 0x20
     UNKNOWN_CHARACTER = 0xff
 
-def to_internal(char_id):
+def to_internal(char_id: int) -> Character:
     """Converts a character select-screen ID to an 'internal ID' enum
 
     Mostly used at the Character Select Screen
@@ -181,7 +182,7 @@ def to_internal(char_id):
         return Character.ROY
     return Character.UNKNOWN_CHARACTER
 
-def from_internal(character):
+def from_internal(character: Character) -> int:
     """Converts a character enum to an "external" ID.
 
     Mostly used at the Character Select Screen

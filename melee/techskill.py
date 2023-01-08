@@ -1,7 +1,10 @@
 """Helper functions for with some techskill examples"""
-from melee import enums
 
-def multishine(ai_state, controller):
+from melee import enums
+import melee.gamestate
+import melee.controller
+
+def multishine(ai_state: melee.gamestate.PlayerState, controller: melee.controller.Controller):
     """ Frame-perfect Multishines as Fox """
     #If standing, shine
     if ai_state.action == enums.Action.STANDING:
@@ -32,7 +35,7 @@ def multishine(ai_state, controller):
 
     controller.release_all()
 
-def upsmashes(ai_state, controller):
+def upsmashes(ai_state: melee.gamestate.PlayerState, controller: melee.controller.Controller):
     """ Spam upsmashes """
     if ai_state.action == enums.Action.STANDING:
         controller.tilt_analog(enums.Button.BUTTON_C, .5, 1)
@@ -43,7 +46,7 @@ def upsmashes(ai_state, controller):
 dashback_frame = -123
 
 
-def latency_test(gamestate, ai_state, controller):
+def latency_test(gamestate: melee.gamestate.GameState, ai_state: melee.gamestate.PlayerState, controller: melee.controller.Controller):
     """Tests for latency by dash dancing and gradually increasing delay
 
     Returns number of frames of delay (-1 if not applicable)

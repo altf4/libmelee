@@ -5,14 +5,13 @@ This can be used to talk to some server implementing the Slippstream protocol
 (i.e. the Project Slippi fork of Nintendont or Slippi Ishiiruka).
 """
 
+from typing import Dict
 import socket
 from enum import Enum
 import enet
 import json
-from ubjson.decoder import DecoderException
 import ubjson
 from struct import pack, unpack
-import time
 
 # The null token used for initial SlippiComm handshakes
 NULL_TOKEN = b'\x00\x00\x00\x00'
@@ -40,7 +39,7 @@ class CommType(Enum):
 class SlippstreamClient():
     """ Container representing a client to some SlippiComm server """
 
-    def __init__(self, address="127.0.0.1", port=51441, gamecube=False):
+    def __init__(self, address: str="127.0.0.1", port: int=51441, gamecube: bool=False):
         """ Constructor for this object """
         self._host = enet.Host(None, 1, 0, 0)
         self._peer = None
@@ -57,7 +56,7 @@ class SlippstreamClient():
         self.last_frame_time = 0
         self.server = None
 
-    def shutdown(self):
+    def shutdown(self) -> bool:
         """ Close down the socket and connection to the console """
         if self._peer:
             self._peer.send(0, enet.Packet())
@@ -73,7 +72,7 @@ class SlippstreamClient():
 
         return False
 
-    def dispatch(self, polling_mode):
+    def dispatch(self, polling_mode: bool) -> Dict[str, bytearray]:
         """Dispatch messages with the peer (read and write packets)"""
         event = None
         event_type = 1000
@@ -128,7 +127,7 @@ class SlippstreamClient():
 
         return None
 
-    def __new_handshake(self, cursor=0, token=NULL_TOKEN):
+    def __new_handshake(self, cursor: int=0, token: bytes=NULL_TOKEN) -> bytearray:
         """ Returns a new binary handshake message """
         handshake = bytearray()
         handshake_contents = ubjson.dumpb({
@@ -143,7 +142,7 @@ class SlippstreamClient():
         handshake += handshake_contents
         return handshake
 
-    def connect(self):
+    def connect(self) -> bool:
         """ Connect to the server
 
         Returns True on success, False on failure

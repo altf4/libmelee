@@ -2,6 +2,7 @@
 
 Reads Slippi game events from SLP file rather than over network
 """
+from typing import Dict
 
 import ubjson
 from enum import Enum
@@ -35,7 +36,7 @@ class SLPFileStreamer:
     def shutdown(self):
         pass
 
-    def _is_new_frame(self, event_bytes):
+    def _is_new_frame(self, event_bytes: bytes) -> bool:
         """Introspect the bytes of the event to see if it represents a new frame
 
         This is for supporting older SLP files that don't have frame bookends
@@ -48,7 +49,7 @@ class SLPFileStreamer:
             self._frame = frame
         return False
 
-    def dispatch(self, dummy):
+    def dispatch(self, _) -> Dict[str, bytearray]:
         """Read a single game event off the buffer
         """
         if self._index >= len(self._contents):
@@ -86,7 +87,7 @@ class SLPFileStreamer:
 
         return wrapper
 
-    def connect(self):
+    def connect(self) -> bool:
         with open(self._path, mode='rb') as file:
             full = ubjson.loadb(file.read())
             raw = full["raw"]
