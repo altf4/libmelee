@@ -2,6 +2,7 @@
         to make gameplay decisions
 """
 from dataclasses import dataclass, field
+from typing import Dict
 
 import numpy as np
 
@@ -24,42 +25,6 @@ class ECB:
     bottom: Position = field(default_factory=Position)
     left: Position = field(default_factory=Position)
     right: Position = field(default_factory=Position)
-
-@dataclass
-class GameState(object):
-    """Represents the state of a running game of Melee at a given moment in time"""
-    frame: int = -10000
-    """int: The current frame number. Monotonically increases. Can be negative."""
-    stage: enums.Stage = enums.Stage.FINAL_DESTINATION
-    """enums.Stage: The current stage being played on"""
-    menu_state: enums.Menu = enums.Menu.IN_GAME
-    """enums.MenuState: The current menu scene, such as IN_GAME, or STAGE_SELECT"""
-    submenu: enums.SubMenu = enums.SubMenu.UNKNOWN_SUBMENU
-    """(enums.SubMenu): The current sub-menu"""
-    players = dict()
-    """(dict of int - gamestate.PlayerState): Dict of PlayerState objects. Key is controller port"""
-    projectiles = []
-    """(list of Projectile): All projectiles (items) currently existing"""
-    ready_to_start: bool = False
-    """(bool): Is the 'ready to start' banner showing at the character select screen?"""
-    is_teams: bool = False
-    """(bool): Is this a teams game?"""
-    distance: float = 0.0
-    """(float): Euclidian distance between the two players. (or just Popo for climbers)"""
-    menu_selection: int = 0
-    """(int): The index of the selected menu item for when in menus."""
-    startAt: str = ""
-    """(str): Timestamp string of when the game started. Such as '2018-06-22T07:52:59Z'"""
-    playedOn: str = ""
-    """(str): Platform the game was played on (values include dolphin, console, and network). Might be blank."""
-    consoleNick: str = ""
-    """(str): The name of the console the replay was created on. Might be blank."""
-    _newframe: int = True
-    _fod_platform_left: int = 0
-    _fod_platform_right: int = 0
-    """(float): The current height of FoD platforms"""        
-    custom = dict()
-    """(dict): Custom fields to be added by the user"""
 
 @dataclass
 class PlayerState(object):
@@ -129,7 +94,7 @@ class PlayerState(object):
     """(int): Interruptible as soon as"""
     moonwalkwarning: bool = False
     """(bool): Helper variable to tell you that if you dash back right now, it'll moon walk"""
-    controller_state: melee.controller.ControllerState = melee.controller.ControllerState()
+    controller_state: melee.controller.ControllerState = field(default_factory=melee.controller.ControllerState)
     """(controller.ControllerState): What buttons were pressed for this character"""
     ecb: ECB = field(default_factory=ECB)
     """(gamestate.ECB): Environmental Collision Box"""
@@ -145,6 +110,42 @@ class PlayerState(object):
     """(str): The rollback connect code for the player. Might be blank."""
     team_id: int = 0
     """(int): The team ID of the player. This is different than costume, and only relevant during teams."""
+
+@dataclass
+class GameState(object):
+    """Represents the state of a running game of Melee at a given moment in time"""
+    frame: int = -10000
+    """int: The current frame number. Monotonically increases. Can be negative."""
+    stage: enums.Stage = enums.Stage.FINAL_DESTINATION
+    """enums.Stage: The current stage being played on"""
+    menu_state: enums.Menu = enums.Menu.IN_GAME
+    """enums.MenuState: The current menu scene, such as IN_GAME, or STAGE_SELECT"""
+    submenu: enums.SubMenu = enums.SubMenu.UNKNOWN_SUBMENU
+    """(enums.SubMenu): The current sub-menu"""
+    players: Dict[int, PlayerState] = field(default_factory=dict)
+    """(dict of int - gamestate.PlayerState): Dict of PlayerState objects. Key is controller port"""
+    projectiles = []
+    """(list of Projectile): All projectiles (items) currently existing"""
+    ready_to_start: bool = False
+    """(bool): Is the 'ready to start' banner showing at the character select screen?"""
+    is_teams: bool = False
+    """(bool): Is this a teams game?"""
+    distance: float = 0.0
+    """(float): Euclidian distance between the two players. (or just Popo for climbers)"""
+    menu_selection: int = 0
+    """(int): The index of the selected menu item for when in menus."""
+    startAt: str = ""
+    """(str): Timestamp string of when the game started. Such as '2018-06-22T07:52:59Z'"""
+    playedOn: str = ""
+    """(str): Platform the game was played on (values include dolphin, console, and network). Might be blank."""
+    consoleNick: str = ""
+    """(str): The name of the console the replay was created on. Might be blank."""
+    _newframe: int = True
+    _fod_platform_left: int = 0
+    _fod_platform_right: int = 0
+    """(float): The current height of FoD platforms"""        
+    custom: Dict[any, any] = field(default_factory=dict)
+    """(dict): Custom fields to be added by the user"""
 
 @dataclass
 class Projectile:
