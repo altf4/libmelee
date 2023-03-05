@@ -47,8 +47,6 @@ class ControllerState:
         """(float): L shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
-        self.dtm_mode = False
-        """(bool): Are we pressing buttons via DTMs? (False for controller mode)"""
 
     def toBytes(self):
         """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
@@ -116,6 +114,7 @@ class Controller:
             port (int): Which controller port to plug into. Must be 1-4.
             type (enums.ControllerType): The type of controller this is
         """
+        self.dtm_mode = False
         self._is_dolphin = console.system == "dolphin"
         if self._is_dolphin:
             self.pipe_path = console.get_dolphin_pipes_path(port)
@@ -357,7 +356,13 @@ class Controller:
     def reset_tastm32(self, controller_mode):
         """Resets the TAStm32"""
         dev = melee.tastm32.TAStm32(self.tastm32)
-        dev.reset()
+        success = False
+        for i in range(10):
+            if dev.reset():
+                success = True
+                break
+        if not success:
+            raise RuntimeError('Error during reset')
         if controller_mode:
             # controller mode
             self.tastm32.write(b'C1')
