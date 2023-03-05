@@ -75,7 +75,7 @@ class TAStm32():
         if data == b'\x01R':
             return True
         else:
-            raise RuntimeError('Error during reset')
+            return False
 
     def enable_controller(self):
         self.write(b'C1')
