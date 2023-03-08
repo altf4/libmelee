@@ -592,6 +592,8 @@ class Console:
     def __pre_frame(self, gamestate, event_bytes):
         # Grab the physical controller state and put that into the controller state
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
+        if controller_port > 4:
+            return
 
         if controller_port not in gamestate.players:
             gamestate.players[controller_port] = PlayerState()
@@ -641,6 +643,8 @@ class Console:
         gamestate.is_teams = self._is_teams
         gamestate.frame = np.ndarray((1,), ">i", event_bytes, 0x1)[0]
         controller_port = np.ndarray((1,), ">B", event_bytes, 0x5)[0] + 1
+        if controller_port > 4:
+            return
 
         if controller_port not in gamestate.players:
             gamestate.players[controller_port] = PlayerState()
