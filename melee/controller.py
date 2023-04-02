@@ -353,16 +353,14 @@ class Controller:
         """Unpauses execution of DTM playing"""
         self.tastm32.write(b'p0')
 
+    def skip_frame(self):
+        """Skips a frame in the TAStm32's buffer"""
+        self.tastm32.write(b'KK') # K skips a poll. 2 polls per frame
+
     def reset_tastm32(self, controller_mode):
         """Resets the TAStm32"""
         dev = melee.tastm32.TAStm32(self.tastm32)
-        success = False
-        for i in range(10):
-            if dev.reset():
-                success = True
-                break
-        if not success:
-            raise RuntimeError('Error during reset')
+        dev.reset()
         if controller_mode:
             # controller mode
             self.tastm32.write(b'C1')
@@ -390,7 +388,8 @@ class Controller:
                 data = run_id + buffer[fn]
                 dev.write(data)
                 if fn % 100 == 0:
-                    print(f'Sending Latch: {fn}')
+                    #print(f'Sending Latch: {fn}')
+                    pass
                 fn += 1
             except IndexError:
                 pass
@@ -419,7 +418,8 @@ class Controller:
                 data = self._run_id + buffer[fn]
                 dev.write(data)
                 if fn % 100 == 0:
-                    print(f'Sending Latch: {fn}')
+                    #print(f'Sending Latch: {fn}')
+                    pass
                 fn += 1
             except IndexError:
                 pass
@@ -517,4 +517,5 @@ class Controller:
                 cmd = self.tastm32.read(1)
 
                 if cmd != b'A':
-                    print("Got error response: ", bytes(cmd))
+                    #print("Got error response: ", bytes(cmd))
+                    pass

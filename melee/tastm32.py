@@ -62,20 +62,16 @@ class TAStm32():
         return data
 
     def reset(self):
-        c = self.read(1)
-        if c == '':
-            pass
-        else:
-            numBytes = self.ser.inWaiting()
-            if numBytes > 0:
-                c += self.read(numBytes)
-        self.write(b'R')
-        time.sleep(0.1)
-        data = self.read(2)
-        if data == b'\x01R':
-            return True
-        else:
-            return False
+        for x in range(3):
+            self.ser.reset_input_buffer()
+            self.write(b'R')
+            time.sleep(0.1)
+            data = self.read(2)
+            if data == b'\x01R': # success
+                return True
+
+        #failure
+        raise RuntimeError('Error during reset')
 
     def enable_controller(self):
         self.write(b'C1')
@@ -272,7 +268,8 @@ class TAStm32():
                         data = run.run_id + run.buffer[run.fn]
                         self.write(data)
                         if run.fn % 100 == 0:
-                            print('Sending Latch: {}'.format(run.fn))
+                            pass
+                            #print('Sending Latch: {}'.format(run.fn))
                     except IndexError:
                         command = []
                         command.append(run.run_id + run.blankframe)
@@ -289,7 +286,8 @@ class TAStm32():
                                 command.append(run.run_id + run.buffer[run.fn])
                                 run.fn += 1
                                 if run.fn % 100 == 0:
-                                    print('Sending Latch: {}'.format(run.fn))
+                                    pass
+                                    #print('Sending Latch: {}'.format(run.fn))
                             except IndexError:
                                 command.append(run.run_id + run.blankframe)
                                 run.fn += 1
