@@ -40,87 +40,87 @@ EDGE_GROUND_POSITION = {
     enums.Stage.YOSHIS_STORY : 56
 }
 
-def top_platform_position(stage):
+def top_platform_position(gamestate):
     """Gets the position of the top platform
 
     Args:
-        (enums.Stage): The current stage
+        (gamestate.Gamestate): The current gamestate
 
     Returns:
         (float, float, float): Tuple of height, left edge, right edge. (None, None, None) if no platform
     """
-    if stage == enums.Stage.FINAL_DESTINATION:
+    if gamestate.stage == enums.Stage.FINAL_DESTINATION:
         return (None, None, None)
-    if stage == enums.Stage.POKEMON_STADIUM:
+    if gamestate.stage == enums.Stage.POKEMON_STADIUM:
         return (None, None, None)
-    if stage == enums.Stage.BATTLEFIELD:
+    if gamestate.stage == enums.Stage.BATTLEFIELD:
         return (54.40010070800781, -18.80000114440918, 18.80000114440918)
-    if stage == enums.Stage.DREAMLAND:
+    if gamestate.stage == enums.Stage.DREAMLAND:
         return (51.42539978027344, -19.01810073852539, 19.017099380493164)
-    if stage == enums.Stage.FOUNTAIN_OF_DREAMS:
+    if gamestate.stage == enums.Stage.FOUNTAIN_OF_DREAMS:
         return (42.750099182128906, -14.25, 14.25)
-    if stage == enums.Stage.YOSHIS_STORY:
+    if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (42.000099182128906, -15.75, 15.75)
     return (None, None, None)
 
-def side_platform_position(right_platform, stage):
+def side_platform_position(right_platform, gamestate):
     """Gets the position of the specified side platform
 
     Args:
         (bool): Is it the right platform?
-        (enums.Stage): The current stage
+        (gamestate.Gamestate): The current gamestate
 
     Returns:
         (float, float, float): Tuple of height, left edge, right edge
     """
     if right_platform:
-        return right_platform_position(stage)
+        return right_platform_position(gamestate)
     else:
-        return left_platform_position(stage)
+        return left_platform_position(gamestate)
 
-def left_platform_position(stage):
+def left_platform_position(gamestate):
     """Gets the position of the left platform
 
     Args:
-        (enums.Stage): The current stage
+        (gamestate.Gamestate): The current gamestate
 
     Returns:
         (float, float, float): Tuple of height, left edge, right edge
     """
-    if stage == enums.Stage.FINAL_DESTINATION:
+    if gamestate.stage == enums.Stage.FINAL_DESTINATION:
         return (None, None, None)
-    if stage == enums.Stage.POKEMON_STADIUM:
+    if gamestate.stage == enums.Stage.POKEMON_STADIUM:
         return (25.000099182128906, -55, -25)
-    if stage == enums.Stage.BATTLEFIELD:
+    if gamestate.stage == enums.Stage.BATTLEFIELD:
         return (27.20009994506836, -57.60000228881836, -20)
-    if stage == enums.Stage.DREAMLAND:
+    if gamestate.stage == enums.Stage.DREAMLAND:
         return (30.14219856262207, -61.39289855957031, -31.725400924682617)
-    if stage == enums.Stage.FOUNTAIN_OF_DREAMS:
-        return (None, None, None) #TODO
-    if stage == enums.Stage.YOSHIS_STORY:
+    if gamestate.stage == enums.Stage.FOUNTAIN_OF_DREAMS:
+        return (gamestate._fod_platform_left, -49.5, -21)
+    if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (23.450098037719727, -59.5, -28.0)
     return (None, None, None)
 
-def right_platform_position(stage):
+def right_platform_position(gamestate):
     """Gets the position of the right platform
 
     Args:
-        (enums.Stage): The current stage
+        (gamestate.Gamestate): The current gamestate
 
     Returns:
         (float, float, float): Tuple of height, left edge, right edge
     """
-    if stage == enums.Stage.FINAL_DESTINATION:
+    if gamestate.stage == enums.Stage.FINAL_DESTINATION:
         return (None, None, None)
-    if stage == enums.Stage.POKEMON_STADIUM:
+    if gamestate.stage == enums.Stage.POKEMON_STADIUM:
         return (25.000099182128906, 25, 55)
-    if stage == enums.Stage.BATTLEFIELD:
+    if gamestate.stage == enums.Stage.BATTLEFIELD:
         return (27.20009994506836, 20, 57.60000228881836)
-    if stage == enums.Stage.DREAMLAND:
+    if gamestate.stage == enums.Stage.DREAMLAND:
         return (30.242599487304688, 31.70359992980957, 63.074501037597656)
-    if stage == enums.Stage.FOUNTAIN_OF_DREAMS:
-        return (None, None, None) #TODO
-    if stage == enums.Stage.YOSHIS_STORY:
+    if gamestate.stage == enums.Stage.FOUNTAIN_OF_DREAMS:
+        return (gamestate._fod_platform_right, 49.5, 21)
+    if gamestate.stage == enums.Stage.YOSHIS_STORY:
         return (23.450098037719727, 28.0, 59.5)
     return (None, None, None)
 

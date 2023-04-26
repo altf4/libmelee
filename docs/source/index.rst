@@ -47,7 +47,7 @@ If you're looking to read SLP files and don't need to interface with Dolphin, th
 .. code-block:: python
   :linenos:
 
-  console = melee.Console(is_dolphin=False, path="YOUR_FILE.slp")
+  console = melee.Console(system="file", path="YOUR_FILE.slp")
   console.connect()
 
   while True:

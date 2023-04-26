@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import melee
 
-console = melee.Console(is_dolphin=False,
+console = melee.Console(system="file",
                         allow_old_version=False,
                         path="PATH_TO_SLP_FILE"
                         )

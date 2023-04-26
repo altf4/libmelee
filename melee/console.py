@@ -5,13 +5,13 @@ is your method to start and stop Dolphin, set configs, and get the latest GameSt
 """
 
 from collections import defaultdict
+from typing import Optional
 from packaging import version
 
 import time
 import os
 import stat
 import configparser
-import collections
 import csv
 import subprocess
 import platform
@@ -23,8 +23,9 @@ import shutil
 import tempfile
 
 from melee import enums
-from melee.gamestate import GameState, Projectile, Action, PlayerState
-from melee.slippstream import SlippstreamClient, CommType, EventType
+from melee.enums import Action
+from melee.gamestate import GameState, Projectile, PlayerState
+from melee.slippstream import SlippstreamClient, EventType
 from melee.slpfilestreamer import SLPFileStreamer
 from melee import stages
 
@@ -50,32 +51,58 @@ def _ignore_fifos(src, names):
 def _copytree_safe(src, dst):
     shutil.copytree(src, dst, ignore=_ignore_fifos)
 
+def _default_home_path(path: str) -> str:
+    if platform.system() == "Darwin":
+        return path + "/Contents/Resources/User/"
+
+    # Next check if the home path is in the same dir as the exe
+    user_path = path + "/User/"
+    if os.path.isdir(user_path):
+        return user_path
+
+    # Otherwise, this must be an appimage install. Use the .config
+    if platform.system() == "Linux":
+        return str(Path.home()) + "/.config/SlippiOnline/"
+
+    raise FileNotFoundError("Could not find dolphin home directory.")
+
+
 # pylint: disable=too-many-instance-attributes
 class Console:
-    """The console object that represents your Dolphin / Wii / SLP file
+    """The console object that represents your Dolphin / GameCube / SLP file
     """
     def __init__(self,
                  path=None,
-                 is_dolphin=True,
+                 system="dolphin",
                  dolphin_home_path=None,
                  tmp_home_directory=True,
+                 copy_home_directory=True,
                  slippi_address="127.0.0.1",
                  slippi_port=51441,
                  online_delay=2,
                  blocking_input=False,
                  polling_mode=False,
                  allow_old_version=False,
-                 logger=None):
+                 logger=None,
+                 setup_gecko_codes=True,
+                 fullscreen=True,
+                 gfx_backend="",
+                 disable_audio=False,
+                 overclock: Optional[float] = None,
+                 save_replays=True,
+                ):
         """Create a Console object
 
         Args:
             path (str): Path to the directory where your dolphin executable is located.
                 If None, will assume the dolphin is remote and won't try to configure it.
             dolphin_home_path (str): Path to dolphin user directory. Optional.
-            is_dolphin (bool): Is this console a dophin instance, or SLP file?
+            system (string): One of "dolphin", "file", or "gamecube"
             tmp_home_directory (bool): Use a temporary directory for the dolphin User path
                 This is useful so instances don't interfere with each other.
-            slippi_address (str): IP address of the Dolphin / Wii to connect to.
+            copy_home_directory (bool): Copy an existing home directory on the system.
+                Unset to get a fresh directory that doesn't depend on system state.
+            slippi_address (str): IP address of the Dolphin / gamecube to connect to.
             slippi_port (int): UDP port that slippi will listen on
             online_delay (int): How many frames of delay to apply in online matches
             blocking_input (bool): Should dolphin block waiting for bot input
@@ -87,21 +114,30 @@ class Console:
                 Only enable if you know what you're doing. You probably don't want this.
                 Gamestates will be missing key information, come in really late, or possibly not work at all
             logger (logger.Logger): Logger instance to use. None for no logger.
+            setup_gecko_codes (bool): Overwrites the user's GALE01r2.ini with libmelee's
+                custom gecko codes. Should be used with tmp_home_directory.
+            fullscreen (bool): Run melee fullscreen.
+            gfx_backend (str): Graphics backend. Leave blank to use default.
+            disable_audio (bool): Turn off sound.
+            overclock (bool): Overclock the dolphin CPU.
+            save_replays (bool): Save slippi replays.
         """
         self.logger = logger
-        self.is_dolphin = is_dolphin
+        self.system = system
         self.path = path
         self.dolphin_home_path = dolphin_home_path
-        if tmp_home_directory and self.is_dolphin:
-            temp_dir = tempfile.mkdtemp(prefix='libmelee_')
-            temp_dir += "/User/"
-            _copytree_safe(self._get_dolphin_home_path(), temp_dir)
-            self.dolphin_home_path = temp_dir
+        self.temp_dir = None
+        if tmp_home_directory and self.system =="dolphin":
+            self.temp_dir = tempfile.mkdtemp(prefix='libmelee_')
+            home_dir = self.temp_dir + "/User/"
+            if copy_home_directory:
+                _copytree_safe(self._get_dolphin_home_path(), home_dir)
+            self.dolphin_home_path = home_dir
 
         self.processingtime = 0
         self._frametimestamp = time.time()
         self.slippi_address = slippi_address
-        """(str): IP address of the Dolphin / Wii to connect to."""
+        """(str): IP address of the Dolphin / gamecube to connect to."""
         self.slippi_port = slippi_port
         """(int): UDP port of slippi server. Default 51441"""
         self.eventsize = [0] * 0x100
@@ -125,29 +161,27 @@ class Console:
         self._invuln_start = {1:(0,0), 2:(0,0), 3:(0,0), 4:(0,0)}
         self._is_teams = False
 
+        self.setup_gecko_codes = setup_gecko_codes
+        self.online_delay = online_delay
+        self.blocking_input = blocking_input
+        self.fullscreen = fullscreen
+        self.gfx_backend = gfx_backend
+        self.disable_audio = disable_audio
+        self.overclock = overclock
+        self.save_replays = save_replays
+
         # Keep a running copy of the last gamestate produced
         self._prev_gamestate = GameState()
         # Half-completed gamestate not yet ready to add to the list
         self._temp_gamestate = None
         self._process = None
-        if self.is_dolphin:
-            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port)
+        assert(self.system in ["dolphin", "gamecube", "file"])
+        if self.system == "dolphin":
+            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, True)
             if self.path:
-                # Setup some dolphin config options
-                dolphin_ini_path = self._get_dolphin_config_path() + "Dolphin.ini"
-                if not os.path.isfile(dolphin_ini_path):
-                    raise InvalidDolphinPath(self._get_dolphin_config_path())
-                config = configparser.ConfigParser()
-                config.read(dolphin_ini_path)
-                config.set("Core", 'slippienablespectator', "True")
-                config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
-                # Set online delay
-                config.set("Core", 'slippionlinedelay', str(online_delay))
-                # Turn on background input so we don't need to have window focus on dolphin
-                config.set("Input", 'backgroundinput', "True")
-                config.set("Core", 'BlockingPipes', str(blocking_input))
-                with open(dolphin_ini_path, 'w') as dolphinfile:
-                    config.write(dolphinfile)
+                self._setup_home_directory()
+        elif self.system == "gamecube":
+            self._slippstream = SlippstreamClient(self.slippi_address, self.slippi_port, False)
         else:
             self._slippstream = SLPFileStreamer(self.path)
 
@@ -174,7 +208,7 @@ class Console:
                 self.characterdata[enums.Character(line["CharacterIndex"])] = line
 
     def connect(self):
-        """ Connects to the Slippi server (dolphin or wii).
+        """ Connects to the Slippi server (dolphin or gamecube).
 
         Returns:
             True is successful, False otherwise
@@ -188,25 +222,10 @@ class Console:
 
         assert self.path, "Must specify a dolphin path."
 
-        if platform.system() == "Darwin":
-            return self.path + "/Contents/Resources/User/"
-
-        # Next check if the home path is in the same dir as the exe
-        user_path = self.path + "/User/"
-        if os.path.isdir(user_path):
-            return user_path
-
-        # Otherwise, this must be an appimage install. Use the .config
-        if platform.system() == "Linux":
-            return str(Path.home()) + "/.config/SlippiOnline/"
-
-        raise FileNotFoundError("Could not find dolphin home directory.")
+        return _default_home_path(self.path)
 
     def _get_dolphin_config_path(self):
         """ Return the path to dolphin's config directory."""
-        if platform.system() == "Darwin":
-            return self.path + "/Contents/Resources/User/Config/"
-
         return self._get_dolphin_home_path() + "Config/"
 
     def get_dolphin_pipes_path(self, port):
@@ -219,7 +238,7 @@ class Console:
             os.makedirs(pipes_path, exist_ok=True)
         return pipes_path + f"slippibot{port}"
 
-    def run(self, iso_path=None, dolphin_user_path=None, environment_vars=None):
+    def run(self, iso_path=None, dolphin_user_path=None, environment_vars=None, exe_name=None):
         """Run the Dolphin emulator.
 
         This starts the Dolphin process, so don't run this if you're connecting to an
@@ -230,12 +249,13 @@ class Console:
             dolphin_user_path (str, optional): Alternative user path for dolphin
                 if not using the default
             environment_vars (dict, optional): Dict (string->string) of environment variables to set
+            exe_name (str, optional): Name of the dolphin executable.
         """
-        assert self.is_dolphin and self.path
+        assert self.system == "dolphin" and self.path
 
         dolphin_user_path = dolphin_user_path or self._get_dolphin_home_path()
 
-        exe_name = "dolphin-emu"
+        exe_name = exe_name or "dolphin-emu"
         if platform.system() == "Windows":
             exe_name = "Slippi Dolphin.exe"
         elif platform.system() == "Darwin":
@@ -266,7 +286,7 @@ class Console:
         """ Stop the console.
 
         For Dolphin instances, this will kill the dolphin process.
-        For Wiis and SLP files, it just shuts down our connection
+        For gamecubes and SLP files, it just shuts down our connection
          """
         if self.path:
             self.connected = False
@@ -274,6 +294,59 @@ class Console:
             # If dolphin, kill the process
             if self._process is not None:
                 self._process.terminate()
+                self._process = None
+
+        if self.temp_dir:
+            shutil.rmtree(self.temp_dir)
+            self.temp_dir = None
+
+    def _setup_home_directory(self,):
+        self._setup_dolphin_ini()
+        if self.setup_gecko_codes:
+            self._setup_gecko_codes()
+
+    def _setup_dolphin_ini(self):
+        # Setup some dolphin config options
+        config_path = self._get_dolphin_config_path()
+        os.makedirs(config_path, exist_ok=True)
+        dolphin_ini_path = os.path.join(config_path, "Dolphin.ini")
+
+        config = configparser.ConfigParser()
+        if os.path.isfile(dolphin_ini_path):
+            config.read(dolphin_ini_path)
+
+        for section in ["Core", "Input", "Display", "DSP"]:
+            if not config.has_section(section):
+                config.add_section(section)
+        config.set("Core", 'slippienablespectator', "True")
+        config.set("Core", 'slippispectatorlocalport', str(self.slippi_port))
+        # Set online delay
+        config.set("Core", 'slippionlinedelay', str(self.online_delay))
+        # Turn on background input so we don't need to have window focus on dolphin
+        config.set("Input", 'backgroundinput', "True")
+        config.set("Core", 'BlockingPipes', str(self.blocking_input))
+        config.set("Core", "GFXBackend", self.gfx_backend)
+        config.set("Display", "Fullscreen", str(self.fullscreen))
+        if self.disable_audio:
+            config.set("DSP", "Backend", "No audio output")
+
+        if self.overclock:
+            config.set("Core", "Overclock", str(self.overclock))
+            config.set("Core", "OverclockEnable", "True")
+
+        config.set("Core", "SlippiSaveReplays", str(self.save_replays))
+
+        with open(dolphin_ini_path, 'w') as dolphinfile:
+            config.write(dolphinfile)
+
+    def _setup_gecko_codes(self):
+        game_settings_path = os.path.join(self._get_dolphin_home_path(), 'GameSettings')
+        os.makedirs(game_settings_path, exist_ok=True)
+
+        libmelee_path = os.path.dirname(os.path.realpath(__file__))
+        gale01r2_ini_path = os.path.join(libmelee_path, "GALE01r2.ini")
+
+        shutil.copy(gale01r2_ini_path, game_settings_path)
 
     def setup_dolphin_controller(self, port, controllertype=enums.ControllerType.STANDARD):
         """Setup the necessary files for dolphin to recognize the player at the given
@@ -369,14 +442,17 @@ class Console:
 
                 elif message["type"] == "game_event":
                     if len(message["payload"]) > 0:
-                        if self.is_dolphin:
+                        if self.system == "dolphin":
                             frame_ended = self.__handle_slippstream_events(base64.b64decode(message["payload"]), self._temp_gamestate)
                         else:
                             frame_ended = self.__handle_slippstream_events(message["payload"], self._temp_gamestate)
 
                 elif message["type"] == "menu_event":
                     if len(message["payload"]) > 0:
-                        self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
+                        if self.system == "dolphin":
+                            self.__handle_slippstream_menu_event(base64.b64decode(message["payload"]), self._temp_gamestate)
+                        else:
+                            self.__handle_slippstream_menu_event(message["payload"], self._temp_gamestate)
                         frame_ended = True
 
                 elif self._use_manual_bookends and message["type"] == "frame_end" and self._frame != -10000:
@@ -410,6 +486,9 @@ class Console:
         """ Handle a series of events, provided sequentially in a byte array """
         gamestate.menu_state = enums.Menu.IN_GAME
         while len(event_bytes) > 0:
+            # A null message type means that the rest of the data is padding
+            if event_bytes[0] == 0x00:
+                return True
             event_size = self.eventsize[event_bytes[0]]
             if len(event_bytes) < event_size:
                 print("WARNING: Something went wrong unpacking events. Data is probably missing")
@@ -684,15 +763,14 @@ class Console:
         ecb_top_x = 0
         ecb_top_y = 0
         try:
-            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x4D)[0]
+            ecb_top_x = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
         except TypeError:
             ecb_top_x = 0
         # ECB Top edge, y
         try:
-            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x51)[0]
+            ecb_top_y = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
         except TypeError:
             ecb_top_y = 0
-        playerstate.ecb.top = collections.namedtuple("Position", ['x', 'y'])
         playerstate.ecb.top.x = ecb_top_x
         playerstate.ecb.top.y = ecb_top_y
         playerstate.ecb_top = (ecb_top_x, ecb_top_y)
@@ -701,15 +779,14 @@ class Console:
         ecb_bot_x = 0
         ecb_bot_y = 0
         try:
-            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x55)[0]
+            ecb_bot_x = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
         except TypeError:
             ecb_bot_x = 0
         # ECB Bottom edge, y coord
         try:
-            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x59)[0]
+            ecb_bot_y = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
         except TypeError:
             ecb_bot_y = 0
-        playerstate.ecb.bottom = collections.namedtuple("Position", ['x', 'y'])
         playerstate.ecb.bottom.x = ecb_bot_x
         playerstate.ecb.bottom.y = ecb_bot_y
         playerstate.ecb_bottom = (ecb_bot_x, ecb_bot_y)
@@ -718,15 +795,14 @@ class Console:
         ecb_left_x = 0
         ecb_left_y = 0
         try:
-            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x5D)[0]
+            ecb_left_x = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
         except TypeError:
             ecb_left_x = 0
         # ECB left edge, y coord
         try:
-            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x61)[0]
+            ecb_left_y = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
         except TypeError:
             ecb_left_y = 0
-        playerstate.ecb.left = collections.namedtuple("Position", ['x', 'y'])
         playerstate.ecb.left.x = ecb_left_x
         playerstate.ecb.left.y = ecb_left_y
         playerstate.ecb_left = (ecb_left_x, ecb_left_y)
@@ -735,20 +811,29 @@ class Console:
         ecb_right_x = 0
         ecb_right_y = 0
         try:
-            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x65)[0]
+            ecb_right_x = np.ndarray((1,), ">f", event_bytes, 0x69)[0]
         except TypeError:
             ecb_right_x = 0
         # ECB right edge, y coord
         try:
-            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x69)[0]
+            ecb_right_y = np.ndarray((1,), ">f", event_bytes, 0x6D)[0]
         except TypeError:
             ecb_right_y = 0
-        playerstate.ecb.right = collections.namedtuple("Position", ['x', 'y'])
         playerstate.ecb.right.x = ecb_right_x
         playerstate.ecb.right.y = ecb_right_y
         playerstate.ecb_right = (ecb_right_x, ecb_right_y)
         if self._use_manual_bookends:
             self._frame = gamestate.frame
+
+        # FoD platform heights
+        try:
+            gamestate._fod_platform_left = np.ndarray((1,), ">f", event_bytes, 0x71)[0]
+        except TypeError:
+            gamestate._fod_platform_left = 0
+        try:
+            gamestate._fod_platform_right = np.ndarray((1,), ">f", event_bytes, 0x75)[0]
+        except TypeError:
+            gamestate._fod_platform_right = 0
 
     def __frame_bookend(self, gamestate, event_bytes):
         self._prev_gamestate = gamestate
@@ -826,7 +911,6 @@ class Console:
             gamestate.players[2] = PlayerState()
             gamestate.players[3] = PlayerState()
             gamestate.players[4] = PlayerState()
-
         elif scene == 0x0202:
             gamestate.menu_state = enums.Menu.IN_GAME
         elif scene == 0x0001:
@@ -839,6 +923,8 @@ class Console:
             gamestate.players[4] = PlayerState()
         elif scene == 0x0000:
             gamestate.menu_state = enums.Menu.PRESS_START
+        elif scene == 0x0402:
+            gamestate.menu_state = enums.Menu.POSTGAME_SCORES
         else:
             gamestate.menu_state = enums.Menu.UNKNOWN_MENU
 
