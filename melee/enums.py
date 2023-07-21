@@ -678,9 +678,47 @@ class Action(Enum):
 
 class ProjectileType(Enum):
     """Primary type of prejectile or item """
+    CAPSULE = 0x00
+    BOX = 0x01
+    BARREL = 0x02
+    EGG = 0x03
+    PARTY_BALL = 0x04
+    BARREL_CANNON = 0x05
     BOB_OMB = 0x06 # Bob-omb (BombHei)
     MR_SATURN = 0x07 # Mr. Saturn (Dosei)
+    HEART_CONTAINER = 0x08
+    MAXIM_TOMATO = 0x09
+    STAR_MAN = 0x0A
+    HOMERUN_BAT = 0x0B
     BEAMSWORD = 0x0C # Beam Sword
+    PARASOL = 0x0D
+    GREEN_SHELL = 0x0E
+    RED_SHELL = 0x0F
+    RAY_GUN = 0x10
+    FREEZIE = 0x11
+    FOOD = 0x12
+    PROXY_MINE = 0x13
+    FLIPPER = 0x14
+    SUPER_SCOPE = 0x15
+    STAR_ROD = 0x16
+    LIPS_STICK = 0x17
+    FAN = 0x18
+    FIRE_FLOWER = 0x19
+    SUPER_MUSHROOM = 0x1A
+    MINI_MUSHROOM = 0x1B
+    HAMMER = 0x1C
+    WARP_STAR = 0x1D
+    SCREW_ATTACK = 0x1E
+    BUNNY_HOOD = 0x1F
+    METAL_BOX = 0x20
+    CLOAKING_DEVICE = 0x21
+    POKEBALL = 0x22
+    YOSHI_EGG = 0x2A
+    GOOMBA = 0x2B
+    REDEAD = 0x2C
+    OCTOROK = 0x2D
+    OTTOSEA = 0x2E
+    STONE = 0x2F
     MARIO_FIREBALL = 0x30 # Mario's fire
     DR_MARIO_CAPSULE = 0x31 # Dr.Mario's Capsule
     KIRBY_CUTTER = 0x32 # Kirby's Cutter beam
