@@ -187,7 +187,7 @@ class Controller:
                     print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
                     return False
                 # controller mode
-                self.tastm32.write(b'C1')
+                self.tastm32.write(b'V1')
                 # Set to gamecube mode
                 self.tastm32.write(b'SAG\x80\x00')
                 # no bulk transfer
@@ -363,7 +363,7 @@ class Controller:
         dev.reset()
         if controller_mode:
             # controller mode
-            self.tastm32.write(b'C1')
+            self.tastm32.write(b'V1')
             # Set to gamecube mode
             self.tastm32.write(b'SAG\x80\x00')
             # no bulk transfer

@@ -74,10 +74,10 @@ class TAStm32():
         raise RuntimeError('Error during reset')
 
     def enable_controller(self):
-        self.write(b'C1')
+        self.write(b'V1')
 
     def disable_controller(self):
-        self.write(b'C0')
+        self.write(b'V0')
 
     def enable_relay(self):
         self.write(b'r1')
