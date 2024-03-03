@@ -658,11 +658,11 @@ class Console:
         raw_main_x = 0
         raw_main_y = 0
         try:
-            raw_main_x = int(np.ndarray((1,), ">B", event_bytes, 0x3B)[0])
+            raw_main_x = int(np.ndarray((1,), ">b", event_bytes, 0x3B)[0])
         except TypeError:
             pass
         try:
-            raw_main_y = int(np.ndarray((1,), ">B", event_bytes, 0x40)[0])
+            raw_main_y = int(np.ndarray((1,), ">b", event_bytes, 0x40)[0])
         except TypeError:
             pass
         playerstate.controller_state.raw_main_stick = (raw_main_x, raw_main_y)
