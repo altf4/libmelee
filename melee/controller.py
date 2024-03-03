@@ -7,6 +7,7 @@ import copy
 import time
 import serial
 from struct import pack
+
 try:
     import win32file
     import pywintypes
@@ -15,14 +16,15 @@ except ImportError:
 
 from melee import enums
 
+
 class ControllerState:
     """A snapshot of the state of a virtual controller"""
 
     def __init__(self):
-        __slots__ = ('button', 'main_stick', 'c_stick', 'l_shoulder', 'r_shoulder')
+        __slots__ = ("button", "main_stick", "c_stick", "l_shoulder", "r_shoulder")
         self.button = dict()
         """(dict of enums.Button to bool): For the each Button as key, tells you if the button is pressed."""
-        #Boolean buttons
+        # Boolean buttons
         self.button[enums.Button.BUTTON_A] = False
         self.button[enums.Button.BUTTON_B] = False
         self.button[enums.Button.BUTTON_X] = False
@@ -35,19 +37,21 @@ class ControllerState:
         self.button[enums.Button.BUTTON_D_DOWN] = False
         self.button[enums.Button.BUTTON_D_LEFT] = False
         self.button[enums.Button.BUTTON_D_RIGHT] = False
-        #Analog sticks
-        self.main_stick = (.5, .5)
+        # Analog sticks
+        self.main_stick = (0.5, 0.5)
         """(pair of floats): The main stick's x,y position. Ranges from 0->1, 0.5 is neutral"""
-        self.c_stick = (.5, .5)
+        self.c_stick = (0.5, 0.5)
         """(pair of floats): The C stick's x,y position. Ranges from 0->1, 0.5 is neutral"""
-        #Analog shoulders
+        self.raw_main_stick = (0, 0)
+        """(pair of ints): The raw unprocessed main stick coordinates. Ranges from -80 -> 80. 0 is neural. """
+        # Analog shoulders
         self.l_shoulder = 0
         """(float): L shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
         self.r_shoulder = 0
         """(float): R shoulder analog press. Ranges from 0 (not pressed) to 1 (fully pressed)"""
 
     def toBytes(self):
-        """ Serialize the controller state into an 8 byte sequence that the Gamecube uses """
+        """Serialize the controller state into an 8 byte sequence that the Gamecube uses"""
         buttons_total = 0x0080
         if self.button[enums.Button.BUTTON_A]:
             buttons_total += 0x0100
@@ -97,6 +101,7 @@ class ControllerState:
         string += "R_SHOULDER: " + str(self.r_shoulder) + "\n"
         return string
 
+
 class Controller:
     """Manages virtual controller state and button presses
 
@@ -104,7 +109,13 @@ class Controller:
     buttons programatically, but also automatically configuring the controller with dolphin
     """
 
-    def __init__(self, console, port, type=enums.ControllerType.STANDARD, serial_device="/dev/ttyACM0"):
+    def __init__(
+        self,
+        console,
+        port,
+        type=enums.ControllerType.STANDARD,
+        serial_device="/dev/ttyACM0",
+    ):
         """Create a new virtual controller
 
         Args:
@@ -118,10 +129,14 @@ class Controller:
             self.pipe = None
         else:
             try:
-                self.tastm32 = serial.Serial(serial_device, 115200, timeout=None, rtscts=True)
+                self.tastm32 = serial.Serial(
+                    serial_device, 115200, timeout=None, rtscts=True
+                )
             except serial.serialutil.SerialException:
-                print("TAStm32 was not ready. It might be booting up. " +
-                      "Wait a few seconds and try again")
+                print(
+                    "TAStm32 was not ready. It might be booting up. "
+                    + "Wait a few seconds and try again"
+                )
                 sys.exit(-1)
 
         self.port = port
@@ -142,8 +157,8 @@ class Controller:
     def connect(self):
         """Connect the controller to the console
 
-            Note:
-                Blocks until the other side is ready
+        Note:
+            Blocks until the other side is ready
         """
         if self._type == enums.ControllerType.STANDARD:
             # Add ourselves to the console's controller list
@@ -164,7 +179,7 @@ class Controller:
                                 None,
                                 win32file.OPEN_EXISTING,
                                 0,
-                                None
+                                None,
                             )
                             return True
                         except pywintypes.error:
@@ -177,23 +192,27 @@ class Controller:
                 self.tastm32.reset_input_buffer()
 
                 # Send reset command
-                self.tastm32.write(b'R') # reset
+                self.tastm32.write(b"R")  # reset
                 cmd = self.tastm32.read(2)
-                if cmd != b'\x01R':
+                if cmd != b"\x01R":
                     # TODO Better error handling logic here
-                    print("ERROR: TAStm32 did not reset properly. Try power cycling it.")
+                    print(
+                        "ERROR: TAStm32 did not reset properly. Try power cycling it."
+                    )
                     return False
                 # controller mode
-                self.tastm32.write(b'C1')
+                self.tastm32.write(b"C1")
                 # Set to gamecube mode
-                self.tastm32.write(b'SAG\x80\x00')
+                self.tastm32.write(b"SAG\x80\x00")
                 # no bulk transfer
-                self.tastm32.write(b'QA0')
+                self.tastm32.write(b"QA0")
                 cmd = self.tastm32.read(2)
                 self.tastm32.reset_input_buffer()
-                if cmd != b'\x01S':
+                if cmd != b"\x01S":
                     # TODO Better error handling logic here
-                    print("ERROR: TAStm32 did not set to GCN mode. Try power cycling it.")
+                    print(
+                        "ERROR: TAStm32 did not set to GCN mode. Try power cycling it."
+                    )
                     return False
                 return True
         else:
@@ -208,33 +227,33 @@ class Controller:
 
     def simple_press(self, x, y, button):
         """Here is a simpler representation of a button press, in case
-            you don't want to bother with the tedium of manually doing everything.
-            It isn't capable of doing everything the normal controller press functions
-            can, but probably covers most scenarios.
-            Notably, a difference here is that doing a button press releases all
-            other buttons pressed previously.
+        you don't want to bother with the tedium of manually doing everything.
+        It isn't capable of doing everything the normal controller press functions
+        can, but probably covers most scenarios.
+        Notably, a difference here is that doing a button press releases all
+        other buttons pressed previously.
 
-            Note:
-                Don't call this function twice in the same frame
-                    x = 0 (left) to 1 (right) on the main stick
-                    y = 0 (down) to 1 (up) on the main stick
-                    button = the button to press. Enter None for no button"""
+        Note:
+            Don't call this function twice in the same frame
+                x = 0 (left) to 1 (right) on the main stick
+                y = 0 (down) to 1 (up) on the main stick
+                button = the button to press. Enter None for no button"""
         if self._is_dolphin:
             if not self.pipe:
                 return
-            #Tilt the main stick
+            # Tilt the main stick
             self.tilt_analog(enums.Button.BUTTON_MAIN, x, y)
-            #Release the shoulders
+            # Release the shoulders
             self.press_shoulder(enums.Button.BUTTON_L, 0)
             self.press_shoulder(enums.Button.BUTTON_R, 0)
-            #Press the right button
+            # Press the right button
             for item in enums.Button:
-                #Don't do anything for the main or c-stick
+                # Don't do anything for the main or c-stick
                 if item == enums.Button.BUTTON_MAIN:
                     continue
                 if item == enums.Button.BUTTON_C:
                     continue
-                #Press our button, release all others
+                # Press our button, release all others
                 if item == button:
                     self.press_button(item)
                 else:
@@ -256,7 +275,6 @@ class Controller:
             if not self.pipe:
                 return
             self._write(command)
-
 
     def release_button(self, button):
         """Release a single button
@@ -300,7 +318,7 @@ class Controller:
             self._write(command)
 
     def tilt_analog(self, button, x, y):
-        """ Tilt one of the analog sticks to a given (x,y) value
+        """Tilt one of the analog sticks to a given (x,y) value
 
         Args:
             button (enums.Button): Must be main stick or C stick
@@ -320,7 +338,7 @@ class Controller:
             self._write(command)
 
     def tilt_analog_unit(self, button, x, y):
-        """ Tilt one of the analog sticks to a given (x,y) value, normalized to a unit vector
+        """Tilt one of the analog sticks to a given (x,y) value, normalized to a unit vector
 
         This mean the values range from -1 -> 1 (with 0 center) rather than 0 -> 1 (with 0.5 center)
         This doesn't press the stick any further than the tilt_analog(), it's just a compat helper
@@ -334,7 +352,15 @@ class Controller:
             self.current.main_stick = (x, y)
         else:
             self.current.c_stick = (x, y)
-        command = "SET " + str(button.value) + " " + str((x/2) + 0.5) + " " + str((y/2) + 0.5) + "\n"
+        command = (
+            "SET "
+            + str(button.value)
+            + " "
+            + str((x / 2) + 0.5)
+            + " "
+            + str((y / 2) + 0.5)
+            + "\n"
+        )
         if self.logger:
             self.logger.log("Buttons Pressed", command, concat=True)
         if self._is_dolphin:
@@ -352,7 +378,7 @@ class Controller:
 
         All buttons are released, all sticks set to 0.5, all shoulders set to 0
         """
-        #Set the internal state back to neutral
+        # Set the internal state back to neutral
         self.current.button[enums.Button.BUTTON_A] = False
         self.current.button[enums.Button.BUTTON_B] = False
         self.current.button[enums.Button.BUTTON_X] = False
@@ -365,8 +391,8 @@ class Controller:
         self.current.button[enums.Button.BUTTON_D_DOWN] = False
         self.current.button[enums.Button.BUTTON_D_LEFT] = False
         self.current.button[enums.Button.BUTTON_D_RIGHT] = False
-        self.current.main_stick = (.5, .5)
-        self.current.c_stick = (.5, .5)
+        self.current.main_stick = (0.5, 0.5)
+        self.current.c_stick = (0.5, 0.5)
         self.current.l_shoulder = 0
         self.current.r_shoulder = 0
         if self._is_dolphin:
@@ -388,14 +414,13 @@ class Controller:
             command += "SET C .5 .5" + "\n"
             command += "SET L 0" + "\n"
             command += "SET R 0" + "\n"
-            #Send the presses to dolphin
+            # Send the presses to dolphin
             self._write(command)
         if self.logger:
             self.logger.log("Buttons Pressed", "Empty Input", concat=True)
 
     def _write(self, command):
-        """ Platform independent button write function.
-        """
+        """Platform independent button write function."""
         if platform.system() == "Windows":
             try:
                 win32file.WriteFile(self.pipe, command.encode())
@@ -422,8 +447,8 @@ class Controller:
         else:
             # Command for "send single controller poll" is 'A'
             # Serialize controller state into bytes and send
-            self.tastm32.write(b'A' + self.current.toBytes())
+            self.tastm32.write(b"A" + self.current.toBytes())
             cmd = self.tastm32.read(1)
 
-            if cmd != b'A':
+            if cmd != b"A":
                 print("Got error response: ", bytes(cmd))
