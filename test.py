@@ -3,18 +3,22 @@ import unittest
 
 import melee
 
+
 class SLPFile(unittest.TestCase):
     """
     Test cases that can be run automatically in the Github cloud environment
     In particular, there are no live dolphin tests here.
     """
+
     def test_read_file(self):
         """
         Load and parse SLP file
         """
-        console = melee.Console(system="file",
-                                allow_old_version=False,
-                                path="test_artifacts/test_game_1.slp")
+        console = melee.Console(
+            system="file",
+            allow_old_version=False,
+            path="test_artifacts/test_game_1.slp",
+        )
         self.assertTrue(console.connect())
         framecount = 0
         while True:
@@ -33,14 +37,13 @@ class SLPFile(unittest.TestCase):
                 self.assertEqual(gamestate.players[1].percent, 17)
                 self.assertEqual(gamestate.players[2].percent, 0)
 
-
     def test_read_old_file(self):
         """
         Load and parse old SLP file
         """
-        console = melee.Console(system="file",
-                                allow_old_version=True,
-                                path="test_artifacts/test_game_2.slp")
+        console = melee.Console(
+            system="file", allow_old_version=True, path="test_artifacts/test_game_2.slp"
+        )
         self.assertTrue(console.connect())
         framecount = 0
         while True:
@@ -65,7 +68,33 @@ class SLPFile(unittest.TestCase):
         """
         framedata = melee.FrameData()
         self.assertTrue(framedata.is_attack(melee.Character.FALCO, melee.Action.DAIR))
-        self.assertFalse(framedata.is_attack(melee.Character.FALCO, melee.Action.STANDING))
+        self.assertFalse(
+            framedata.is_attack(melee.Character.FALCO, melee.Action.STANDING)
+        )
 
-if __name__ == '__main__':
+    def test_corrupt_file(self):
+        """Load a corrupt SLP file and make sure we don't crash"""
+        console = melee.Console(
+            system="file",
+            allow_old_version=True,
+            path="test_artifacts/corrupt_game_1.slp",
+        )
+        self.assertFalse(console.connect())
+
+        console = melee.Console(
+            system="file",
+            allow_old_version=True,
+            path="test_artifacts/corrupt_game_2.slp",
+        )
+        self.assertFalse(console.connect())
+
+        console = melee.Console(
+            system="file",
+            allow_old_version=True,
+            path="test_artifacts/corrupt_game_3.slp",
+        )
+        self.assertFalse(console.connect())
+
+
+if __name__ == "__main__":
     unittest.main()

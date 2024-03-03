@@ -7,18 +7,21 @@ import ubjson
 from enum import Enum
 import numpy as np
 
+
 # pylint: disable=too-few-public-methods
 class EventType(Enum):
-    """ Replay event types """
+    """Replay event types"""
+
     GECKO_CODES = 0x10
     PAYLOADS = 0x35
     GAME_START = 0x36
     PRE_FRAME = 0x37
     POST_FRAME = 0x38
     GAME_END = 0x39
-    FRAME_START = 0x3a
-    ITEM_UPDATE = 0x3b
-    FRAME_BOOKEND = 0x3c
+    FRAME_START = 0x3A
+    ITEM_UPDATE = 0x3B
+    FRAME_BOOKEND = 0x3C
+
 
 class SLPFileStreamer:
     def __init__(self, path):
@@ -50,31 +53,32 @@ class SLPFileStreamer:
         return False
 
     def dispatch(self, dummy):
-        """Read a single game event off the buffer
-        """
+        """Read a single game event off the buffer"""
         if self._index >= len(self._contents):
             return None
 
         if EventType(self._contents[self._index]) == EventType.PAYLOADS:
             cursor = 0x2
-            payload_size = self._contents[self._index+1]
+            payload_size = self._contents[self._index + 1]
             num_commands = (payload_size - 1) // 3
             for i in range(0, num_commands):
                 command = np.ndarray((1,), ">B", self._contents, cursor)[0]
                 command_len = np.ndarray((1,), ">H", self._contents, cursor + 0x1)[0]
-                self.eventsize[command] = command_len+1
+                self.eventsize[command] = command_len + 1
                 cursor += 3
 
             wrapper = dict()
             wrapper["type"] = "game_event"
-            wrapper["payload"] = self._contents[self._index : self._index+payload_size+1]
+            wrapper["payload"] = self._contents[
+                self._index : self._index + payload_size + 1
+            ]
             self._index += payload_size + 1
             return wrapper
 
         event_size = self.eventsize[self._contents[self._index]]
 
         # Check to see if a new frame has happened for an old file type
-        if self._is_new_frame(self._contents[self._index : self._index+event_size]):
+        if self._is_new_frame(self._contents[self._index : self._index + event_size]):
             wrapper = dict()
             wrapper["type"] = "frame_end"
             wrapper["payload"] = b""
@@ -82,14 +86,23 @@ class SLPFileStreamer:
 
         wrapper = dict()
         wrapper["type"] = "game_event"
-        wrapper["payload"] = self._contents[self._index : self._index+event_size]
+        wrapper["payload"] = self._contents[self._index : self._index + event_size]
         self._index += event_size
 
         return wrapper
 
     def connect(self):
-        with open(self._path, mode='rb') as file:
-            full = ubjson.loadb(file.read())
+        with open(self._path, mode="rb") as file:
+            full = None
+            try:
+                full = ubjson.loadb(file.read())
+            except ubjson.decoder.DecoderException:
+                return False
+            # This is annoying and sometimes happens when there's an error parsing
+            if not isinstance(full, dict):
+                return False
+            if "raw" not in full:
+                return False
             raw = full["raw"]
             self._contents = raw
             try:
