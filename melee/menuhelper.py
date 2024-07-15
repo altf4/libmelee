@@ -287,7 +287,7 @@ class MenuHelper():
             return
 
         # Make sure the port is set to "Human"
-        if gamestate.players[controlling_port].controller_status != enums.ControllerStatus.CONTROLLER_HUMAN:
+        if gamestate.players[controlling_port].controller_status != enums.ControllerStatus.CONTROLLER_HUMAN and cpu_level == 0:
             MenuHelper.change_controller_status(controller, gamestate, controlling_port, enums.ControllerStatus.CONTROLLER_HUMAN)
             return
 
